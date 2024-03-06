@@ -113,7 +113,7 @@ export const BetterBulldozerComponent = (moduleRegistry: ModuleRegistry) => (Com
                     // This section is only showing if Raycasting markers.
                     <Section title={engine.translate("YY_BETTER_BULLDOZER.Filter")}>
                         <ToolButton className = {theme.button} selected={staticObjectMarkersFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton"} onSelect={staticObjectsFilterToggled} src="coui://ui-mods/images/MarkersIconBetterBulldozer.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={markerNetworkFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton"} onSelect={raycastMarkersButtonToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={markerNetworkFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton"} onSelect={networksFilterToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
                     </Section>
                     : <></>
                     }
