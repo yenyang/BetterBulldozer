@@ -35,8 +35,8 @@
 	  <None Remove="l10n\pl-PL.csv" />
 	  <None Remove="l10n\pt-BR.csv" />
 	  <None Remove="l10n\ru-RU.csv" />
-	  <None Remove="l10n\zh-CN.csv" />
-	  <None Remove="l10n\zh-TW.csv" />
+	  <None Remove="l10n\zh-HANS.csv" />
+	  <None Remove="l10n\zh-HANT.csv" />
 	  <None Remove="StyleCop\stylecop.json" />
 	</ItemGroup>
 	<ItemGroup>
@@ -53,8 +53,8 @@
 	  <EmbeddedResource Include="l10n\pl-PL.csv" />
 	  <EmbeddedResource Include="l10n\pt-BR.csv" />
 	  <EmbeddedResource Include="l10n\ru-RU.csv" />
-	  <EmbeddedResource Include="l10n\zh-CN.csv" />
-	  <EmbeddedResource Include="l10n\zh-TW.csv" />
+	  <EmbeddedResource Include="l10n\zh-HANS.csv" />
+	  <EmbeddedResource Include="l10n\zh-HANT.csv" />
 	</ItemGroup>
 
 	<ItemGroup>

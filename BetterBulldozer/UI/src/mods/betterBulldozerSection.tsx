@@ -104,24 +104,24 @@ export const BetterBulldozerComponent = (moduleRegistry: ModuleRegistry) => (Com
                     { raycastingAreas ?
                     // This section is only showing if Raycasting areas.
                     <Section title={engine.translate("YY_BETTER_BULLDOZER.Filter")}>
-                        <ToolButton className = {theme.button} selected={surfacesFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton"} onSelect={surfacesFilterToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={spacesFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton"} onSelect={spacesFilterToggled} src="coui://ui-mods/images/AreaToolBetterBulldozer.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={surfacesFilter} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton")} onSelect={surfacesFilterToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={spacesFilter} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton")} onSelect={spacesFilterToggled} src="coui://ui-mods/images/AreaToolBetterBulldozer.svg"></ToolButton>
                     </Section>
                     : <></>
                     }
                     { raycastingMarkers ?
                     // This section is only showing if Raycasting markers.
                     <Section title={engine.translate("YY_BETTER_BULLDOZER.Filter")}>
-                        <ToolButton className = {theme.button} selected={staticObjectMarkersFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton"} onSelect={staticObjectsFilterToggled} src="coui://ui-mods/images/MarkersIconBetterBulldozer.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={markerNetworkFilter} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton"} onSelect={networksFilterToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={staticObjectMarkersFilter} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton")} onSelect={staticObjectsFilterToggled} src="coui://ui-mods/images/MarkersIconBetterBulldozer.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={markerNetworkFilter} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton")} onSelect={networksFilterToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
                     </Section>
                     : <></>
                     }
                     <Section title={engine.translate("Toolbar.TOOL_MODE_TITLE")}>
-                        <ToolButton className = {theme.button} selected={gameplayManipulation} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton"} onSelect={gameplayManipulationToggled} src="coui://uil/Standard/CubeSimulation.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={bypassConfirmation} tooltip = {"YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton"} onSelect={bypassConfirmationToggled} src="coui://uil/Standard/BypassQuestionmark.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={raycastingMarkers} tooltip = {"YY_BETTER_BULLDOZER.RaycastMarkersButton"} onSelect={raycastMarkersButtonToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={raycastingAreas} tooltip = {"YY_BETTER_BULLDOZER.RaycastAreasButton"} onSelect={raycastAreasButtonToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={gameplayManipulation} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton")} onSelect={gameplayManipulationToggled} src="coui://uil/Standard/CubeSimulation.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={bypassConfirmation} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton")} onSelect={bypassConfirmationToggled} src="coui://uil/Standard/BypassQuestionmark.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={raycastingMarkers} tooltip = {engine.translate("YY_BETTER_BULLDOZER.RaycastMarkersButton")} onSelect={raycastMarkersButtonToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={raycastingAreas} tooltip = {engine.translate("YY_BETTER_BULLDOZER.RaycastAreasButton")} onSelect={raycastAreasButtonToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
                     </Section>
                 </>
             );
