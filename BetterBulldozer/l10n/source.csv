@@ -1,5 +1,5 @@
 YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton,Makes the bulldozer EXCLUSIVELY target surfaces or spaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else.
-YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton,"Shows and EXCLUSIVELY targets static object markers and invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings."
+YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton,"Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings."
 YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton,Allows you to use the bulldozer on moving objects such as vehicles or cims.
 YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton,Disables the prompt for whether you are sure you want to demolish a building.
 YY_BETTER_BULLDOZER.Filter,Filter
