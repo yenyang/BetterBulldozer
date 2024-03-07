@@ -251,7 +251,7 @@ namespace Better_Bulldozer.Systems
         {
             if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
             {
-                if (EntityManager.HasComponent<MarkerNetData>(prefabEntity) || prefab is MarkerObjectPrefab || (prefab is BulldozePrefab /*&& m_RaycastTarget.value == RaycastTarget.Markers*/))
+                if (EntityManager.HasComponent<MarkerNetData>(prefabEntity) || prefab is MarkerObjectPrefab || (prefab is BulldozePrefab && SelectedRaycastTarget == RaycastTarget.Markers))
                 {
                     if (!m_PrefabIsMarker)
                     {
@@ -271,7 +271,7 @@ namespace Better_Bulldozer.Systems
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} prefab is MarkerObjectPrefab : {prefab is MarkerObjectPrefab}");
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} prefab is BulldozePrefab : {prefab is BulldozePrefab}");
 
-                    // m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)}  m_RaycastTarget == RaycastTarget.Markers: {m_RaycastTarget.value == RaycastTarget.Markers}");
+                    m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)}  m_RaycastTarget == RaycastTarget.Markers: {SelectedRaycastTarget == RaycastTarget.Markers}");
                 }
             }
             else if (m_PrefabIsMarker)
