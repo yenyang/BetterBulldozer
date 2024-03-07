@@ -120,8 +120,8 @@ export const BetterBulldozerComponent = (moduleRegistry: ModuleRegistry) => (Com
                     <Section title={engine.translate("Toolbar.TOOL_MODE_TITLE")}>
                         <ToolButton className = {theme.button} selected={gameplayManipulation} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton")} onSelect={gameplayManipulationToggled} src="coui://uil/Standard/CubeSimulation.svg"></ToolButton>
                         <ToolButton className = {theme.button} selected={bypassConfirmation} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton")} onSelect={bypassConfirmationToggled} src="coui://uil/Standard/BypassQuestionmark.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={raycastingMarkers} tooltip = {engine.translate("YY_BETTER_BULLDOZER.RaycastMarkersButton")} onSelect={raycastMarkersButtonToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
-                        <ToolButton className = {theme.button} selected={raycastingAreas} tooltip = {engine.translate("YY_BETTER_BULLDOZER.RaycastAreasButton")} onSelect={raycastAreasButtonToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={raycastingMarkers} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton")} onSelect={raycastMarkersButtonToggled} src="coui://uil/Standard/DottedLinesMarkers.svg"></ToolButton>
+                        <ToolButton className = {theme.button} selected={raycastingAreas} tooltip = {engine.translate("YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton")} onSelect={raycastAreasButtonToggled} src="coui://ui-mods/images/SurfaceIconBetterBulldozer.svg"></ToolButton>
                     </Section>
                 </>
             );
