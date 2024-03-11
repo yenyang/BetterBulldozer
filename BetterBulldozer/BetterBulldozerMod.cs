@@ -64,10 +64,10 @@ namespace Better_Bulldozer
             Instance = this;
             Logger = LogManager.GetLogger("Mods_Yenyang_Better_Bulldozer").SetShowsErrorsInUI(false);
             Logger.Info(nameof(OnLoad));
-#if DEBUG
-            Logger.effectivenessLevel = Level.Debug;
-#elif VERBOSE
+#if VERBOSE
             Logger.effectivenessLevel = Level.Verbose;
+#elif DEBUG
+            Logger.effectivenessLevel = Level.Debug;
 #else
             Logger.effectivenessLevel = Level.Info;
 #endif
