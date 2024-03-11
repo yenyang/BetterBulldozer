@@ -67,9 +67,9 @@ namespace Better_Bulldozer
 #if DEBUG
             Logger.effectivenessLevel = Level.Debug;
 #elif VERBOSE
-            Log.effectivenessLevel = Level.Verbose;
+            Logger.effectivenessLevel = Level.Verbose;
 #else
-            Log.effectivenessLevel = Level.Info;
+            Logger.effectivenessLevel = Level.Info;
 #endif
 
             Logger.Info("ModInstallFolder = " + ModInstallFolder);
