@@ -25,6 +25,11 @@
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 	<ItemGroup>
+	  <Compile Remove="images\**" />
+	  <EmbeddedResource Remove="images\**" />
+	  <None Remove="images\**" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove="l10n\de-DE.csv" />
 	  <None Remove="l10n\en-US.csv" />
 	  <None Remove="l10n\es-ES.csv" />
@@ -35,8 +40,8 @@
 	  <None Remove="l10n\pl-PL.csv" />
 	  <None Remove="l10n\pt-BR.csv" />
 	  <None Remove="l10n\ru-RU.csv" />
-	  <None Remove="l10n\zh-CN.csv" />
-	  <None Remove="l10n\zh-TW.csv" />
+	  <None Remove="l10n\zh-HANS.csv" />
+	  <None Remove="l10n\zh-HANT.csv" />
 	  <None Remove="StyleCop\stylecop.json" />
 	</ItemGroup>
 	<ItemGroup>
@@ -53,8 +58,8 @@
 	  <EmbeddedResource Include="l10n\pl-PL.csv" />
 	  <EmbeddedResource Include="l10n\pt-BR.csv" />
 	  <EmbeddedResource Include="l10n\ru-RU.csv" />
-	  <EmbeddedResource Include="l10n\zh-CN.csv" />
-	  <EmbeddedResource Include="l10n\zh-TW.csv" />
+	  <EmbeddedResource Include="l10n\zh-HANS.csv" />
+	  <EmbeddedResource Include="l10n\zh-HANT.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -161,32 +166,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="images\" />
 	  <Folder Include="Localization\" />
 	  <Folder Include="Utils\" />
 	  <Folder Include="UI\" />
 	  <Folder Include="Systems\" />
-	  <Folder Include="Patches\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Lib.Harmony.Thin" Version="2.3.1.1" />
+	  <PackageReference Include="Lib.Harmony" Version="2.2.2" />
 	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="images\AreaToolBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="images\MarkersIconBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="images\SurfaceIconBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 	
 	<Target Name="CopyFiles" BeforeTargets="AfterBuild">

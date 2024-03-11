@@ -50,9 +50,9 @@ namespace Better_Bulldozer.Localization
                 {
                     string resourceName = $"{thisAssembly.GetName().Name}.l10n.{localeID}.csv";
 
-                    log.Info($"Found localization file {resourceName}");
                     if (resourceNames.Contains(resourceName))
                     {
+                        log.Info($"Found localization file {resourceName}");
                         try
                         {
                             log.Info($"Reading embedded translation file {resourceName}");
@@ -187,6 +187,7 @@ namespace Better_Bulldozer.Localization
                                     if (!translations.ContainsKey(key))
                                     {
                                         translations.Add(key, value);
+                                        log.Verbose($"[{nameof(LoadTranslations)}]  Adding key: {key} value: {value} to {resourceName}");
                                     }
                                     else
                                     {
@@ -204,6 +205,10 @@ namespace Better_Bulldozer.Localization
                             // Don't let a single failure stop us.
                             log.Error(e, $"Exception reading localization from embedded file {resourceName}");
                         }
+                    }
+                    else
+                    {
+                        log.Warn($"Did not find localization file {resourceName}");
                     }
                 }
             }

@@ -31,12 +31,11 @@ namespace Better_Bulldozer.Systems
         private NetToolSystem m_NetToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private DefaultToolSystem m_DefaultToolSystem;
-        private ValueBinding<RaycastTarget> m_RaycastTarget;
-        private ValueBinding<AreaTypeMask> m_AreasFilter;
-        private ValueBinding<TypeMask> m_MarkersFilter;
+        private ValueBinding<int> m_RaycastTarget;
+        private ValueBinding<int> m_AreasFilter;
+        private ValueBinding<int> m_MarkersFilter;
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
-        private ValueBinding<bool> m_BulldozeToolActive;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -57,22 +56,27 @@ namespace Better_Bulldozer.Systems
             /// Exclusively target markers.
             /// </summary>
             Markers,
+
+            /// <summary>
+            /// Exclusively target standalone lanes such as fences, hedges, street markings, or vehicle lanes.
+            /// </summary>
+            Lanes,
         }
 
         /// <summary>
         /// Gets a value indicating what to raycast.
         /// </summary>
-        public RaycastTarget SelectedRaycastTarget { get => m_RaycastTarget.value; }
+        public RaycastTarget SelectedRaycastTarget { get => (RaycastTarget)m_RaycastTarget.value; }
 
         /// <summary>
         /// Gets a value indicating the filter to apply to areas.
         /// </summary>
-        public AreaTypeMask AreasFilter { get => m_AreasFilter.value; }
+        public AreaTypeMask AreasFilter { get => (AreaTypeMask)m_AreasFilter.value; }
 
         /// <summary>
         /// Gets a value indicating the filter to apply to Markers.
         /// </summary>
-        public TypeMask MarkersFilter { get => m_MarkersFilter.value; }
+        public TypeMask MarkersFilter { get => (TypeMask)m_MarkersFilter.value; }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -92,13 +96,13 @@ namespace Better_Bulldozer.Systems
             toolSystem2.EventPrefabChanged = (Action<PrefabBase>)Delegate.Combine(toolSystem2.EventPrefabChanged, new Action<PrefabBase>(OnPrefabChanged));
 
             // This binding communicates what the Raycast target is.
-            AddBinding(m_RaycastTarget = new ValueBinding<RaycastTarget>("BetterBulldozer", "RaycastTarget", RaycastTarget.Vanilla));
+            AddBinding(m_RaycastTarget = new ValueBinding<int>("BetterBulldozer", "RaycastTarget", (int)RaycastTarget.Vanilla));
 
             // This binding communicates what the Area filter is.
-            AddBinding(m_AreasFilter = new ValueBinding<AreaTypeMask>("BetterBulldozer", "AreasFilter", AreaTypeMask.Surfaces));
+            AddBinding(m_AreasFilter = new ValueBinding<int>("BetterBulldozer", "AreasFilter", (int)AreaTypeMask.Surfaces));
 
             // This binding communicates what the Markers filter is.
-            AddBinding(m_MarkersFilter = new ValueBinding<TypeMask>("BetterBulldozer", "MarkersFilter", TypeMask.Net));
+            AddBinding(m_MarkersFilter = new ValueBinding<int>("BetterBulldozer", "MarkersFilter", (int)TypeMask.Net));
 
             // This binding communicates whether bypass confirmation is toggled.
             AddBinding(m_BypassConfirmation = new ValueBinding<bool>("BetterBulldozer", "BypassConfirmation", false));
@@ -106,8 +110,32 @@ namespace Better_Bulldozer.Systems
             // This binding communicates whether gameplay manipulation is toggled.
             AddBinding(m_GameplayManipulation = new ValueBinding<bool>("BetterBulldozer", "GameplayManipulation", false));
 
-            // This binding communicates whether the bulldoze tool is active.
-            AddBinding(m_BulldozeToolActive = new ValueBinding<bool>("BetterBulldozer", "BulldozeToolActive", false));
+            // This binding listens for whether the BypassConfirmation tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "BypassConfirmationButton", BypassConfirmationToggled));
+
+            // This binding listens for whether the GameplayManipulation tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "GameplayManipulationButton", GameplayManipulationToggled));
+
+            // This binding listens for whether the RaycastMarkersButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastMarkersButton", RaycastMarkersButtonToggled));
+
+            // This binding listens for whether the SurfacesFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "SurfacesFilterButton", SurfacesFilterToggled));
+
+            // This binding listens for whether the SpacesFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "SpacesFilterButton", SpacesFilterToggled));
+
+            // This binding listens for whether the StaticObjectsFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "StaticObjectsFilterButton", StaticObjectsFilterToggled));
+
+            // This binding listens for whether the NetworksFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "NetworksFilterButton", NetworksFilterToggled));
+
+            // This binding listens for whether the RaycastAreasButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastAreasButton", RaycastAreasButtonToggled));
+
+            // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastLanesButton", RaycastLanesButtonToggled));
         }
 
         /// <summary>
@@ -123,8 +151,7 @@ namespace Better_Bulldozer.Systems
         /// <summary>
         /// C# event handler for event callback from UI JavaScript. Toggles the game playmanipulation field of the bulldozer system.
         /// </summary>
-        /// <param name="flag">A bool for what to set the field to.</param>
-        private void GameplayManipulationToggled(bool flag)
+        private void GameplayManipulationToggled()
         {
             m_GameplayManipulation.Update(!m_GameplayManipulation.value);
             m_BulldozeToolSystem.allowManipulation = m_GameplayManipulation.value;
@@ -135,13 +162,13 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void RaycastMarkersButtonToggled()
         {
-            if (m_RaycastTarget.value != RaycastTarget.Markers)
+            if (SelectedRaycastTarget != RaycastTarget.Markers)
             {
-                m_RaycastTarget.Update(RaycastTarget.Markers);
+                m_RaycastTarget.Update((int)RaycastTarget.Markers);
             }
             else
             {
-                m_RaycastTarget.Update(RaycastTarget.Vanilla);
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
@@ -152,13 +179,13 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void SurfacesFilterToggled()
         {
-            if (m_AreasFilter.value != AreaTypeMask.Surfaces)
+            if (AreasFilter != AreaTypeMask.Surfaces)
             {
-                m_AreasFilter.Update(AreaTypeMask.Surfaces);
+                m_AreasFilter.Update((int)AreaTypeMask.Surfaces);
             }
             else
             {
-                m_AreasFilter.Update(AreaTypeMask.Spaces);
+                m_AreasFilter.Update((int)AreaTypeMask.Spaces);
             }
         }
 
@@ -167,13 +194,13 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void SpacesFilterToggled()
         {
-            if (m_AreasFilter.value != AreaTypeMask.Spaces)
+            if (AreasFilter != AreaTypeMask.Spaces)
             {
-                m_AreasFilter.Update(AreaTypeMask.Spaces);
+                m_AreasFilter.Update((int)AreaTypeMask.Spaces);
             }
             else
             {
-                m_AreasFilter.Update(AreaTypeMask.Surfaces);
+                m_AreasFilter.Update((int)AreaTypeMask.Surfaces);
             }
         }
 
@@ -182,13 +209,13 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void StaticObjectsFilterToggled()
         {
-            if (m_MarkersFilter.value != TypeMask.StaticObjects)
+            if (MarkersFilter != TypeMask.StaticObjects)
             {
-                m_MarkersFilter.Update(TypeMask.StaticObjects);
+                m_MarkersFilter.Update((int)TypeMask.StaticObjects);
             }
             else
             {
-                m_MarkersFilter.Update(TypeMask.Net);
+                m_MarkersFilter.Update((int)TypeMask.Net);
             }
         }
 
@@ -197,13 +224,13 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void NetworksFilterToggled()
         {
-            if (m_MarkersFilter.value != TypeMask.Net)
+            if (MarkersFilter != TypeMask.Net)
             {
-                m_MarkersFilter.Update(TypeMask.Net);
+                m_MarkersFilter.Update((int)TypeMask.Net);
             }
             else
             {
-                m_MarkersFilter.Update(TypeMask.StaticObjects);
+                m_MarkersFilter.Update((int)TypeMask.StaticObjects);
             }
         }
 
@@ -212,13 +239,30 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void RaycastAreasButtonToggled()
         {
-            if (m_RaycastTarget.value != RaycastTarget.Areas)
+            if (SelectedRaycastTarget != RaycastTarget.Areas)
             {
-                m_RaycastTarget.Update(RaycastTarget.Areas);
+                m_RaycastTarget.Update((int)RaycastTarget.Areas);
             }
             else
             {
-                m_RaycastTarget.Update(RaycastTarget.Vanilla);
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastAreas.
+        /// </summary>
+        private void RaycastLanesButtonToggled()
+        {
+            if (SelectedRaycastTarget != RaycastTarget.Lanes)
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Lanes);
+            }
+            else
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
@@ -228,7 +272,10 @@ namespace Better_Bulldozer.Systems
         {
             if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
             {
-                if (EntityManager.HasComponent<MarkerNetData>(prefabEntity) || prefab is MarkerObjectPrefab || (prefab is BulldozePrefab && m_RaycastTarget.value == RaycastTarget.Markers))
+                if (EntityManager.HasComponent<MarkerNetData>(prefabEntity)
+                 || prefab is MarkerObjectPrefab || prefab is NetLaneGeometryPrefab || prefab is NetLanePrefab
+                 || (prefab is BulldozePrefab && SelectedRaycastTarget == RaycastTarget.Markers)
+                 || (prefab is BulldozePrefab && SelectedRaycastTarget == RaycastTarget.Lanes))
                 {
                     if (!m_PrefabIsMarker)
                     {
@@ -247,7 +294,8 @@ namespace Better_Bulldozer.Systems
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} EntityManager.HasComponent<MarkerNetData>(prefabEntity) : {EntityManager.HasComponent<MarkerNetData>(prefabEntity)}");
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} prefab is MarkerObjectPrefab : {prefab is MarkerObjectPrefab}");
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} prefab is BulldozePrefab : {prefab is BulldozePrefab}");
-                    m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)}  m_RaycastTarget == RaycastTarget.Markers: {m_RaycastTarget.value == RaycastTarget.Markers}");
+
+                    m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)}  m_RaycastTarget == RaycastTarget.Markers: {SelectedRaycastTarget == RaycastTarget.Markers}");
                 }
             }
             else if (m_PrefabIsMarker)
@@ -266,19 +314,13 @@ namespace Better_Bulldozer.Systems
 
         private void OnToolChanged(ToolBaseSystem tool)
         {
-            if (tool == null || m_ToolSystem.activePrefab == null)
+            if (tool == null)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} something is null.");
                 return;
             }
 
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} {tool.toolID} {m_ToolSystem.activePrefab?.GetPrefabID()} {tool.GetPrefab()?.GetPrefabID()}");
-
-            bool flag = tool == m_BulldozeToolSystem;
-            if (m_BulldozeToolActive.value != flag)
-            {
-                m_BulldozeToolActive.Update(flag);
-            }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }
