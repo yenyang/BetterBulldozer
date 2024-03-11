@@ -63,7 +63,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const bypassConfirmationTooltip =   translate(tooltipDescriptionPrefix + bypassConfirmationID,      "Disables the prompt for whether you are sure you want to demolish a building.");
         const raycastMarkersTooltip =       translate(tooltipDescriptionPrefix + raycastMarkersID,          "Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings.");
         const raycastAreasTooltip =         translate(tooltipDescriptionPrefix + raycastAreasID,            "Makes the bulldozer EXCLUSIVELY target surfaces or spaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else.");
-        const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   "For removing standalone lanes such as interconnected fences, interconnected hedges, street markings, and vehicle lanes. You cannot create these in-game without a mod for it.")
+        const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   "For removing standalone lanes such as interconnected fences, interconnected hedges, street markings, and vehicle lanes. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it.")
         const toolModeTitle =               translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode");
 
         // These convert integer casts of Enums into booleans.
