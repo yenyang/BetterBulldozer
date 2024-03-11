@@ -55,15 +55,15 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.0" />
+  <ModVersion Value="1.1.1" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.0.21*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="" DisplayName="" Version="" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog Value="" />
-  <!--ChangeLog>
-	</ChangeLog-->
+  <ChangeLog Value=""># Patch V1.1.1
+* Fixed errors related to Focus nodes, Thanks to Klyte.
+* Modified some icons by Chameleon TBN.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.com/invite/DgH7rDKZ6r" />

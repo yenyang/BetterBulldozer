@@ -11,6 +11,7 @@ import lanesSrc from "./NetworkBB.svg";
 import networkMarkersSrc from "./DottedLinesMarkersBB.svg";
 import surfacesSrc from "./SurfaceIconBetterBulldozer.svg";
 import { tool } from "cs2/bindings";
+import { FOCUS_DISABLED, FocusSymbol, PanelSectionRow } from "cs2/ui";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 // export const bulldozeToolActive$ = bindValue<boolean>(mod.id, 'BulldozeToolActive');
@@ -90,26 +91,26 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                     { raycastingAreas ?
                         // This section is only showing if Raycasting areas. It includes filters for surfaces and spaces.
                         <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
-                            <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={surfacesFilter}    tooltip={surfacesFilterTooltip} onSelect={() => handleClick(surfacesID)}    src={surfacesSrc}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={spacesFilter}      tooltip={spacesFilterTooltip}   onSelect={() => handleClick(spacesID)}      src={spacesSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={surfacesFilter}    tooltip={surfacesFilterTooltip} onSelect={() => handleClick(surfacesID)}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={surfacesSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={spacesFilter}      tooltip={spacesFilterTooltip}   onSelect={() => handleClick(spacesID)}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={spacesSrc}></VanillaComponentResolver.instance.ToolButton>
                         </VanillaComponentResolver.instance.Section>
                         : <></>
                     }
                     { raycastingMarkers ? 
                         // This section is only showing if Raycasting markers. It includes filters for static objects and networks.
                         <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
-                            <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={staticObjectMarkersFilter} tooltip={staticObjectMarkersTooltip}    onSelect={() => handleClick(staticObjectsID)}   src={staticObjectMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={markerNetworkFilter}       tooltip={markerNetworkTooltip}          onSelect={() => handleClick(networksFilterID)}  src={networkMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={staticObjectMarkersFilter} tooltip={staticObjectMarkersTooltip}    onSelect={() => handleClick(staticObjectsID)}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     src={staticObjectMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={markerNetworkFilter}       tooltip={markerNetworkTooltip}          onSelect={() => handleClick(networksFilterID)}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     src={networkMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
                         </VanillaComponentResolver.instance.Section>
                         : <></>
                     }
-                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
-                        <VanillaComponentResolver.instance.ToolButton  selected={raycastingLanes}       tooltip={lanesTooltip}                  onSelect={() => handleClick(lanesID)}                   src={lanesSrc}                  className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                        <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}  tooltip={gameplayManipulationTooltip}   onSelect={() => handleClick(gameplayManipulationID)}    src={gameplayManipulationSrc}   className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                        <VanillaComponentResolver.instance.ToolButton  selected={bypassConfirmation}    tooltip={bypassConfirmationTooltip}     onSelect={() => handleClick(bypassConfirmationID)}      src={bypassConfirmationSrc}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                        <VanillaComponentResolver.instance.ToolButton  selected={raycastingMarkers}     tooltip={raycastMarkersTooltip}         onSelect={() => handleClick(raycastMarkersID)}          src={networkMarkersSrc}         className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                        <VanillaComponentResolver.instance.ToolButton  selected={raycastingAreas}       tooltip={raycastAreasTooltip}           onSelect={() => handleClick(raycastAreasID)}            src={surfacesSrc}               className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                     </VanillaComponentResolver.instance.Section>
+                    <VanillaComponentResolver.instance.Section title={toolModeTitle}>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingLanes}       tooltip={lanesTooltip}                  onSelect={() => handleClick(lanesID)}                   src={lanesSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}  tooltip={gameplayManipulationTooltip}   onSelect={() => handleClick(gameplayManipulationID)}    src={gameplayManipulationSrc}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={bypassConfirmation}    tooltip={bypassConfirmationTooltip}     onSelect={() => handleClick(bypassConfirmationID)}      src={bypassConfirmationSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingMarkers}     tooltip={raycastMarkersTooltip}         onSelect={() => handleClick(raycastMarkersID)}          src={networkMarkersSrc}        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingAreas}       tooltip={raycastAreasTooltip}           onSelect={() => handleClick(raycastAreasID)}            src={surfacesSrc}              focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                    </VanillaComponentResolver.instance.Section>
                 </>
             );
         }
