@@ -36,7 +36,6 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<int> m_MarkersFilter;
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
-        private ValueBinding<bool> m_BulldozeToolActive;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -57,6 +56,11 @@ namespace Better_Bulldozer.Systems
             /// Exclusively target markers.
             /// </summary>
             Markers,
+
+            /// <summary>
+            /// Exclusively target standalone lanes such as fences, hedges, street markings, or vehicle lanes.
+            /// </summary>
+            Lanes,
         }
 
         /// <summary>
@@ -106,32 +110,32 @@ namespace Better_Bulldozer.Systems
             // This binding communicates whether gameplay manipulation is toggled.
             AddBinding(m_GameplayManipulation = new ValueBinding<bool>("BetterBulldozer", "GameplayManipulation", false));
 
-            // This binding communicates whether the bulldoze tool is active.
-            AddBinding(m_BulldozeToolActive = new ValueBinding<bool>("BetterBulldozer", "BulldozeToolActive", false));
+            // This binding listens for whether the BypassConfirmation tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "BypassConfirmationButton", BypassConfirmationToggled));
 
-            // This binding listens for whether the BypassConfirmationToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "BypassConfirmationToggled", BypassConfirmationToggled));
+            // This binding listens for whether the GameplayManipulation tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "GameplayManipulationButton", GameplayManipulationToggled));
 
-            // This binding listens for whether the GameplayManipulationToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "GameplayManipulationToggled", GameplayManipulationToggled));
+            // This binding listens for whether the RaycastMarkersButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastMarkersButton", RaycastMarkersButtonToggled));
 
-            // This binding listens for whether the RaycastMarkersButtonToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastMarkersButtonToggled", RaycastMarkersButtonToggled));
+            // This binding listens for whether the SurfacesFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "SurfacesFilterButton", SurfacesFilterToggled));
 
-            // This binding listens for whether the SurfacesFilterToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "SurfacesFilterToggled", SurfacesFilterToggled));
+            // This binding listens for whether the SpacesFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "SpacesFilterButton", SpacesFilterToggled));
 
-            // This binding listens for whether the SpacesFilterToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "SpacesFilterToggled", SpacesFilterToggled));
+            // This binding listens for whether the StaticObjectsFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "StaticObjectsFilterButton", StaticObjectsFilterToggled));
 
-            // This binding listens for whether the StaticObjectsFilterToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "StaticObjectsFilterToggled", StaticObjectsFilterToggled));
+            // This binding listens for whether the NetworksFilter tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "NetworksFilterButton", NetworksFilterToggled));
 
-            // This binding listens for whether the NetworksFilterToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "NetworksFilterToggled", NetworksFilterToggled));
+            // This binding listens for whether the RaycastAreasButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastAreasButton", RaycastAreasButtonToggled));
 
-            // This binding listens for whether the RaycastAreasButtonToggled tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastAreasButtonToggled", RaycastAreasButtonToggled));
+            // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastLanesButton", RaycastLanesButtonToggled));
         }
 
         /// <summary>
@@ -247,6 +251,23 @@ namespace Better_Bulldozer.Systems
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }
 
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastAreas.
+        /// </summary>
+        private void RaycastLanesButtonToggled()
+        {
+            if (SelectedRaycastTarget != RaycastTarget.Lanes)
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Lanes);
+            }
+            else
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
         private void HandleShowMarkers(PrefabBase prefab)
         {
             if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
@@ -290,19 +311,13 @@ namespace Better_Bulldozer.Systems
 
         private void OnToolChanged(ToolBaseSystem tool)
         {
-            if (tool == null || m_ToolSystem.activePrefab == null)
+            if (tool == null)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} something is null.");
                 return;
             }
 
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} {tool.toolID} {m_ToolSystem.activePrefab?.GetPrefabID()} {tool.GetPrefab()?.GetPrefabID()}");
-
-            bool flag = tool == m_BulldozeToolSystem;
-            if (m_BulldozeToolActive.value != flag)
-            {
-                m_BulldozeToolActive.Update(flag);
-            }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }

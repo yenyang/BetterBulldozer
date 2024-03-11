@@ -25,6 +25,11 @@
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 	<ItemGroup>
+	  <Compile Remove="images\**" />
+	  <EmbeddedResource Remove="images\**" />
+	  <None Remove="images\**" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Remove="l10n\de-DE.csv" />
 	  <None Remove="l10n\en-US.csv" />
 	  <None Remove="l10n\es-ES.csv" />
@@ -161,7 +166,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="images\" />
 	  <Folder Include="Localization\" />
 	  <Folder Include="Utils\" />
 	  <Folder Include="UI\" />
@@ -169,23 +173,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Lib.Harmony.Thin" Version="2.3.1.1" />
+	  <PackageReference Include="Lib.Harmony" Version="2.2.2" />
 	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="images\AreaToolBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="images\MarkersIconBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	  <None Update="images\SurfaceIconBetterBulldozer.svg">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 	
 	<Target Name="CopyFiles" BeforeTargets="AfterBuild">

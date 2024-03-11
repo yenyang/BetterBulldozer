@@ -46,6 +46,11 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.areaTypeMask = betterBulldozerUISystem.AreasFilter;
                 toolRaycastSystem.raycastFlags |= RaycastFlags.SubElements;
             }
+            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Lanes)
+            {
+                toolRaycastSystem.typeMask = TypeMask.Net;
+                toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
+            }
         }
     }
 }
