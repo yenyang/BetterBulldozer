@@ -32,7 +32,7 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.typeMask = betterBulldozerUISystem.MarkersFilter;
                 if ((betterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net)
                 {
-                    toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway;
+                    toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway | Layer.PowerlineLow | Layer.PowerlineHigh | Layer.WaterPipe | Layer.SewagePipe;
                     toolRaycastSystem.raycastFlags = RaycastFlags.Markers;
                     toolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine | UtilityTypes.SewagePipe | UtilityTypes.SewagePipe;
                     toolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Underground | CollisionMask.Overground;
@@ -57,7 +57,8 @@ namespace Better_Bulldozer.Patches
             else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Icons)
             {
                 toolRaycastSystem.typeMask = TypeMask.Icons;
-                toolRaycastSystem.iconLayerMask = Game.Notifications.IconLayerMask.Marker;
+                toolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine | UtilityTypes.SewagePipe | UtilityTypes.SewagePipe;
+                toolRaycastSystem.iconLayerMask = Game.Notifications.IconLayerMask.Marker | Game.Notifications.IconLayerMask.Default;
             }
         }
     }
