@@ -19,7 +19,6 @@ Unified Icon Library
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.
 * Icon and filters to EXCLUSIVELY target surfaces or spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
 * Icon to EXCLUSIVELY target standalone lanes with the bulldozer such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. You cannot create these in-game without a mod for it.
-* Icon to EXCLUSIVELY target floating icons.
 * Automatically manages the "Show Markers" DevUI option while plopping, drawing, and bulldozing applicable objects and networks. 
 
 ## Invisible Paths and Markers
@@ -66,10 +65,9 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <ChangeLog># Patch V1.1.2
-* Added Dependency for Unified Icon Library
-* Fixed Raycasting Lanes
-* Added Raycasting Icons
-* Added utilities networks to raycast marker networks.</ChangeLog>
+* Added Dependency for Unified Icon Library.
+* Fixed Raycasting Lanes.
+* Added utilities networks to raycast marker networks. Also removes their floating icons with them.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

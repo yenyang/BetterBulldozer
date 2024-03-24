@@ -54,12 +54,6 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
                 toolRaycastSystem.raycastFlags |= RaycastFlags.Markers | RaycastFlags.EditorContainers;
             }
-            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Icons)
-            {
-                toolRaycastSystem.typeMask = TypeMask.Icons;
-                toolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine | UtilityTypes.SewagePipe | UtilityTypes.SewagePipe;
-                toolRaycastSystem.iconLayerMask = Game.Notifications.IconLayerMask.Marker | Game.Notifications.IconLayerMask.Default;
-            }
         }
     }
 }
