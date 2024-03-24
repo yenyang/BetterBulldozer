@@ -35,6 +35,7 @@ namespace Better_Bulldozer.Patches
                     toolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway;
                     toolRaycastSystem.raycastFlags = RaycastFlags.Markers;
                     toolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine | UtilityTypes.SewagePipe | UtilityTypes.SewagePipe;
+                    toolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Underground | CollisionMask.Overground;
                 }
                 else
                 {
@@ -56,6 +57,7 @@ namespace Better_Bulldozer.Patches
             else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Icons)
             {
                 toolRaycastSystem.typeMask = TypeMask.Icons;
+                toolRaycastSystem.iconLayerMask = Game.Notifications.IconLayerMask.Marker;
             }
         }
     }

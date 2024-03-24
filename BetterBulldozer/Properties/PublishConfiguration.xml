@@ -68,7 +68,8 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <ChangeLog># Patch V1.1.2
 * Added Dependency for Unified Icon Library
 * Fixed Raycasting Lanes
-* Added Raycasting Icons</ChangeLog>
+* Added Raycasting Icons
+* Added utilities networks to raycast marker networks.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
