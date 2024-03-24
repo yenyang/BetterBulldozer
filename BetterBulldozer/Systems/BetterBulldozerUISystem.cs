@@ -141,6 +141,9 @@ namespace Better_Bulldozer.Systems
 
             // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
             AddBinding(new TriggerBinding("BetterBulldozer", "RaycastLanesButton", RaycastLanesButtonToggled));
+
+            // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
+            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastIconsButton", RaycastIconsButtonToggled));
         }
 
         /// <summary>
@@ -264,6 +267,23 @@ namespace Better_Bulldozer.Systems
             if (SelectedRaycastTarget != RaycastTarget.Lanes)
             {
                 m_RaycastTarget.Update((int)RaycastTarget.Lanes);
+            }
+            else
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastAreas.
+        /// </summary>
+        private void RaycastIconsButtonToggled()
+        {
+            if (SelectedRaycastTarget != RaycastTarget.Icons)
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Icons);
             }
             else
             {

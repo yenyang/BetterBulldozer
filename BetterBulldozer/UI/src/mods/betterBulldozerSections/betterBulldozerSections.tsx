@@ -87,7 +87,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         // It is important that we coordinate how to handle the tool options panel because it is possibile to create a mod that works for your mod but prevents others from doing the same thing.
         // If bulldoze tool active add better bulldozer sections.
         if (bulldozeToolActive) {
-            result.props.children?.unshift(
+            result.props.children?.push(
                 /* 
                 Adds a section for filters if raycasting areas or markers. Each of those sections has two buttons.
                 Adds a section for tool mode with 4 buttons.
