@@ -61,6 +61,11 @@ namespace Better_Bulldozer.Systems
             /// Exclusively target standalone lanes such as fences, hedges, street markings, or vehicle lanes.
             /// </summary>
             Lanes,
+
+            /// <summary>
+            /// Exclusively target icons.
+            /// </summary>
+            Icons,
         }
 
         /// <summary>

@@ -2,12 +2,16 @@
 
 Sully made a Youtube video about custom car parks (aka Parking Lots) and this functionality helped make that safe.
 
+## Dependencies
+Unified Icon Library
+
 # Detailed Descrption
 * Icon for game manipulation that allows you to use the bulldozer on moving objects such as vehicles or cims.
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.
 * Icon and filters to EXCLUSIVELY target surfaces or spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
 * Icon to EXCLUSIVELY target standalone lanes with the bulldozer such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. You cannot create these in-game without a mod for it.
+* Icon to EXCLUSIVELY target floating icons.
 * Automatically manages the "Show Markers" DevUI option while plopping, drawing, and bulldozing applicable objects and networks. 
 
 ## Invisible Paths and Markers
