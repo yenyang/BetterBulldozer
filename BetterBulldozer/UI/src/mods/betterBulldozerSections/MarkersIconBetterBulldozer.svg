@@ -1,14 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 26.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="a" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 46.3 44.5" style="enable-background:new 0 0 46.3 44.5;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#F3F4F4;}
-	.st1{fill:#ACABAB;}
-</style>
-<g>
-	<path class="st0" d="M23.4,0.6c-6.3,0-11.3,1.2-11.3,2.7v38.3c0,1.5,5.1,2.7,11.3,2.7s11.3-1.2,11.3-2.7V3.3
-		C34.7,1.8,29.7,0.6,23.4,0.6z"/>
-	<ellipse class="st1" cx="23.4" cy="3.4" rx="11.3" ry="2.9"/>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="white">
+    <path fill="#f4f4f4" d="M16.38 57.915V6.085c0 3.042 6.999 5.511 15.62 5.511 8.621 0 15.62-2.469 15.62-5.511v51.83c0 3.041-6.999 5.511-15.62 5.511-8.621 0-15.62-2.47-15.62-5.511Z"/>
+  </g>
+  <g id="grey">
+    <ellipse cx="32" cy="6.085" fill="#ababab" rx="15.62" ry="5.511"/>
+  </g>
 </svg>

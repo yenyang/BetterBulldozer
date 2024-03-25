@@ -2,6 +2,15 @@
 
 Sully made a Youtube video about custom car parks (aka Parking Lots) and this functionality helped make that safe.
 
+## Dependencies
+Unified Icon Library
+
+## Donations
+If you want to say thank you with a donation you can do so on Paypal.
+
+## Translations
+I am looking for volunteers to help translate the mod into the official languages. For those interested please find the project in the discord link. CSL2:CODEMODS -> mods-wip -> Better Bulldozer: Translations.
+
 # Detailed Descrption
 * Icon for game manipulation that allows you to use the bulldozer on moving objects such as vehicles or cims.
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
