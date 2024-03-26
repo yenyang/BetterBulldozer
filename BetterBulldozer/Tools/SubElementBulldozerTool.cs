@@ -29,7 +29,6 @@ namespace Better_Bulldozer.Tools
         private SEBTSelectionMode m_SelectionMode = SEBTSelectionMode.Single;
         private float m_Radius = 100f;
         private ILog m_Log;
-        private TypeHandle __TypeHandle;
         private Entity m_SingleHighlightedEntity = Entity.Null;
         private bool m_HighlightingSubobjects = false;
         private RenderingSystem m_RenderingSystem;
@@ -177,9 +176,6 @@ namespace Better_Bulldozer.Tools
         /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            __TypeHandle.__Game_Objects_Transform_RO_ComponentTypeHandle.Update(ref CheckedStateRef);
-            __TypeHandle.__Unity_Entities_Entity_TypeHandle.Update(ref CheckedStateRef);
-
             inputDeps = Dependency;
             bool raycastFlag = GetRaycastResult(out Entity currentEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.HasComponent<Owner>(currentEntity);
@@ -328,27 +324,6 @@ namespace Better_Bulldozer.Tools
             }
 
             return inputDeps;
-        }
-
-        /// <inheritdoc/>
-        protected override void OnCreateForCompiler()
-        {
-            base.OnCreateForCompiler();
-            __TypeHandle.__AssignHandles(ref CheckedStateRef);
-        }
-
-        private struct TypeHandle
-        {
-            [ReadOnly]
-            public EntityTypeHandle __Unity_Entities_Entity_TypeHandle;
-            [ReadOnly]
-            public ComponentTypeHandle<Game.Objects.Transform> __Game_Objects_Transform_RO_ComponentTypeHandle;
-
-            public void __AssignHandles(ref SystemState state)
-            {
-                __Unity_Entities_Entity_TypeHandle = state.GetEntityTypeHandle();
-                __Game_Objects_Transform_RO_ComponentTypeHandle = state.GetComponentTypeHandle<Game.Objects.Transform>();
-            }
         }
 
         /* Saved for later
