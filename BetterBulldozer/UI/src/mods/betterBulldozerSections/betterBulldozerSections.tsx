@@ -7,6 +7,7 @@ import spacesSrc from "./AreaToolBetterBulldozer.svg";
 import staticObjectMarkersSrc from "./MarkersIconBetterBulldozer.svg";
 import surfacesSrc from "./SurfaceIconBetterBulldozer.svg";
 import { tool } from "cs2/bindings";
+import locale from "../lang/en-US.json";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 export const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
@@ -21,7 +22,7 @@ export const gameplayManipulationSrc =         couiStandard +  "CubeSimulation.s
 export const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg";
 export const lanesSrc =                         couiStandard + "Network.svg";
 export const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
-
+export const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
 
 // Saving strings for events and translations.
 export const surfacesID =              "SurfacesFilterButton";
@@ -48,6 +49,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const {children, ...otherProps} = props || {};
 
         // These get the value of the bindings.
+        const subElementBulldozerToolActive = useValue(tool.activeTool$).id == "SubElement Bulldozer Tool";
         const bulldozeToolActive = useValue(tool.activeTool$).id == tool.BULLDOZE_TOOL;
         const gameplayManipulation = useValue(gameplayManipulation$);
         const bypassConfirmation = useValue(bypassConfirmation$);
@@ -57,16 +59,18 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
-        const filterSectionTitle =          translate(sectionTitlePrefix + "Filter",                        "Filter");
-        const surfacesFilterTooltip =       translate(tooltipDescriptionPrefix + surfacesID,                "For removing surfaces inside or outside of buildings in one click.");
-        const spacesFilterTooltip =         translate(tooltipDescriptionPrefix + spacesID,                  "For removing spaces including: Walking, Park, and Hangout areas. They are not currently visible with this tool, but will be highlighted when hovered. With this enabled you can target them inside or outside buildings and remove with one click.");
-        const staticObjectMarkersTooltip =  translate(tooltipDescriptionPrefix + staticObjectsID,           "For removing invisible parking decals, various spots, points, and spawners. Only those outside buildings can be removed. Trying to target those inside buildings will remove the building!");
-        const markerNetworkTooltip =        translate(tooltipDescriptionPrefix + networksFilterID,          "For removing invisible networks. Only those outside buildings can be removed. Trying to target those inside buildings will have no effect.");
-        const gameplayManipulationTooltip = translate(tooltipDescriptionPrefix + gameplayManipulationID,    "Allows you to use the bulldozer on moving objects such as vehicles or cims.");
-        const bypassConfirmationTooltip =   translate(tooltipDescriptionPrefix + bypassConfirmationID,      "Disables the prompt for whether you are sure you want to demolish a building.");
-        const raycastMarkersTooltip =       translate(tooltipDescriptionPrefix + raycastMarkersID,          "Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings.");
-        const raycastAreasTooltip =         translate(tooltipDescriptionPrefix + raycastAreasID,            "Makes the bulldozer EXCLUSIVELY target surfaces or spaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else.");
-        const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   "For removing standalone lanes such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it.");
+        const filterSectionTitle =          translate(sectionTitlePrefix + "Filter",                        locale["YY_BETTER_BULLDOZER.Filter"]);
+        const surfacesFilterTooltip =       translate(tooltipDescriptionPrefix + surfacesID,                locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastSurfacesButton"]);
+        const spacesFilterTooltip =         translate(tooltipDescriptionPrefix + spacesID,                  locale["YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton"]);
+        const staticObjectMarkersTooltip =  translate(tooltipDescriptionPrefix + staticObjectsID,           locale["YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton"]);
+        const markerNetworkTooltip =        translate(tooltipDescriptionPrefix + networksFilterID,          locale["YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton"]);
+        const gameplayManipulationTooltip = translate(tooltipDescriptionPrefix + gameplayManipulationID,    locale["YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton"]);
+        const bypassConfirmationTooltip =   translate(tooltipDescriptionPrefix + bypassConfirmationID,      locale["YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton"]);
+        const raycastMarkersTooltip =       translate(tooltipDescriptionPrefix + raycastMarkersID,          locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton"]);
+        const raycastAreasTooltip =         translate(tooltipDescriptionPrefix + raycastAreasID,            locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton"]);
+        const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton"]);
+
+        const subElementBulldozerDescription = translate("YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton" ,locale["YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton"]);
         const toolModeTitle =               translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode");
 
         // These convert integer casts of Enums into booleans.
@@ -82,7 +86,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         var result : JSX.Element = Component();
         // It is important that we coordinate how to handle the tool options panel because it is possibile to create a mod that works for your mod but prevents others from doing the same thing.
         // If bulldoze tool active add better bulldozer sections.
-        if (bulldozeToolActive) {
+        if (bulldozeToolActive || subElementBulldozerToolActive) {
             result.props.children?.push(
                 /* 
                 Adds a section for filters if raycasting areas or markers. Each of those sections has two buttons.
@@ -107,11 +111,12 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                         : <></>
                     }
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
-                            <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}  tooltip={gameplayManipulationTooltip}   onSelect={() => handleClick(gameplayManipulationID)}    src={gameplayManipulationSrc}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton  selected={bypassConfirmation}    tooltip={bypassConfirmationTooltip}     onSelect={() => handleClick(bypassConfirmationID)}      src={bypassConfirmationSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingLanes}       tooltip={lanesTooltip}                  onSelect={() => handleClick(lanesID)}                   src={lanesSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingMarkers}     tooltip={raycastMarkersTooltip}         onSelect={() => handleClick(raycastMarkersID)}          src={networkMarkersSrc}        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingAreas}       tooltip={raycastAreasTooltip}           onSelect={() => handleClick(raycastAreasID)}            src={surfacesSrc}              focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={subElementBulldozerDescription}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}              tooltip={gameplayManipulationTooltip}       onSelect={() => handleClick(gameplayManipulationID)}            src={gameplayManipulationSrc}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={bypassConfirmation}                tooltip={bypassConfirmationTooltip}         onSelect={() => handleClick(bypassConfirmationID)}              src={bypassConfirmationSrc}     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingLanes}                   tooltip={lanesTooltip}                      onSelect={() => handleClick(lanesID)}                           src={lanesSrc}                  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingMarkers}                 tooltip={raycastMarkersTooltip}             onSelect={() => handleClick(raycastMarkersID)}                  src={networkMarkersSrc}         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastingAreas}                   tooltip={raycastAreasTooltip}               onSelect={() => handleClick(raycastAreasID)}                    src={surfacesSrc}               focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
                     </VanillaComponentResolver.instance.Section>
                 </>
             );

@@ -6,11 +6,14 @@ namespace Better_Bulldozer
 {
     using System;
     using System.IO;
+    using Better_Bulldozer.Settings;
     using Better_Bulldozer.Systems;
+    using Better_Bulldozer.Tools;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Game;
     using Game.Modding;
+    using Game.SceneFlow;
     using HarmonyLib;
 
     /// <summary>
@@ -58,6 +61,11 @@ namespace Better_Bulldozer
         /// </summary>
         internal ILog Logger { get; private set; }
 
+        /// <summary>
+        ///  Gets or sets the Mod Settings.
+        /// </summary>
+        internal BetterBulldozerModSettings Settings { get; set; }
+
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -76,10 +84,11 @@ namespace Better_Bulldozer
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
             m_Harmony = new Harmony("Mods_Yenyang_Better_Bulldozer");
             m_Harmony.PatchAll();
-            Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Loading localization");
-            Localization.Localization.LoadTranslations(Logger);
+            Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Loading en-US");
+            GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting systems.");
             updateSystem.UpdateAt<BetterBulldozerUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<SubElementBulldozerTool>(SystemUpdatePhase.ToolUpdate);
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Complete.");
         }
 
@@ -88,6 +97,11 @@ namespace Better_Bulldozer
         {
             Logger.Info("Disposing..");
             m_Harmony.UnpatchAll();
+            if (Settings != null)
+            {
+                Settings.UnregisterInOptionsUI();
+                Settings = null;
+            }
         }
 
     }

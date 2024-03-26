@@ -17,9 +17,9 @@
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.1.2</AssemblyVersion>
-		<FileVersion>1.1.2</FileVersion>
-		<Version>1.1.2</Version>
+		<AssemblyVersion>1.2.0</AssemblyVersion>
+		<FileVersion>1.2.0</FileVersion>
+		<Version>1.2.0</Version>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
@@ -29,6 +29,9 @@
 	  <Compile Remove="images\**" />
 	  <EmbeddedResource Remove="images\**" />
 	  <None Remove="images\**" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Localization\Localization.cs" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="l10n\de-DE.csv" />
@@ -164,13 +167,15 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+		<None Include="Localization\Localization.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Localization\" />
+	  <Folder Include="Settings\" />
+	  <Folder Include="Tools\" />
 	  <Folder Include="Properties\Previews\" />
+	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="Utils\" />
-	  <Folder Include="UI\" />
 	  <Folder Include="Systems\" />
 	</ItemGroup>
 
