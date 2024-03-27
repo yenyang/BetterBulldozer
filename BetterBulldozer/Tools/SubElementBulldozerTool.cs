@@ -4,6 +4,7 @@
 
 namespace Better_Bulldozer.Tools
 {
+    using Better_Bulldozer.Systems;
     using Colossal.Entities;
     using Colossal.Logging;
     using Game.Buildings;
@@ -13,7 +14,6 @@ namespace Better_Bulldozer.Tools
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
-    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
 
@@ -24,6 +24,8 @@ namespace Better_Bulldozer.Tools
     {
         private ProxyAction m_ApplyAction;
         private OverlayRenderSystem m_OverlayRenderSystem;
+        private BetterBulldozerUISystem m_BetterBulldozerUISystem;
+        private BulldozeToolSystem m_BulldozeToolSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private EntityQuery m_OwnedQuery;
         private SEBTSelectionMode m_SelectionMode = SEBTSelectionMode.Single;
@@ -64,9 +66,17 @@ namespace Better_Bulldozer.Tools
         public float Radius { get => m_Radius; set => m_Radius = value; }
 
         /// <inheritdoc/>
+        public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
+        {
+            base.GetAvailableSnapMask(out onMask, out offMask);
+            onMask |= Snap.ContourLines;
+            offMask |= Snap.ContourLines;
+        }
+
+        /// <inheritdoc/>
         public override PrefabBase GetPrefab()
         {
-            return null;
+            return m_BulldozeToolSystem.GetPrefab();
         }
 
         /// <inheritdoc/>
@@ -91,13 +101,16 @@ namespace Better_Bulldozer.Tools
                 m_ToolRaycastSystem.netLayerMask |= Layer.Pathway | Layer.PowerlineHigh | Layer.PowerlineLow | Layer.Taxiway | Layer.PublicTransportRoad | Layer.SubwayTrack | Layer.TrainTrack | Layer.TramTrack | Layer.Waterway | Layer.Road;
             }
 
-            if (m_RenderingSystem.markersVisible && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            if (m_RenderingSystem.markersVisible && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
             {
                 m_ToolRaycastSystem.netLayerMask |= Layer.MarkerPathway | Layer.MarkerTaxiway;
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.Markers;
             }
 
-            // m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain; This needs a seperate toggle.
+            if (m_BetterBulldozerUISystem.UpgradeIsMain)
+            {
+                m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain;
+            }
         }
 
         /// <summary>
@@ -117,7 +130,9 @@ namespace Better_Bulldozer.Tools
             m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             m_Log.Info($"[{nameof(SubElementBulldozerTool)}] {nameof(OnCreate)}");
             m_ToolOutputBarrier = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            m_BulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
             m_OverlayRenderSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            m_BetterBulldozerUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             base.OnCreate();
             m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
             {

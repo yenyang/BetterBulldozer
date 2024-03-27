@@ -81,6 +81,11 @@ namespace Better_Bulldozer
 #endif
 
             Logger.Info("ModInstallFolder = " + ModInstallFolder);
+            Settings = new (this);
+            Settings.RegisterInOptionsUI();
+            AssetDatabase.global.LoadSettings(nameof(BetterBulldozerMod), Settings, new BetterBulldozerModSettings(this));
+            Settings.Contra = false;
+            Logger.Info($"[{nameof(BetterBulldozerMod)}] {nameof(OnLoad)} finished loading settings.");
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
             m_Harmony = new Harmony("Mods_Yenyang_Better_Bulldozer");
             m_Harmony.PatchAll();

@@ -22,5 +22,8 @@
   "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "For removing spaces including: Walking, Park, and Hangout areas. They are not currently visible with this tool, but will be highlighted when hovered. With this enabled you can target them inside or outside buildings and remove with one click.",
   "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton": " For removing invisible parking decals, various spots, points, and spawners. Only those outside buildings can be removed. Trying to target those inside buildings will remove the building!",
   "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton": "For removing invisible networks. Only those outside buildings can be removed.Trying to target those inside buildings will have no effect.",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton": "For removing standalone lanes such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it."
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton": "For removing standalone lanes such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it.",
+  "BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]": "For removing subelements such as props, trees, decals, and subbuildings from buildings.",
+  "BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]": "For removing subelements such as props, trees, and decals of subbuildings.",
+  "BetterBulldozer.SECTION_TITLE[Tier]": "Tier"
 }

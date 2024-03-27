@@ -6,6 +6,7 @@
 namespace Better_Bulldozer.Systems
 {
     using System;
+    using Better_Bulldozer.Tools;
     using Colossal.Logging;
     using Colossal.UI.Binding;
     using Game.Areas;
@@ -21,11 +22,14 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class BetterBulldozerUISystem : UISystemBase
     {
+        private const string ModId = "BetterBulldozer";
+
         private ToolSystem m_ToolSystem;
         private ILog m_Log;
         private RenderingSystem m_RenderingSystem;
         private PrefabSystem m_PrefabSystem;
         private BulldozeToolSystem m_BulldozeToolSystem;
+        private SubElementBulldozerTool m_SubElementBulldozeToolSystem;
         private bool m_RecordedShowMarkers;
         private bool m_PrefabIsMarker = false;
         private NetToolSystem m_NetToolSystem;
@@ -36,6 +40,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<int> m_MarkersFilter;
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
+        private ValueBinding<bool> m_UpgradeIsMain;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -78,6 +83,11 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public TypeMask MarkersFilter { get => (TypeMask)m_MarkersFilter.value; }
 
+        /// <summary>
+        /// Gets a value indicating whether UpgradeIsMain.
+        /// </summary>
+        public bool UpgradeIsMain { get => m_UpgradeIsMain.value; }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -88,6 +98,7 @@ namespace Better_Bulldozer.Systems
             m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             m_PrefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
             m_ObjectToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_SubElementBulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SubElementBulldozerTool>();
             m_NetToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<NetToolSystem>();
             ToolSystem toolSystem = m_ToolSystem; // I don't know why vanilla game did this.
             m_ToolSystem.EventToolChanged = (Action<ToolBaseSystem>)Delegate.Combine(toolSystem.EventToolChanged, new Action<ToolBaseSystem>(OnToolChanged));
@@ -96,46 +107,58 @@ namespace Better_Bulldozer.Systems
             toolSystem2.EventPrefabChanged = (Action<PrefabBase>)Delegate.Combine(toolSystem2.EventPrefabChanged, new Action<PrefabBase>(OnPrefabChanged));
 
             // This binding communicates what the Raycast target is.
-            AddBinding(m_RaycastTarget = new ValueBinding<int>("BetterBulldozer", "RaycastTarget", (int)RaycastTarget.Vanilla));
+            AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
 
             // This binding communicates what the Area filter is.
-            AddBinding(m_AreasFilter = new ValueBinding<int>("BetterBulldozer", "AreasFilter", (int)AreaTypeMask.Surfaces));
+            AddBinding(m_AreasFilter = new ValueBinding<int>(ModId, "AreasFilter", (int)AreaTypeMask.Surfaces));
 
             // This binding communicates what the Markers filter is.
-            AddBinding(m_MarkersFilter = new ValueBinding<int>("BetterBulldozer", "MarkersFilter", (int)TypeMask.Net));
+            AddBinding(m_MarkersFilter = new ValueBinding<int>(ModId, "MarkersFilter", (int)TypeMask.Net));
 
             // This binding communicates whether bypass confirmation is toggled.
-            AddBinding(m_BypassConfirmation = new ValueBinding<bool>("BetterBulldozer", "BypassConfirmation", false));
+            AddBinding(m_BypassConfirmation = new ValueBinding<bool>(ModId, "BypassConfirmation", false));
 
             // This binding communicates whether gameplay manipulation is toggled.
-            AddBinding(m_GameplayManipulation = new ValueBinding<bool>("BetterBulldozer", "GameplayManipulation", false));
+            AddBinding(m_GameplayManipulation = new ValueBinding<bool>(ModId, "GameplayManipulation", false));
+
+            // This binding communicates whether UpgradeIsMain is toggled.
+            AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
 
             // This binding listens for whether the BypassConfirmation tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "BypassConfirmationButton", BypassConfirmationToggled));
+            AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
 
             // This binding listens for whether the GameplayManipulation tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "GameplayManipulationButton", GameplayManipulationToggled));
+            AddBinding(new TriggerBinding(ModId, "GameplayManipulationButton", GameplayManipulationToggled));
 
             // This binding listens for whether the RaycastMarkersButton tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastMarkersButton", RaycastMarkersButtonToggled));
+            AddBinding(new TriggerBinding(ModId, "RaycastMarkersButton", RaycastMarkersButtonToggled));
 
             // This binding listens for whether the SurfacesFilter tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "SurfacesFilterButton", SurfacesFilterToggled));
+            AddBinding(new TriggerBinding(ModId, "SurfacesFilterButton", SurfacesFilterToggled));
 
             // This binding listens for whether the SpacesFilter tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "SpacesFilterButton", SpacesFilterToggled));
+            AddBinding(new TriggerBinding(ModId, "SpacesFilterButton", SpacesFilterToggled));
 
             // This binding listens for whether the StaticObjectsFilter tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "StaticObjectsFilterButton", StaticObjectsFilterToggled));
+            AddBinding(new TriggerBinding(ModId, "StaticObjectsFilterButton", StaticObjectsFilterToggled));
 
             // This binding listens for whether the NetworksFilter tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "NetworksFilterButton", NetworksFilterToggled));
+            AddBinding(new TriggerBinding(ModId, "NetworksFilterButton", NetworksFilterToggled));
 
             // This binding listens for whether the RaycastAreasButton tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastAreasButton", RaycastAreasButtonToggled));
+            AddBinding(new TriggerBinding(ModId, "RaycastAreasButton", RaycastAreasButtonToggled));
 
             // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
-            AddBinding(new TriggerBinding("BetterBulldozer", "RaycastLanesButton", RaycastLanesButtonToggled));
+            AddBinding(new TriggerBinding(ModId, "RaycastLanesButton", RaycastLanesButtonToggled));
+
+            // This binding listens for whether the SubElementBulldozerButton tool icon has been toggled.
+            AddBinding(new TriggerBinding(ModId, "SubElementBulldozerButton", SubElementBulldozerButtonToggled));
+
+            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
+            AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", UpgradeIsMainToggled));
+
+            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
+            AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
         }
 
         /// <summary>
@@ -268,6 +291,24 @@ namespace Better_Bulldozer.Systems
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }
 
+        /// <summary>
+        /// C# event handler for event callback from UI JavaScript. Toggles the m_RaycastAreas.
+        /// </summary>
+        private void SubElementBulldozerButtonToggled()
+        {
+            if (m_ToolSystem.activeTool == m_BulldozeToolSystem)
+            {
+                m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
+            }
+            else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            {
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
+
         private void HandleShowMarkers(PrefabBase prefab)
         {
             if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
@@ -339,5 +380,16 @@ namespace Better_Bulldozer.Systems
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnPrefabChanged)} {prefab.GetPrefabID()}");
             HandleShowMarkers(prefab);
         }
+
+        /// <summary>
+        /// For setting upgrade is main when button is pressed.
+        /// </summary>
+        private void UpgradeIsMainToggled() => m_UpgradeIsMain.Update(true);
+
+        /// <summary>
+        /// For unsetting upgrade is main when subeleemnts of main element button pressed.
+        /// </summary>
+        private void SubElementsOfMainElementToggled() => m_UpgradeIsMain.Update(false);
+
     }
 }

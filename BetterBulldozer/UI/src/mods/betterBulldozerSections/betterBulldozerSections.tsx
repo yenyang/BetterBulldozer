@@ -8,6 +8,7 @@ import staticObjectMarkersSrc from "./MarkersIconBetterBulldozer.svg";
 import surfacesSrc from "./SurfaceIconBetterBulldozer.svg";
 import { tool } from "cs2/bindings";
 import locale from "../lang/en-US.json";
+import upgradeIsMainSrc from "./SubElementsBetterBulldozer.svg";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 export const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
@@ -15,6 +16,7 @@ export const bypassConfirmation$ = bindValue<boolean>(mod.id, 'BypassConfirmatio
 export const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
 export const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
 export const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
+export const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
 
 // These contain the coui paths to Unified Icon Library svg assets
 export const couiStandard =                         "coui://uil/Standard/";
@@ -23,6 +25,7 @@ export const bypassConfirmationSrc =           couiStandard +  "BypassQuestionma
 export const lanesSrc =                         couiStandard + "Network.svg";
 export const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
 export const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
+export const subElementsOfMainElementSrc =               couiStandard + "House.svg";
 
 // Saving strings for events and translations.
 export const surfacesID =              "SurfacesFilterButton";
@@ -56,6 +59,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const raycastTarget = useValue(raycastTarget$);
         const areasFilter = useValue(areasFilter$);
         const markersFilter = useValue(markersFilter$);
+        const upgradeIsMain = useValue(upgradeIsMain$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -71,6 +75,8 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton"]);
 
         const subElementBulldozerDescription = translate("YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton" ,locale["YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton"]);
+        const subElementsOfMainElementDescription = translate(locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]"]);
+        const upgradeIsMainDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]"]);
         const toolModeTitle =               translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode");
 
         // These convert integer casts of Enums into booleans.
@@ -81,6 +87,8 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const spacesFilter : boolean = areasFilter == 8;
         const staticObjectMarkersFilter : boolean = markersFilter == 2; 
         const markerNetworkFilter : boolean = markersFilter == 8;
+
+        
 
         // This gets the original component that we may alter and return.
         var result : JSX.Element = Component();
@@ -94,22 +102,27 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                 All properties of the buttons and sections have been previously defined in variables above.
                 */
                <>
-                    { raycastingAreas ?
+                    { raycastingAreas && (
                         // This section is only showing if Raycasting areas. It includes filters for surfaces and spaces.
                         <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={surfacesFilter}    tooltip={surfacesFilterTooltip} onSelect={() => handleClick(surfacesID)}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={surfacesSrc}></VanillaComponentResolver.instance.ToolButton>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={spacesFilter}      tooltip={spacesFilterTooltip}   onSelect={() => handleClick(spacesID)}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={spacesSrc}></VanillaComponentResolver.instance.ToolButton>
                         </VanillaComponentResolver.instance.Section>
-                        : <></>
-                    }
-                    { raycastingMarkers ? 
+                    )}
+                    { raycastingMarkers && (
                         // This section is only showing if Raycasting markers. It includes filters for static objects and networks.
                         <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={staticObjectMarkersFilter} tooltip={staticObjectMarkersTooltip}    onSelect={() => handleClick(staticObjectsID)}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     src={staticObjectMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={markerNetworkFilter}       tooltip={markerNetworkTooltip}          onSelect={() => handleClick(networksFilterID)}  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     src={networkMarkersSrc}></VanillaComponentResolver.instance.ToolButton>
                         </VanillaComponentResolver.instance.Section>
-                        : <></>
-                    }
+                    )}
+                    { subElementBulldozerToolActive && (
+                        // This section is only showing using Subelement Bulldozer. It includes filters for surfaces and spaces.
+                        <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={subElementsOfMainElementDescription}   onSelect={() => handleClick("SubElementsOfMainElement")}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={surfacesSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}               focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={spacesSrc}></VanillaComponentResolver.instance.ToolButton>
+                        </VanillaComponentResolver.instance.Section>
+                    )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={subElementBulldozerDescription}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}              tooltip={gameplayManipulationTooltip}       onSelect={() => handleClick(gameplayManipulationID)}            src={gameplayManipulationSrc}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>

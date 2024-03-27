@@ -6,6 +6,7 @@ namespace Better_Bulldozer.Settings
 {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
 
     /// <summary>
     /// Localization for <see cref="BetterBulldozerMod"/> mod in English.
@@ -52,12 +53,31 @@ namespace Better_Bulldozer.Settings
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton", " For removing invisible parking decals, various spots, points, and spawners. Only those outside buildings can be removed. Trying to target those inside buildings will remove the building!" },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton", "For removing invisible networks. Only those outside buildings can be removed.Trying to target those inside buildings will have no effect." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton", "For removing standalone lanes such as interconnected fences, interconnected hedges, linear street markings, vehicle and pedestrian lanes. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it." },
+                { TooltipDescriptionKey("SubElementsOfMainElement"), "For removing subelements such as props, trees, decals, and subbuildings from buildings." },
+                { TooltipDescriptionKey("UpgradeIsMain"), "For removing subelements such as props, trees, and decals of subbuildings." },
+                { SectionLabel("Tier"), "Tier" },
             };
         }
+
 
         /// <inheritdoc/>
         public void Unload()
         {
+        }
+
+        private string TooltipDescriptionKey(string key)
+        {
+            return $"BetterBulldozer.TOOLTIP_DESCRIPTION[{key}]";
+        }
+
+        private string TooltipTitleKey(string key)
+        {
+            return $"BetterBulldozer.TOOLTIP_TITLE[{key}]";
+        }
+
+        private string SectionLabel(string key)
+        {
+            return $"BetterBulldozer.SECTION_TITLE[{key}]";
         }
     }
 }
