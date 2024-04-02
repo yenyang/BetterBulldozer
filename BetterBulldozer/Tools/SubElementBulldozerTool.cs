@@ -7,6 +7,7 @@ namespace Better_Bulldozer.Tools
     using Better_Bulldozer.Systems;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
@@ -32,7 +33,7 @@ namespace Better_Bulldozer.Tools
         private float m_Radius = 100f;
         private ILog m_Log;
         private Entity m_SingleHighlightedEntity = Entity.Null;
-        private bool m_HighlightingSubobjects = false;
+        private Entity m_HighlighedSubobjectsEntity = Entity.Null;
         private RenderingSystem m_RenderingSystem;
         private EntityQuery m_HighlightedQuery;
 
@@ -196,27 +197,59 @@ namespace Better_Bulldozer.Tools
             bool hasOwnerComponentFlag = EntityManager.HasComponent<Owner>(currentEntity);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentEntity);
             bool hasServiceUpgradeComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity);
-            Owner ownerComponent = EntityManager.GetComponentData<Owner>(currentEntity);
-            if (EntityManager.TryGetComponent(ownerComponent.m_Owner, out PrefabRef prefabRef))
+            EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
+
+            if (raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasServiceUpgradeComponentFlag) // Single subelement highlight
             {
-                if (!EntityManager.HasComponent<BuildingData>(prefabRef))
+                if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
                 {
-                    return inputDeps;
+                    buffer.AddComponent<Highlighted>(currentEntity);
+                    buffer.AddComponent<BatchesUpdated>(currentEntity);
+                    m_SingleHighlightedEntity = currentEntity;
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights.");
+                }
+                else if (m_SingleHighlightedEntity != currentEntity)
+                {
+                    buffer.AddComponent<Highlighted>(currentEntity);
+                    buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
+                    buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
+                    buffer.AddComponent<BatchesUpdated>(currentEntity);
+                    m_SingleHighlightedEntity = currentEntity;
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights and removed old highlight.");
+                }
+            }
+            else if ((raycastFlag && hasOwnerComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions) || (raycastFlag && hasOwnerComponentFlag && hasServiceUpgradeComponentFlag && !hasExtensionComponentFlag))
+            {
+                if (EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                {
+                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                    {
+                        buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    }
+
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added muiltiple highlights.");
+                    m_SingleHighlightedEntity = Entity.Null;
+                    m_HighlighedSubobjectsEntity = currentEntity;
                 }
             }
 
-            /* Saved for later
-            if (m_Radius > 0 && raycastFlag && m_SelectionMode == SEBTSelectionMode.Radius) // Radius Circle
+            if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
             {
-                ToolRadiusJob toolRadiusJob = new ()
-                {
-                    m_OverlayBuffer = m_OverlayRenderSystem.GetBuffer(out JobHandle outJobHandle),
-                    m_Position = new Vector3(hit.m_HitPosition.x, hit.m_Position.y, hit.m_HitPosition.z),
-                    m_Radius = m_Radius,
-                };
-                inputDeps = IJobExtensions.Schedule(toolRadiusJob, JobHandle.CombineDependencies(inputDeps, outJobHandle));
-                m_OverlayRenderSystem.AddBufferWriter(inputDeps);
-            } */
+                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
+                buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
+                buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
+                m_SingleHighlightedEntity = Entity.Null;
+            }
+            else if (raycastFlag == false || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
+            {
+                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
+                EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
+                EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
+                m_HighlighedSubobjectsEntity = Entity.Null;
+                m_SingleHighlightedEntity = Entity.Null;
+            }
+
 
             if (m_ApplyAction.WasPressedThisFrame())
             {
@@ -228,7 +261,7 @@ namespace Better_Bulldozer.Tools
                         {
                             if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
                             {
-                                EntityManager.AddComponent<Deleted>(segmentEdge.m_Start);
+                                buffer.AddComponent<Deleted>(segmentEdge.m_Start);
                             }
                             else
                             {
@@ -236,11 +269,11 @@ namespace Better_Bulldozer.Tools
                                 {
                                     if (edge.m_Edge != currentEntity)
                                     {
-                                        EntityManager.AddComponent<Updated>(edge.m_Edge);
+                                        buffer.AddComponent<Updated>(edge.m_Edge);
                                     }
                                 }
 
-                                EntityManager.AddComponent<Updated>(segmentEdge.m_Start);
+                                buffer.AddComponent<Updated>(segmentEdge.m_Start);
                             }
                         }
 
@@ -248,7 +281,7 @@ namespace Better_Bulldozer.Tools
                         {
                             if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
                             {
-                                EntityManager.AddComponent<Deleted>(segmentEdge.m_End);
+                                buffer.AddComponent<Deleted>(segmentEdge.m_End);
                             }
                             else
                             {
@@ -256,87 +289,23 @@ namespace Better_Bulldozer.Tools
                                 {
                                     if (edge.m_Edge != currentEntity)
                                     {
-                                        EntityManager.AddComponent<Updated>(edge.m_Edge);
+                                        buffer.AddComponent<Updated>(edge.m_Edge);
                                     }
                                 }
 
-                                EntityManager.AddComponent<Updated>(segmentEdge.m_End);
+                                buffer.AddComponent<Updated>(segmentEdge.m_End);
                             }
                         }
                     }
 
                     if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
                     {
-                        EntityManager.AddComponent<Deleted>(currentEntity);
+                        buffer.AddComponent<Deleted>(currentEntity);
                     }
                 }
             }
-            else if (m_ApplyAction.IsPressed() && m_SelectionMode == SEBTSelectionMode.Radius && raycastFlag)
-            {
-                /*
-                    TreeChangerWithinRadius changeTreeAgeWithinRadiusJob = new()
-                    {
-                        m_EntityType = __TypeHandle.__Unity_Entities_Entity_TypeHandle,
-                        m_Position = hit.m_HitPosition,
-                        m_Radius = m_Radius,
-                        m_Ages = m_SelectedTreeStates,
-                        m_TransformType = __TypeHandle.__Game_Objects_Transform_RO_ComponentTypeHandle,
-                        m_TreeType = __TypeHandle.__Game_Object_Tree_RW_ComponentTypeHandle,
-                        buffer = m_ToolOutputBarrier.CreateCommandBuffer().AsParallelWriter(),
-                        m_PrefabRefType = __TypeHandle.__PrefabRef_RW_ComponentTypeHandle,
-                        m_OverrideState = m_AtLeastOneAgeSelected,
-                        m_OverridePrefab = overridePrefab,
-                        m_Random = new((uint)UnityEngine.Random.Range(1, 100000)),
-                        m_PrefabEntities = m_SelectedTreePrefabEntities,
-                    };
-                    inputDeps = JobChunkExtensions.ScheduleParallel(changeTreeAgeWithinRadiusJob, m_TreeQuery, JobHandle.CombineDependencies(inputDeps, treePrefabJobHandle));
-                    m_ToolOutputBarrier.AddJobHandleForProducer(inputDeps);
-                */
-            }
 
-            if (raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasServiceUpgradeComponentFlag) // Single subelement highlight
-            {
-                if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
-                {
-                    EntityManager.AddComponent<Highlighted>(currentEntity);
-                    EntityManager.AddComponent<BatchesUpdated>(currentEntity);
-                    m_SingleHighlightedEntity = currentEntity;
-                }
-                else if (m_SingleHighlightedEntity != currentEntity)
-                {
-                    EntityManager.AddComponent<Highlighted>(currentEntity);
-                    EntityManager.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                    EntityManager.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                    EntityManager.AddComponent<BatchesUpdated>(currentEntity);
-                    m_SingleHighlightedEntity = currentEntity;
-                }
-            }
-            else if ((raycastFlag && hasOwnerComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions) || (raycastFlag && hasOwnerComponentFlag && hasServiceUpgradeComponentFlag && !hasExtensionComponentFlag))
-            {
-                if (EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> buffer))
-                {
-                    foreach (Game.Objects.SubObject subObject in buffer)
-                    {
-                        EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
-                        EntityManager.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                    }
-
-                    m_HighlightingSubobjects = true;
-                }
-            }
-            else if (m_SingleHighlightedEntity != Entity.Null && m_HighlightingSubobjects == false)
-            {
-                EntityManager.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                EntityManager.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-            else if (m_HighlightingSubobjects)
-            {
-                EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
-                EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
-                m_HighlightingSubobjects = false;
-                m_SingleHighlightedEntity = Entity.Null;
-            }
+            
 
             return inputDeps;
         }

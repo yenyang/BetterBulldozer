@@ -75,7 +75,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton"]);
 
         const subElementBulldozerDescription = translate("YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton" ,locale["YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton"]);
-        const subElementsOfMainElementDescription = translate(locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]"]);
+        const subElementsOfMainElementDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]"]);
         const upgradeIsMainDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]"]);
         const toolModeTitle =               translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode");
 
@@ -119,8 +119,8 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                     { subElementBulldozerToolActive && (
                         // This section is only showing using Subelement Bulldozer. It includes filters for surfaces and spaces.
                         <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={subElementsOfMainElementDescription}   onSelect={() => handleClick("SubElementsOfMainElement")}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={surfacesSrc}></VanillaComponentResolver.instance.ToolButton>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}               focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  src={spacesSrc}></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={subElementsOfMainElementDescription}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                         </VanillaComponentResolver.instance.Section>
                     )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
