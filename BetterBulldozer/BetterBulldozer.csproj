@@ -176,7 +176,6 @@
 	  <Folder Include="Properties\Previews\" />
 	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="Utils\" />
-	  <Folder Include="Systems\" />
 	</ItemGroup>
 
 	<ItemGroup>

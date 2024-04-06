@@ -61,7 +61,6 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const areasFilter = useValue(areasFilter$);
         const markersFilter = useValue(markersFilter$);
         const upgradeIsMain = useValue(upgradeIsMain$);
-        const noMainElements = useValue(noMainElements$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -123,8 +122,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                         <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={subElementsOfMainElementDescription}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={noMainElements}      tooltip={"no main elements description"}      onSelect={() => handleClick("NoMainElements")}           src={subElementBulldozerSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                       </VanillaComponentResolver.instance.Section>
+                        </VanillaComponentResolver.instance.Section>
                     )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={subElementBulldozerDescription}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>

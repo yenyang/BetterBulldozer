@@ -41,7 +41,6 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
-        private ValueBinding<bool> m_NoMainElements;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -89,11 +88,6 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public bool UpgradeIsMain { get => m_UpgradeIsMain.value; }
 
-        /// <summary>
-        /// Gets a value indicating whether to have NoMainElements.
-        /// </summary>
-        public bool NoMainElements { get => m_NoMainElements.value; }
-
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -127,9 +121,6 @@ namespace Better_Bulldozer.Systems
 
             // This binding communicates whether UpgradeIsMain is toggled.
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
-
-            // This binding communicates whether m_NoMainElements is toggled.
-            AddBinding(m_NoMainElements = new ValueBinding<bool>(ModId, "NoMainElements", false));
 
             // This binding listens for whether the BypassConfirmation tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -166,9 +157,6 @@ namespace Better_Bulldozer.Systems
 
             // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
-
-            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
-            AddBinding(new TriggerBinding(ModId, "NoMainElements", NoMainElementToggled));
         }
 
         /// <summary>
@@ -400,11 +388,5 @@ namespace Better_Bulldozer.Systems
         /// For unsetting upgrade is main when subeleemnts of main element button pressed.
         /// </summary>
         private void SubElementsOfMainElementToggled() => m_UpgradeIsMain.Update(false);
-
-        /// <summary>
-        /// For unsetting upgrade is main when subeleemnts of main element button pressed.
-        /// </summary>
-        private void NoMainElementToggled() => m_NoMainElements.Update(!m_NoMainElements.value);
-
     }
 }
