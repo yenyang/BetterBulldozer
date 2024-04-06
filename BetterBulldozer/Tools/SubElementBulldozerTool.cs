@@ -93,7 +93,7 @@ namespace Better_Bulldozer.Tools
             m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
             m_ToolRaycastSystem.typeMask = TypeMask.StaticObjects | TypeMask.Lanes;
             m_ToolRaycastSystem.netLayerMask = Layer.Fence;
-            m_ToolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Decals | RaycastFlags.NoMainElements;
+            m_ToolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Decals;
             m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
 
             if (BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
