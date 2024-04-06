@@ -233,6 +233,8 @@ namespace Better_Bulldozer.Tools
                         buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     }
 
+                    buffer.AddComponent<Highlighted>(currentEntity);
+                    buffer.AddComponent<BatchesUpdated>(currentEntity);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added muiltiple highlights.");
                     m_SingleHighlightedEntity = Entity.Null;
                     m_HighlighedSubobjectsEntity = currentEntity;
