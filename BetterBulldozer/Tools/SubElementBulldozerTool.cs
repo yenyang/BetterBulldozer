@@ -112,6 +112,11 @@ namespace Better_Bulldozer.Tools
             {
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain;
             }
+
+            if (m_BetterBulldozerUISystem.NoMainElements)
+            {
+                m_ToolRaycastSystem.raycastFlags |= RaycastFlags.NoMainElements;
+            }
         }
 
         /// <summary>

@@ -41,6 +41,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
+        private ValueBinding<bool> m_NoMainElements;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -88,23 +89,26 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public bool UpgradeIsMain { get => m_UpgradeIsMain.value; }
 
+        /// <summary>
+        /// Gets a value indicating whether to have NoMainElements.
+        /// </summary>
+        public bool NoMainElements { get => m_NoMainElements.value; }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
             base.OnCreate();
             m_Log = BetterBulldozerMod.Instance.Logger;
-            m_ToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolSystem>();
-            m_BulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
-            m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
-            m_PrefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
-            m_ObjectToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ObjectToolSystem>();
-            m_SubElementBulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SubElementBulldozerTool>();
-            m_NetToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<NetToolSystem>();
-            ToolSystem toolSystem = m_ToolSystem; // I don't know why vanilla game did this.
-            m_ToolSystem.EventToolChanged = (Action<ToolBaseSystem>)Delegate.Combine(toolSystem.EventToolChanged, new Action<ToolBaseSystem>(OnToolChanged));
-            m_DefaultToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<DefaultToolSystem>();
-            ToolSystem toolSystem2 = m_ToolSystem;
-            toolSystem2.EventPrefabChanged = (Action<PrefabBase>)Delegate.Combine(toolSystem2.EventPrefabChanged, new Action<PrefabBase>(OnPrefabChanged));
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
+            m_RenderingSystem = World.GetOrCreateSystemManaged<RenderingSystem>();
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
+            m_SubElementBulldozeToolSystem = World.GetOrCreateSystemManaged<SubElementBulldozerTool>();
+            m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
+            m_ToolSystem.EventToolChanged += OnToolChanged;
+            m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
+            m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
 
             // This binding communicates what the Raycast target is.
             AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
@@ -123,6 +127,9 @@ namespace Better_Bulldozer.Systems
 
             // This binding communicates whether UpgradeIsMain is toggled.
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
+
+            // This binding communicates whether m_NoMainElements is toggled.
+            AddBinding(m_NoMainElements = new ValueBinding<bool>(ModId, "NoMainElements", false));
 
             // This binding listens for whether the BypassConfirmation tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -159,6 +166,9 @@ namespace Better_Bulldozer.Systems
 
             // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
+
+            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
+            AddBinding(new TriggerBinding(ModId, "NoMainElements", NoMainElementToggled));
         }
 
         /// <summary>
@@ -390,6 +400,11 @@ namespace Better_Bulldozer.Systems
         /// For unsetting upgrade is main when subeleemnts of main element button pressed.
         /// </summary>
         private void SubElementsOfMainElementToggled() => m_UpgradeIsMain.Update(false);
+
+        /// <summary>
+        /// For unsetting upgrade is main when subeleemnts of main element button pressed.
+        /// </summary>
+        private void NoMainElementToggled() => m_NoMainElements.Update(!m_NoMainElements.value);
 
     }
 }

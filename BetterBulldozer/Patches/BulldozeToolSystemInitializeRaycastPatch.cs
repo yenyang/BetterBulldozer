@@ -12,6 +12,7 @@ namespace Better_Bulldozer.Patches
     using Game.Tools;
     using HarmonyLib;
     using Unity.Entities;
+    using UnityEngine;
 
     /// <summary>
     /// Patches Bulldoze Tool System Inititialize Raycast to add Markers as something to raycast.
@@ -25,7 +26,6 @@ namespace Better_Bulldozer.Patches
         public static void Postfix()
         {
             ToolRaycastSystem toolRaycastSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolRaycastSystem>();
-            BulldozeToolSystem bulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
             BetterBulldozerUISystem betterBulldozerUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             RenderingSystem renderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
             if (renderingSystem.markersVisible && betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
@@ -54,11 +54,6 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.typeMask = TypeMask.Net;
                 toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
                 toolRaycastSystem.raycastFlags |= RaycastFlags.Markers | RaycastFlags.EditorContainers;
-            }
-            else if (bulldozeToolSystem.allowManipulation)
-            {
-                toolRaycastSystem.typeMask = TypeMask.MovingObjects;
-                toolRaycastSystem.transportType = Game.Prefabs.TransportType.Train;
             }
         }
     }

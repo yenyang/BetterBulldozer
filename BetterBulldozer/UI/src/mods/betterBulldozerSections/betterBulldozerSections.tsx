@@ -11,37 +11,38 @@ import locale from "../lang/en-US.json";
 import upgradeIsMainSrc from "./SubElementsBetterBulldozer.svg";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
-export const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
-export const bypassConfirmation$ = bindValue<boolean>(mod.id, 'BypassConfirmation');
-export const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
-export const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
-export const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
-export const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
+const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
+const bypassConfirmation$ = bindValue<boolean>(mod.id, 'BypassConfirmation');
+const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
+const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
+const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
+const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
+const noMainElements$ = bindValue<boolean>(mod.id, 'NoMainElements');
 
 // These contain the coui paths to Unified Icon Library svg assets
-export const couiStandard =                         "coui://uil/Standard/";
-export const gameplayManipulationSrc =         couiStandard +  "CubeSimulation.svg";
-export const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg";
-export const lanesSrc =                         couiStandard + "Network.svg";
-export const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
-export const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
-export const subElementsOfMainElementSrc =               couiStandard + "House.svg";
+const couiStandard =                         "coui://uil/Standard/";
+const gameplayManipulationSrc =         couiStandard +  "CubeSimulation.svg";
+const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg";
+const lanesSrc =                         couiStandard + "Network.svg";
+const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
+const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
+const subElementsOfMainElementSrc =               couiStandard + "House.svg";
 
 // Saving strings for events and translations.
-export const surfacesID =              "SurfacesFilterButton";
-export const spacesID =                "SpacesFilterButton";
-export const staticObjectsID =         "StaticObjectsFilterButton";
-export const networksFilterID =        "NetworksFilterButton";
-export const gameplayManipulationID =  "GameplayManipulationButton";
-export const bypassConfirmationID =    "BypassConfirmationButton";
-export const raycastMarkersID =        "RaycastMarkersButton";
-export const raycastAreasID =          "RaycastAreasButton";
-export const lanesID =                 "RaycastLanesButton";
-export const tooltipDescriptionPrefix ="YY_BETTER_BULLDOZER_DESCRIPTION.";
-export const sectionTitlePrefix =      "YY_BETTER_BULLDOZER.";
+const surfacesID =              "SurfacesFilterButton";
+const spacesID =                "SpacesFilterButton";
+const staticObjectsID =         "StaticObjectsFilterButton";
+const networksFilterID =        "NetworksFilterButton";
+const gameplayManipulationID =  "GameplayManipulationButton";
+const bypassConfirmationID =    "BypassConfirmationButton";
+const raycastMarkersID =        "RaycastMarkersButton";
+const raycastAreasID =          "RaycastAreasButton";
+const lanesID =                 "RaycastLanesButton";
+const tooltipDescriptionPrefix ="YY_BETTER_BULLDOZER_DESCRIPTION.";
+const sectionTitlePrefix =      "YY_BETTER_BULLDOZER.";
 
 // This functions trigger an event on C# side and C# designates the method to implement.
-export function handleClick(eventName: string) {
+function handleClick(eventName: string) {
     trigger(mod.id, eventName);
 }
 
@@ -60,6 +61,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const areasFilter = useValue(areasFilter$);
         const markersFilter = useValue(markersFilter$);
         const upgradeIsMain = useValue(upgradeIsMain$);
+        const noMainElements = useValue(noMainElements$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -117,11 +119,12 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                         </VanillaComponentResolver.instance.Section>
                     )}
                     { subElementBulldozerToolActive && (
-                        // This section is only showing using Subelement Bulldozer. It includes filters for surfaces and spaces.
+                        // This section is only showing using Subelement Bulldozer.
                         <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={subElementsOfMainElementDescription}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}        focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                        </VanillaComponentResolver.instance.Section>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={upgradeIsMainDescription}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={noMainElements}      tooltip={"no main elements description"}      onSelect={() => handleClick("NoMainElements")}           src={subElementBulldozerSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                       </VanillaComponentResolver.instance.Section>
                     )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={subElementBulldozerDescription}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
