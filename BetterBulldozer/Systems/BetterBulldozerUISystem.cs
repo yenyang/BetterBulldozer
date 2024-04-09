@@ -15,6 +15,7 @@ namespace Better_Bulldozer.Systems
     using Game.Rendering;
     using Game.Tools;
     using Game.UI;
+    using Game.UI.Tooltip;
     using Unity.Entities;
 
     /// <summary>
@@ -307,6 +308,10 @@ namespace Better_Bulldozer.Systems
             if (m_ToolSystem.activeTool == m_BulldozeToolSystem)
             {
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
+                if (m_RaycastTarget.value != (int)RaycastTarget.Vanilla || m_RaycastTarget.value != (int)RaycastTarget.Markers)
+                {
+                    m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+                }
             }
             else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {

@@ -89,7 +89,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const raycastAreasTooltip =         translate(tooltipDescriptionPrefix + raycastAreasID,            locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton"]);
         const lanesTooltip =                translate(tooltipDescriptionPrefix + lanesID,                   locale["YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton"]);
 
-        const subElementBulldozerDescription = translate("YY_BETTER_BULLDOZER_DESCRIPTION.SubElementBulldozerButton" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementBulldozerButton]"]);
+        const subElementBulldozerDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementBulldozerButton]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementBulldozerButton]"]);
         const subElementsOfMainElementDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SubElementsOfMainElement]"]);
         const upgradeIsMainDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[UpgradeIsMain]"]);
         const toolModeTitle =               translate("Toolbar.TOOL_MODE_TITLE", "Tool Mode");
