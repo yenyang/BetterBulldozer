@@ -253,7 +253,7 @@ namespace Better_Bulldozer.Tools
                 buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
                 m_SingleHighlightedEntity = Entity.Null;
             }
-            else if (raycastFlag == false || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
+            else if ((raycastFlag == false && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
             {
                 m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
                 EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
@@ -265,135 +265,74 @@ namespace Better_Bulldozer.Tools
 
             if (m_ApplyAction.WasPressedThisFrame())
             {
-                if (m_SelectionMode == SEBTSelectionMode.Single)
+                if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
                 {
-                    if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
+                    if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
                     {
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
+                        if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
                         {
-                            if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
+                            buffer.AddComponent<Deleted>(segmentEdge.m_Start);
+                        }
+                        else
+                        {
+                            foreach (ConnectedEdge edge in startConnectedEdges)
                             {
-                                buffer.AddComponent<Deleted>(segmentEdge.m_Start);
-                            }
-                            else
-                            {
-                                foreach (ConnectedEdge edge in startConnectedEdges)
+                                if (edge.m_Edge != currentEntity)
                                 {
-                                    if (edge.m_Edge != currentEntity)
+                                    EntityManager.AddComponent<Updated>(edge.m_Edge);
+                                    if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
                                     {
-                                        buffer.AddComponent<Updated>(edge.m_Edge);
+                                        EntityManager.AddComponent<Updated>(distantEdge.m_Start);
+                                        EntityManager.AddComponent<Updated>(distantEdge.m_End);
                                     }
                                 }
-
-                                buffer.AddComponent<Updated>(segmentEdge.m_Start);
                             }
+
+                            EntityManager.AddComponent<Updated>(segmentEdge.m_Start);
                         }
+                    }
 
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
+                    if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
+                    {
+                        if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
                         {
-                            if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
+                            buffer.AddComponent<Deleted>(segmentEdge.m_End);
+                        }
+                        else
+                        {
+                            foreach (ConnectedEdge edge in endConnectedEdges)
                             {
-                                buffer.AddComponent<Deleted>(segmentEdge.m_End);
-                            }
-                            else
-                            {
-                                foreach (ConnectedEdge edge in endConnectedEdges)
+                                if (edge.m_Edge != currentEntity)
                                 {
-                                    if (edge.m_Edge != currentEntity)
+                                    EntityManager.AddComponent<Updated>(edge.m_Edge);
+                                    if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
                                     {
-                                        buffer.AddComponent<Updated>(edge.m_Edge);
+                                        EntityManager.AddComponent<Updated>(distantEdge.m_Start);
+                                        EntityManager.AddComponent<Updated>(distantEdge.m_End);
                                     }
                                 }
-
-                                buffer.AddComponent<Updated>(segmentEdge.m_End);
                             }
+
+                            EntityManager.AddComponent<Updated>(segmentEdge.m_End);
                         }
                     }
+                }
 
-                    if (hasExtensionComponentFlag && hasSubObjectsFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
+                if (hasSubObjectsFlag)
+                {
+                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                     {
-                        foreach (Game.Objects.SubObject subObject in dynamicBuffer)
-                        {
-                            buffer.AddComponent<Deleted>(subObject.m_SubObject);
-                        }
+                        buffer.AddComponent<Deleted>(subObject.m_SubObject);
                     }
+                }
 
-                    if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasNodeComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasNodeComponentFlag))
-                    {
-                        buffer.AddComponent<Deleted>(currentEntity);
-                    }
+                if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasNodeComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasNodeComponentFlag))
+                {
+                    buffer.AddComponent<Deleted>(currentEntity);
                 }
             }
 
             return inputDeps;
         }
-
-        /* Saved for later
-        private struct SubElementBulldozerWithinRadius : IJobChunk
-        {
-            [ReadOnly]
-            public EntityTypeHandle m_EntityType;
-            [ReadOnly]
-            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
-            public EntityCommandBuffer.ParallelWriter buffer;
-            public float m_Radius;
-            public float3 m_Position;
-
-            /// <summary>
-            /// Executes job which will change state or prefab for trees within a radius.
-            /// </summary>
-            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
-            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
-            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
-            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
-            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
-            {
-                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
-                NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
-                for (int i = 0; i < chunk.Count; i++)
-                {
-                    if (RadiusCheck(m_Position, transformNativeArray[i].m_Position, m_Radius))
-                    {
-                        Entity currentEntity = entityNativeArray[i];
-                        buffer.AddComponent<Deleted>(unfilteredChunkIndex, currentEntity);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Checks the radius and position and returns true if tree is there.
-            /// </summary>
-            /// <param name="cursorPosition">Float3 from Raycast.</param>
-            /// <param name="position">Float3 position from Transform.</param>
-            /// <param name="radius">Radius usually passed from settings.</param>
-            /// <returns>True if tree position is within radius of position. False if not.</returns>
-            private bool RadiusCheck(float3 cursorPosition, float3 position, float radius)
-            {
-                float minRadius = 5f;
-                radius = Mathf.Max(radius, minRadius);
-                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        private struct ToolRadiusJob : IJob
-        {
-            public OverlayRenderSystem.Buffer m_OverlayBuffer;
-            public float3 m_Position;
-            public float m_Radius;
-
-            /// <summary>
-            /// Draws tool radius.
-            /// </summary>
-            public void Execute()
-            {
-                m_OverlayBuffer.DrawCircle(new UnityEngine.Color(.52f, .80f, .86f, 1f), default, m_Radius / 20f, 0, new float2(0, 1), m_Position, m_Radius * 2f);
-            }
-        }
-        */
     }
 }
