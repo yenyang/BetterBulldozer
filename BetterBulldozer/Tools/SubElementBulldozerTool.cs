@@ -90,23 +90,41 @@ namespace Better_Bulldozer.Tools
         {
             base.InitializeRaycast();
             m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
-            m_ToolRaycastSystem.typeMask = TypeMask.StaticObjects | TypeMask.Lanes | TypeMask.MovingObjects;
-            m_ToolRaycastSystem.netLayerMask = Layer.Fence;
-            m_ToolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Decals | RaycastFlags.NoMainElements;
-            m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
-
-            if (BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            if (m_RenderingSystem.markersVisible && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
             {
-                m_ToolRaycastSystem.typeMask |= TypeMask.Net;
-                m_ToolRaycastSystem.netLayerMask |= Layer.Pathway | Layer.PowerlineHigh | Layer.PowerlineLow | Layer.Taxiway | Layer.PublicTransportRoad | Layer.SubwayTrack | Layer.TrainTrack | Layer.TramTrack | Layer.Waterway | Layer.Road;
+                m_ToolRaycastSystem.typeMask = m_BetterBulldozerUISystem.MarkersFilter;
+                if ((m_BetterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net)
+                {
+                    m_ToolRaycastSystem.netLayerMask = Layer.MarkerPathway | Layer.MarkerTaxiway | Layer.PowerlineLow | Layer.PowerlineHigh | Layer.WaterPipe | Layer.SewagePipe;
+                    m_ToolRaycastSystem.raycastFlags = RaycastFlags.Markers;
+                    m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine | UtilityTypes.SewagePipe | UtilityTypes.SewagePipe;
+                    m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Underground | CollisionMask.Overground;
+                }
+                else
+                {
+                    m_ToolRaycastSystem.raycastFlags = RaycastFlags.Markers | RaycastFlags.Decals;
+                }
+            }
+            else if (m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Areas)
+            {
+                m_ToolRaycastSystem.typeMask = TypeMask.Areas;
+                m_ToolRaycastSystem.areaTypeMask = m_BetterBulldozerUISystem.AreasFilter;
+            }
+            else
+            {
+                m_ToolRaycastSystem.typeMask = TypeMask.StaticObjects | TypeMask.Lanes;
+                m_ToolRaycastSystem.netLayerMask = Layer.Fence;
+                m_ToolRaycastSystem.raycastFlags = RaycastFlags.Decals;
+                m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
+
+                if (BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+                {
+                    m_ToolRaycastSystem.typeMask |= TypeMask.Net;
+                    m_ToolRaycastSystem.netLayerMask |= Layer.Pathway | Layer.PowerlineHigh | Layer.PowerlineLow | Layer.Taxiway | Layer.PublicTransportRoad | Layer.SubwayTrack | Layer.TrainTrack | Layer.TramTrack | Layer.Waterway | Layer.Road;
+                }
             }
 
-            if (m_RenderingSystem.markersVisible && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
-            {
-                m_ToolRaycastSystem.netLayerMask |= Layer.MarkerPathway | Layer.MarkerTaxiway;
-                m_ToolRaycastSystem.raycastFlags |= RaycastFlags.Markers;
-            }
-
+            m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubElements | RaycastFlags.NoMainElements;
             if (m_BetterBulldozerUISystem.UpgradeIsMain)
             {
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain;
@@ -187,7 +205,8 @@ namespace Better_Bulldozer.Tools
                 EntityManager.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
                 m_SingleHighlightedEntity = Entity.Null;
             }
-            else if (m_HighlighedSubobjectsEntity != Entity.Null)
+
+            if (!m_HighlightedQuery.IsEmptyIgnoreFilter)
             {
                 m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
                 EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
@@ -209,6 +228,22 @@ namespace Better_Bulldozer.Tools
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
             bool hasSubObjectsFlag = EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer);
 
+            if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
+            {
+                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
+                buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
+                buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
+                m_SingleHighlightedEntity = Entity.Null;
+            }
+            else if ((raycastFlag == false && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
+            {
+                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
+                EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
+                EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
+                m_HighlighedSubobjectsEntity = Entity.Null;
+                m_SingleHighlightedEntity = Entity.Null;
+            }
+
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
                 if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag) // Single subelement highlight
@@ -218,6 +253,7 @@ namespace Better_Bulldozer.Tools
                         buffer.AddComponent<Highlighted>(currentEntity);
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
                         m_SingleHighlightedEntity = currentEntity;
+                        m_HighlighedSubobjectsEntity = Entity.Null;
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights.");
                     }
                     else if (m_SingleHighlightedEntity != currentEntity)
@@ -227,6 +263,7 @@ namespace Better_Bulldozer.Tools
                         buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
                         buffer.AddComponent<BatchesUpdated>(currentEntity);
                         m_SingleHighlightedEntity = currentEntity;
+                        m_HighlighedSubobjectsEntity = Entity.Null;
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights and removed old highlight.");
                     }
                 }
@@ -245,23 +282,6 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(currentEntity);
                 }
             }
-
-            if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
-            {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
-                buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-            else if ((raycastFlag == false && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
-            {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
-                EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
-                EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
-                m_HighlighedSubobjectsEntity = Entity.Null;
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-
 
             if (m_ApplyAction.WasPressedThisFrame())
             {

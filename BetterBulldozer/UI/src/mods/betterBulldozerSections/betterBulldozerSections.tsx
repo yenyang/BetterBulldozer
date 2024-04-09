@@ -145,7 +145,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                         </VanillaComponentResolver.instance.Section>
                     )}
                     { subElementBulldozerToolActive && (
-                        // This section is only showing using Subelement Bulldozer.
+                        // This section is only showing while using Subelement Bulldozer.
                         <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={descriptionTooltip(subElementsofMainElementTitle ,subElementsOfMainElementDescription)}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                                 <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={descriptionTooltip(upgradeIsMainTitle ,upgradeIsMainDescription)}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
