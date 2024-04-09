@@ -269,6 +269,11 @@ namespace Better_Bulldozer.Systems
                 m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
+            if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            {
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
+            }
+
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }
 
@@ -284,6 +289,11 @@ namespace Better_Bulldozer.Systems
             else
             {
                 m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+            }
+
+            if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            {
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);

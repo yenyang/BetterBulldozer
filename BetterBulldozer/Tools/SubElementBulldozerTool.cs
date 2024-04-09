@@ -105,11 +105,6 @@ namespace Better_Bulldozer.Tools
                     m_ToolRaycastSystem.raycastFlags = RaycastFlags.Markers | RaycastFlags.Decals;
                 }
             }
-            else if (m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Areas)
-            {
-                m_ToolRaycastSystem.typeMask = TypeMask.Areas;
-                m_ToolRaycastSystem.areaTypeMask = m_BetterBulldozerUISystem.AreasFilter;
-            }
             else
             {
                 m_ToolRaycastSystem.typeMask = TypeMask.StaticObjects | TypeMask.Lanes;
