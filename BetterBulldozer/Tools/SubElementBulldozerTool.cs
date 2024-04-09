@@ -18,7 +18,7 @@ namespace Better_Bulldozer.Tools
     using Unity.Jobs;
 
     /// <summary>
-    /// Tool for removing subelements.
+    /// Tool for removing subelements. --burst-disable-compilation
     /// </summary>
     public partial class SubElementBulldozerTool : ToolBaseSystem
     {
@@ -205,12 +205,13 @@ namespace Better_Bulldozer.Tools
             bool hasOwnerComponentFlag = EntityManager.HasComponent<Owner>(currentEntity);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentEntity);
             bool hasServiceUpgradeComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity);
+            bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
             bool hasSubObjectsFlag = EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer);
 
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
-                if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag) // Single subelement highlight
+                if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag) // Single subelement highlight
                 {
                     if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
                     {
@@ -229,7 +230,7 @@ namespace Better_Bulldozer.Tools
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights and removed old highlight.");
                     }
                 }
-                else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag)
+                else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag && !hasNodeComponentFlag)
                 {
                     foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                     {
@@ -268,7 +269,7 @@ namespace Better_Bulldozer.Tools
                 {
                     if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
                     {
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_Start, true, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
+                        if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
                         {
                             if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
                             {
@@ -288,7 +289,7 @@ namespace Better_Bulldozer.Tools
                             }
                         }
 
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_End, true, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
+                        if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
                         {
                             if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
                             {
@@ -317,7 +318,7 @@ namespace Better_Bulldozer.Tools
                         }
                     }
 
-                    if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
+                    if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasNodeComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasNodeComponentFlag))
                     {
                         buffer.AddComponent<Deleted>(currentEntity);
                     }
