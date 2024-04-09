@@ -333,7 +333,7 @@ namespace Better_Bulldozer.Tools
                     }
                 }
 
-                if (hasSubObjectsFlag)
+                if (hasSubObjectsFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
                 {
                     foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                     {
