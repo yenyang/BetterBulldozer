@@ -311,7 +311,7 @@ namespace Better_Bulldozer.Systems
             {
                 m_PreviousBulldozeToolSystem = m_SubElementBulldozeToolSystem;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
-                if (m_RaycastTarget.value != (int)RaycastTarget.Vanilla || m_RaycastTarget.value != (int)RaycastTarget.Markers)
+                if (m_RaycastTarget.value != (int)RaycastTarget.Vanilla && m_RaycastTarget.value != (int)RaycastTarget.Markers)
                 {
                     m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
                 }
