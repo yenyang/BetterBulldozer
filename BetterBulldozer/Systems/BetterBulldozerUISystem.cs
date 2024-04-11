@@ -274,6 +274,7 @@ namespace Better_Bulldozer.Systems
 
             if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
+                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -296,6 +297,7 @@ namespace Better_Bulldozer.Systems
 
             if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
+                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
