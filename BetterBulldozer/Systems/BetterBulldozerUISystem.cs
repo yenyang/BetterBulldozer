@@ -42,6 +42,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
+        private ToolBaseSystem m_PreviousBulldozeToolSystem;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -104,6 +105,7 @@ namespace Better_Bulldozer.Systems
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
+            m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
 
             // This binding communicates what the Raycast target is.
             AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
@@ -307,6 +309,7 @@ namespace Better_Bulldozer.Systems
         {
             if (m_ToolSystem.activeTool == m_BulldozeToolSystem)
             {
+                m_PreviousBulldozeToolSystem = m_SubElementBulldozeToolSystem;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
                 if (m_RaycastTarget.value != (int)RaycastTarget.Vanilla || m_RaycastTarget.value != (int)RaycastTarget.Markers)
                 {
@@ -315,6 +318,7 @@ namespace Better_Bulldozer.Systems
             }
             else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
+                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -371,6 +375,12 @@ namespace Better_Bulldozer.Systems
             if (tool == null)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} something is null.");
+                return;
+            }
+
+            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem)
+            {
+                SubElementBulldozerButtonToggled();
                 return;
             }
 
