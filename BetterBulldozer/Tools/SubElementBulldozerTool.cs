@@ -91,8 +91,9 @@ namespace Better_Bulldozer.Tools
         public override void InitializeRaycast()
         {
             base.InitializeRaycast();
+
             m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
-            if (m_RenderingSystem.markersVisible && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            if (m_RenderingSystem.markersVisible && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
             {
                 m_ToolRaycastSystem.typeMask = m_BetterBulldozerUISystem.MarkersFilter;
                 if ((m_BetterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net)
@@ -237,7 +238,7 @@ namespace Better_Bulldozer.Tools
             }
 
             // This section handles highlight removal for multiple highlighted entities.
-            else if ((raycastFlag == false && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
+            else if (((raycastFlag == false || !hasOwnerComponentFlag || hasNodeComponentFlag) && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
             {
                 m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
                 EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
@@ -252,6 +253,7 @@ namespace Better_Bulldozer.Tools
                 // This section handles highlighting single elements.
                 if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag) // Single subelement highlight
                 {
+                    m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
                     if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
                     {
                         buffer.AddComponent<Highlighted>(currentEntity);
@@ -281,25 +283,54 @@ namespace Better_Bulldozer.Tools
                         buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     }
 
+                    m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added muiltiple highlights.");
                     m_SingleHighlightedEntity = Entity.Null;
                     m_HighlighedSubobjectsEntity = currentEntity;
                     buffer.AddComponent<Highlighted>(currentEntity);
                     buffer.AddComponent<BatchesUpdated>(currentEntity);
                 }
-            }
 
-            // This section registers or unregisters tooltips.
-            if (raycastFlag)
-            {
-                m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
+                // This section removes tooltips.
+                else
+                {
+                    m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
+                }
+
+                m_WarningTooltipSystem.RemoveTooltip("ExtensionRemovalProhibited");
             }
             else
             {
                 m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
+                m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings.");
             }
 
+            if (raycastFlag && !hasNodeComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
+            {
+                m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("ExtensionRemovalWarning"), "Removing some extensions will break assets.");
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("ExtensionRemovalWarning");
+            }
 
+            if (raycastFlag && !hasNodeComponentFlag && EntityManager.HasComponent<Edge>(currentEntity) && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            {
+                m_WarningTooltipSystem.RegisterTooltip("SubelementNetworkRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets.");
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("SubelementNetworkRemovalWarning");
+            }
+
+            if (m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers && (m_BetterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net && !BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            {
+                m_WarningTooltipSystem.RegisterTooltip("RemovingMarkerNetworksProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing subelement networks has been disabled in the settings.");
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
+            }
 
             if (m_ApplyAction.WasPressedThisFrame())
             {

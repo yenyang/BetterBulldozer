@@ -73,6 +73,10 @@ namespace Better_Bulldozer.Settings
                 { TooltipDescriptionKey("UpgradeIsMain"), "For removing subelements such as props, trees, decals belonging to subbuildings and extensions of the main building." },
                 { SectionLabel("Tier"), "Tier" },
                 { WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement" },
+                { WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings." },
+                { WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing subelement networks has been disabled in the settings." },
+                { WarningTooltipKey("ExtensionRemovalWarning"), "Removing some extensions will break assets." },
+                { WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets." },
             };
         }
 
