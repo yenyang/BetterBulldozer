@@ -3,12 +3,8 @@ import {ModuleRegistryExtend} from "cs2/modding";
 import { bindValue, trigger, useValue } from "cs2/api";
 import { VanillaComponentResolver } from "../VanillaComponentResolver/VanillaComponentResolver";
 import mod from "../../../mod.json";
-import spacesSrc from "./AreaToolBetterBulldozer.svg";
-import staticObjectMarkersSrc from "./MarkersIconBetterBulldozer.svg";
-import surfacesSrc from "./SurfaceIconBetterBulldozer.svg";
 import { tool } from "cs2/bindings";
 import locale from "../lang/en-US.json";
-import upgradeIsMainSrc from "./SubElementsBetterBulldozer.svg";
 import { getModule } from "cs2/modding";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
@@ -26,7 +22,11 @@ const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg"
 const lanesSrc =                         couiStandard + "Network.svg";
 const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
 const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
-const subElementsOfMainElementSrc =               couiStandard + "House.svg";
+const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
+const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
+const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
+const staticObjectMarkersSrc =          couiStandard + "MarkerSpawner.svg";
+const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";
 
 // Saving strings for events and translations.
 const surfacesID =              "SurfacesFilterButton";

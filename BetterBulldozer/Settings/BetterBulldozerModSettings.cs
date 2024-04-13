@@ -66,8 +66,8 @@ namespace Better_Bulldozer.Settings
         public override void SetDefaults()
         {
             Contra = true;
-            AllowRemovingSubElementNetworks = false;
-            AllowRemovingExtensions = false;
+            AllowRemovingSubElementNetworks = true;
+            AllowRemovingExtensions = true;
         }
     }
 }

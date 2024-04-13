@@ -5,7 +5,6 @@
 // #define VERBOSE
 namespace Better_Bulldozer.Systems
 {
-    using System;
     using Better_Bulldozer.Tools;
     using Colossal.Logging;
     using Colossal.UI.Binding;
@@ -15,7 +14,6 @@ namespace Better_Bulldozer.Systems
     using Game.Rendering;
     using Game.Tools;
     using Game.UI;
-    using Game.UI.Tooltip;
     using Unity.Entities;
 
     /// <summary>
@@ -333,7 +331,7 @@ namespace Better_Bulldozer.Systems
             if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
             {
                 if (EntityManager.HasComponent<MarkerNetData>(prefabEntity)
-                 || prefab is MarkerObjectPrefab || prefab is NetLaneGeometryPrefab || prefab is NetLanePrefab
+                 || prefab is MarkerObjectPrefab || prefab is NetLaneGeometryPrefab || prefab is NetLanePrefab || prefab is TransformPrefab
                  || (prefab is BulldozePrefab && SelectedRaycastTarget == RaycastTarget.Markers)
                  || (prefab is BulldozePrefab && SelectedRaycastTarget == RaycastTarget.Lanes))
                 {

@@ -4,6 +4,7 @@
 
 namespace Better_Bulldozer.Tools
 {
+    using Better_Bulldozer.Settings;
     using Better_Bulldozer.Systems;
     using Colossal.Entities;
     using Colossal.Logging;
@@ -35,6 +36,7 @@ namespace Better_Bulldozer.Tools
         private Entity m_HighlighedSubobjectsEntity = Entity.Null;
         private RenderingSystem m_RenderingSystem;
         private EntityQuery m_HighlightedQuery;
+        private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
 
         /// <summary>
         /// An enum for the tool mod selection.
@@ -140,12 +142,13 @@ namespace Better_Bulldozer.Tools
             Enabled = false;
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_RenderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();
+            m_RenderingSystem = World.GetOrCreateSystemManaged<RenderingSystem>();
             m_Log.Info($"[{nameof(SubElementBulldozerTool)}] {nameof(OnCreate)}");
-            m_ToolOutputBarrier = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolOutputBarrier>();
-            m_BulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
-            m_OverlayRenderSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            m_BetterBulldozerUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
+            m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
+            m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            m_BetterBulldozerUISystem = World.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
+            m_WarningTooltipSystem = World.GetOrCreateSystemManaged<SubelementBulldozerWarningTooltipSystem>();
             base.OnCreate();
             m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
@@ -209,6 +212,8 @@ namespace Better_Bulldozer.Tools
                 m_HighlighedSubobjectsEntity = Entity.Null;
                 m_SingleHighlightedEntity = Entity.Null;
             }
+
+            m_WarningTooltipSystem.ClearTooltips();
         }
 
         /// <inheritdoc/>
@@ -218,11 +223,11 @@ namespace Better_Bulldozer.Tools
             bool raycastFlag = GetRaycastResult(out Entity currentEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.HasComponent<Owner>(currentEntity);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentEntity);
-            bool hasServiceUpgradeComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
             bool hasSubObjectsFlag = EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer);
 
+            // This section handles highlight removal for single highlighted entity.
             if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
             {
                 m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
@@ -230,6 +235,8 @@ namespace Better_Bulldozer.Tools
                 buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
                 m_SingleHighlightedEntity = Entity.Null;
             }
+
+            // This section handles highlight removal for multiple highlighted entities.
             else if ((raycastFlag == false && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
             {
                 m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
@@ -239,8 +246,10 @@ namespace Better_Bulldozer.Tools
                 m_SingleHighlightedEntity = Entity.Null;
             }
 
+
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
+                // This section handles highlighting single elements.
                 if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag) // Single subelement highlight
                 {
                     if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
@@ -262,6 +271,8 @@ namespace Better_Bulldozer.Tools
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights and removed old highlight.");
                     }
                 }
+
+                // This section handles highlighting subelements with subobjects.
                 else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag && !hasNodeComponentFlag)
                 {
                     foreach (Game.Objects.SubObject subObject in dynamicBuffer)
@@ -277,6 +288,18 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(currentEntity);
                 }
             }
+
+            // This section registers or unregisters tooltips.
+            if (raycastFlag)
+            {
+                m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
+            }
+
+
 
             if (m_ApplyAction.WasPressedThisFrame())
             {

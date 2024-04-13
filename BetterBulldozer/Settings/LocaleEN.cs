@@ -23,6 +23,16 @@ namespace Better_Bulldozer.Settings
             m_Setting = setting;
         }
 
+        /// <summary>
+        /// Returns the locale key for a warning tooltip.
+        /// </summary>
+        /// <param name="key">The bracketed portion of locale key.</param>
+        /// <returns>Localization key for translations.</returns>
+        public static string WarningTooltipKey(string key)
+        {
+            return $"BetterBulldozer.WARNING_TOOLTIP[{key}]";
+        }
+
         /// <inheritdoc/>
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
         {
@@ -62,6 +72,7 @@ namespace Better_Bulldozer.Settings
                 { TooltipTitleKey("UpgradeIsMain"), "Subelements of Subbuildings and Extensions" },
                 { TooltipDescriptionKey("UpgradeIsMain"), "For removing subelements such as props, trees, decals belonging to subbuildings and extensions of the main building." },
                 { SectionLabel("Tier"), "Tier" },
+                { WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement" },
             };
         }
 
@@ -85,5 +96,6 @@ namespace Better_Bulldozer.Settings
         {
             return $"BetterBulldozer.SECTION_TITLE[{key}]";
         }
+
     }
 }
