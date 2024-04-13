@@ -6,6 +6,11 @@ import mod from "../../../mod.json";
 import { tool } from "cs2/bindings";
 import locale from "../lang/en-US.json";
 import { getModule } from "cs2/modding";
+import subElementsOfMainElementSrc from "./HouseMainElements.svg";
+import surfacesSrc                      from "./ShovelSurface.svg";
+import upgradeIsMainSrc                 from "./HouseSmallSubElements.svg";
+import staticObjectMarkersSrc           from "./MarkerSpawner.svg";
+import spacesSrc                       from "./PeopleAreaTool.svg";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
@@ -22,11 +27,11 @@ const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg"
 const lanesSrc =                         couiStandard + "Network.svg";
 const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
 const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
-const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
+/*const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
 const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
 const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
 const staticObjectMarkersSrc =          couiStandard + "MarkerSpawner.svg";
-const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";
+const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";*/
 
 // Saving strings for events and translations.
 const surfacesID =              "SurfacesFilterButton";

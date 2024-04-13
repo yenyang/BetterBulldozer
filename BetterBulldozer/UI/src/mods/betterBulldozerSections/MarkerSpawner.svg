@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" clip-rule="evenodd" viewBox="0 0 64 64">
+  <g id="white">
+    <path fill="#f4f4f4" d="M18.58 54.265V9.735c0 2.613 6.013 4.735 13.42 4.735s13.42-2.122 13.42-4.735v44.53C45.42 56.878 39.407 59 32 59s-13.42-2.122-13.42-4.735Z"/>
+  </g>
+  <g id="grey">
+    <ellipse cx="32" cy="9.735" fill="#ababab" rx="13.42" ry="4.735"/>
+  </g>
+</svg>
