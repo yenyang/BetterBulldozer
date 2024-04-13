@@ -94,6 +94,7 @@ namespace Better_Bulldozer
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting systems.");
             updateSystem.UpdateAt<BetterBulldozerUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<SubElementBulldozerTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<SubelementBulldozerWarningTooltipSystem>(SystemUpdatePhase.UITooltip);
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Complete.");
         }
 
