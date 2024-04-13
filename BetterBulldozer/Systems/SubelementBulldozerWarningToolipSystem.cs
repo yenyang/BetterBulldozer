@@ -75,6 +75,7 @@ namespace Better_Bulldozer.Systems
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_SubElementBulldozerTool = World.GetOrCreateSystemManaged<SubElementBulldozerTool>();
+            m_Tooltips = new Dictionary<string, StringTooltip>();
             m_Log.Info($"{nameof(SubelementBulldozerWarningTooltipSystem)} Created.");
         }
 
