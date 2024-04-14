@@ -34,6 +34,7 @@ namespace Better_Bulldozer.Systems
         private NetToolSystem m_NetToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private DefaultToolSystem m_DefaultToolSystem;
+        private ValueBinding<bool> m_SubElementBulldozeToolActive;
         private ValueBinding<int> m_RaycastTarget;
         private ValueBinding<int> m_AreasFilter;
         private ValueBinding<int> m_MarkersFilter;
@@ -127,6 +128,9 @@ namespace Better_Bulldozer.Systems
 
             // This binding communicates whether UpgradeIsMain is toggled.
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
+
+            // This binding communicates whether SubElementBulldozeTool is active.
+            AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
 
             // This binding listens for whether the BypassConfirmation tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -341,8 +345,8 @@ namespace Better_Bulldozer.Systems
             else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolSystem.activeTool = m_BulldozeToolSystem;
                 m_SubElementBulldozeToolToggledRecently = true;
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
@@ -423,6 +427,15 @@ namespace Better_Bulldozer.Systems
 
             m_PreviousToolSystem = tool;
             m_SubElementBulldozeToolToggledRecently = false;
+
+            if (tool == m_SubElementBulldozeToolSystem)
+            {
+                m_SubElementBulldozeToolActive.Update(true);
+            }
+            else if (m_SubElementBulldozeToolActive.value)
+            {
+                m_SubElementBulldozeToolActive.Update(false);
+            }
         }
 
         /// <summary>

@@ -19,6 +19,7 @@ const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
 const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
 const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
 const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
+const subElementBulldozeToolActive$ = bindValue<boolean>(mod.id, 'SubElementBulldozeToolActive');
 
 // These contain the coui paths to Unified Icon Library svg assets
 const couiStandard =                         "coui://uil/Standard/";
@@ -72,7 +73,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const {children, ...otherProps} = props || {};
 
         // These get the value of the bindings.
-        const subElementBulldozerToolActive = useValue(tool.activeTool$).id == "SubElement Bulldozer Tool";
+        const subElementBulldozerToolActive = useValue(subElementBulldozeToolActive$);
         const bulldozeToolActive = useValue(tool.activeTool$).id == tool.BULLDOZE_TOOL;
         const gameplayManipulation = useValue(gameplayManipulation$);
         const bypassConfirmation = useValue(bypassConfirmation$);
@@ -127,7 +128,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         var result : JSX.Element = Component();
         // It is important that we coordinate how to handle the tool options panel because it is possibile to create a mod that works for your mod but prevents others from doing the same thing.
         // If bulldoze tool active add better bulldozer sections.
-        if (bulldozeToolActive || subElementBulldozerToolActive) {
+        if (bulldozeToolActive) {
             result.props.children?.push(
                 /* 
                 Adds a section for filters if raycasting areas or markers. Each of those sections has two buttons.

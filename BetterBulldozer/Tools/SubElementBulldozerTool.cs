@@ -55,7 +55,7 @@ namespace Better_Bulldozer.Tools
         }
 
         /// <inheritdoc/>
-        public override string toolID => "SubElement Bulldozer Tool";
+        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
 
         /// <summary>
         /// Gets or sets the TreeAgeChanger ToolMode.
