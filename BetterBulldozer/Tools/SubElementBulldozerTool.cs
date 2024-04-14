@@ -215,6 +215,7 @@ namespace Better_Bulldozer.Tools
             }
 
             m_WarningTooltipSystem.ClearTooltips();
+            base.OnStopRunning();
         }
 
         /// <inheritdoc/>
@@ -334,6 +335,17 @@ namespace Better_Bulldozer.Tools
 
             if (m_ApplyAction.WasPressedThisFrame())
             {
+                // This handles deleteting editor contrainter for net lane prefabs placed with EDT.
+                if (EntityManager.TryGetComponent(currentEntity, out Owner owner)
+                    && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
+                    && ownerBuffer.Length == 1
+                    && EntityManager.HasComponent<Game.Tools.EditorContainer>(owner.m_Owner))
+                {
+                    currentEntity = owner.m_Owner;
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
+                }
+
+
                 if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
                 {
                     if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
