@@ -66,7 +66,7 @@ namespace Better_Bulldozer.Settings
                 { TooltipTitleKey("SpacesFilterButton"), "Spaces Filter" },
                 { TooltipTitleKey("StaticObjectsFilterButton"), "Static Objects Filter" },
                 { TooltipTitleKey("NetworksFilterButton"), "Networks Filter" },
-                { TooltipDescriptionKey("SubElementBulldozerButton"), "Custom bulldozer for removing props, trees, decals, fences, hedges, subbuildings, extensions, and networks from buildings. This tool can break assets! Some elements are more safe to remove such as: props that cims do not use, trees, decals, fences, hedges, subbuildings. Use with caution with props that cims use. Some elements are less safe to remove such as: networks and extensions. You must opt-in to remove those in the settings." },
+                { TooltipDescriptionKey("SubElementBulldozerButton"), "Custom bulldozer for removing props, trees, decals, fences, hedges, subbuildings, extensions, and networks from buildings. This tool can break assets! Some elements are more safe to remove such as: props that cims do not use, trees, decals, fences, hedges, subbuildings. Use with caution with props that cims use. Some elements are less safe to remove such as: networks and extensions. You can prohibit removing those in the settings." },
                 { TooltipTitleKey("SubElementsOfMainElement"), "Subelements of the Main Asset" },
                 { TooltipDescriptionKey("SubElementsOfMainElement"), "For removing subelements such as props, trees, decals, fences, hedges, subbuildings, extensions, and networks from the main asset." },
                 { TooltipTitleKey("UpgradeIsMain"), "Subelements of Subbuildings and Extensions" },
