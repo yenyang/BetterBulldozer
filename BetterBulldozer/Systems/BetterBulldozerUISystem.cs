@@ -43,7 +43,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_UpgradeIsMain;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
-        private bool m_SubElementBulldozeToolToggledRecently;
+        private bool m_ToolModeToggledRecently;
         private PrefabBase m_PreviousPrefab;
         private bool m_SwitchToSubElementBulldozeToolOnUpdate;
         private bool m_ActivatePrefabToolOnUpdate;
@@ -184,6 +184,16 @@ namespace Better_Bulldozer.Systems
                 m_ActivatePrefabToolOnUpdate = false;
                 m_ToolSystem.ActivatePrefabTool(m_PreviousPrefab);
             }
+
+            if (m_BulldozeToolSystem.debugBypassBulldozeConfirmation != m_BypassConfirmation.value)
+            {
+                m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
+            }
+
+            if (m_GameplayManipulation.value != m_BulldozeToolSystem.allowManipulation)
+            {
+                m_GameplayManipulation.Update(m_BulldozeToolSystem.allowManipulation);
+            }
         }
 
         /// <summary>
@@ -299,6 +309,7 @@ namespace Better_Bulldozer.Systems
             if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
+                m_ToolModeToggledRecently = true;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -322,6 +333,7 @@ namespace Better_Bulldozer.Systems
             if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
+                m_ToolModeToggledRecently = true;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -345,7 +357,7 @@ namespace Better_Bulldozer.Systems
             else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_SubElementBulldozeToolToggledRecently = true;
+                m_ToolModeToggledRecently = true;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -410,7 +422,7 @@ namespace Better_Bulldozer.Systems
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to SubElementBulldoze tool since that was previous tool mode.");
                 m_SwitchToSubElementBulldozeToolOnUpdate = true;
             }
-            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_SubElementBulldozeToolToggledRecently)
+            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_ToolModeToggledRecently)
             {
                 m_PreviousToolSystem = null;
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since subelement bulldoze tool was closed without changing tool mode.");
@@ -426,7 +438,7 @@ namespace Better_Bulldozer.Systems
             }
 
             m_PreviousToolSystem = tool;
-            m_SubElementBulldozeToolToggledRecently = false;
+            m_ToolModeToggledRecently = false;
 
             if (tool == m_SubElementBulldozeToolSystem)
             {
