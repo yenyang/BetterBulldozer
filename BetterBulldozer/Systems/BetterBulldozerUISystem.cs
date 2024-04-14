@@ -41,6 +41,11 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
+        private ToolBaseSystem m_PreviousToolSystem;
+        private bool m_SubElementBulldozeToolToggledRecently;
+        private PrefabBase m_PreviousPrefab;
+        private bool m_SwitchToSubElementBulldozeToolOnUpdate;
+        private bool m_ActivatePrefabToolOnUpdate;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -158,6 +163,23 @@ namespace Better_Bulldozer.Systems
 
             // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
+        }
+
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
+            base.OnUpdate();
+            if (m_SwitchToSubElementBulldozeToolOnUpdate)
+            {
+                m_SwitchToSubElementBulldozeToolOnUpdate = false;
+                m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
+            }
+
+            if (m_ActivatePrefabToolOnUpdate)
+            {
+                m_ActivatePrefabToolOnUpdate = false;
+                m_ToolSystem.ActivatePrefabTool(m_PreviousPrefab);
+            }
         }
 
         /// <summary>
@@ -320,6 +342,7 @@ namespace Better_Bulldozer.Systems
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
+                m_SubElementBulldozeToolToggledRecently = true;
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
@@ -378,15 +401,28 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
-            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem)
+            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem && m_PreviousToolSystem != m_SubElementBulldozeToolSystem)
             {
-                SubElementBulldozerButtonToggled();
-                return;
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to SubElementBulldoze tool since that was previous tool mode.");
+                m_SwitchToSubElementBulldozeToolOnUpdate = true;
+            }
+            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_SubElementBulldozeToolToggledRecently)
+            {
+                m_PreviousToolSystem = null;
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since subelement bulldoze tool was closed without changing tool mode.");
+                m_ActivatePrefabToolOnUpdate = true;
             }
 
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} {tool.toolID} {m_ToolSystem.activePrefab?.GetPrefabID()} {tool.GetPrefab()?.GetPrefabID()}");
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
+            if (m_ToolSystem.activePrefab is not BulldozePrefab)
+            {
+                m_PreviousPrefab = m_ToolSystem.activePrefab;
+            }
+
+            m_PreviousToolSystem = tool;
+            m_SubElementBulldozeToolToggledRecently = false;
         }
 
         /// <summary>
@@ -402,6 +438,10 @@ namespace Better_Bulldozer.Systems
 
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnPrefabChanged)} {prefab.GetPrefabID()}");
             HandleShowMarkers(prefab);
+            if (prefab is not BulldozePrefab)
+            {
+                m_PreviousPrefab = prefab;
+            }
         }
 
         /// <summary>
