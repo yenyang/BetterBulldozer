@@ -19,7 +19,7 @@ namespace Better_Bulldozer.Tools
     using Unity.Jobs;
 
     /// <summary>
-    /// Tool for removing subelements. --burst-disable-compilation
+    /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
     /// </summary>
     public partial class SubElementBulldozerTool : ToolBaseSystem
     {
@@ -29,7 +29,6 @@ namespace Better_Bulldozer.Tools
         private BulldozeToolSystem m_BulldozeToolSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private EntityQuery m_OwnedQuery;
-        private SEBTSelectionMode m_SelectionMode = SEBTSelectionMode.Single;
         private float m_Radius = 100f;
         private ILog m_Log;
         private Entity m_SingleHighlightedEntity = Entity.Null;
@@ -38,29 +37,9 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_HighlightedQuery;
         private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
 
-        /// <summary>
-        /// An enum for the tool mod selection.
-        /// </summary>
-        public enum SEBTSelectionMode
-        {
-            /// <summary>
-            /// SubElementBulldozerTool will only apply to one subelements inside a net or building.
-            /// </summary>
-            Single,
-
-            /// <summary>
-            /// SubElementBulldozerwill apply to all subelements inside a net, or building within specified radius.
-            /// </summary>
-            Radius,
-        }
 
         /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
-
-        /// <summary>
-        /// Gets or sets the TreeAgeChanger ToolMode.
-        /// </summary>
-        public SEBTSelectionMode SelectionMode { get => m_SelectionMode; set => m_SelectionMode = value; }
 
         /// <summary>
         /// Gets or sets the TreeAgeChanger Radius.

@@ -5,6 +5,7 @@
 // #define VERBOSE
 namespace Better_Bulldozer.Systems
 {
+    using Better_Bulldozer.Helpers;
     using Better_Bulldozer.Tools;
     using Colossal.Logging;
     using Colossal.UI.Binding;
@@ -19,7 +20,7 @@ namespace Better_Bulldozer.Systems
     /// <summary>
     /// UI system for Better Bulldozer extensions to the bulldoze tool.
     /// </summary>
-    public partial class BetterBulldozerUISystem : UISystemBase
+    public partial class BetterBulldozerUISystem : ExtendedUISystemBase
     {
         private const string ModId = "BetterBulldozer";
 
@@ -41,6 +42,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
+        private ValueBindingHelper<int> m_SelectionMode;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
         private bool m_ToolModeToggledRecently;
@@ -75,6 +77,27 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
+        /// Selection mode for subelement bulldozer.
+        /// </summary>
+        public enum SelectionMode
+        {
+            /// <summary>
+            /// One item at a time.
+            /// </summary>
+            Single,
+
+            /// <summary>
+            /// All exact match of prefab with same owner.
+            /// </summary>
+            Matching,
+
+            /// <summary>
+            /// Same family of prefab with same owner.
+            /// </summary>
+            Similar,
+        }
+
+        /// <summary>
         /// Gets a value indicating what to raycast.
         /// </summary>
         public RaycastTarget SelectedRaycastTarget { get => (RaycastTarget)m_RaycastTarget.value; }
@@ -94,6 +117,11 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public bool UpgradeIsMain { get => m_UpgradeIsMain.value; }
 
+        /// <summary>
+        /// Gets a value indicating the active selection mode for subelement bulldozer.
+        /// </summary>
+        public SelectionMode ActiveSelectionMode { get => (SelectionMode)m_SelectionMode.Value; }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -111,62 +139,30 @@ namespace Better_Bulldozer.Systems
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
             m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
 
-            // This binding communicates what the Raycast target is.
+            // These establish binding with UI.
             AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
-
-            // This binding communicates what the Area filter is.
             AddBinding(m_AreasFilter = new ValueBinding<int>(ModId, "AreasFilter", (int)AreaTypeMask.Surfaces));
-
-            // This binding communicates what the Markers filter is.
             AddBinding(m_MarkersFilter = new ValueBinding<int>(ModId, "MarkersFilter", (int)TypeMask.Net));
-
-            // This binding communicates whether bypass confirmation is toggled.
             AddBinding(m_BypassConfirmation = new ValueBinding<bool>(ModId, "BypassConfirmation", false));
-
-            // This binding communicates whether gameplay manipulation is toggled.
             AddBinding(m_GameplayManipulation = new ValueBinding<bool>(ModId, "GameplayManipulation", false));
-
-            // This binding communicates whether UpgradeIsMain is toggled.
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
-
-            // This binding communicates whether SubElementBulldozeTool is active.
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
+            m_SelectionMode = CreateBinding("SelectionMode", (int)SelectionMode.Single);
 
-            // This binding listens for whether the BypassConfirmation tool icon has been toggled.
+            // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
-
-            // This binding listens for whether the GameplayManipulation tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "GameplayManipulationButton", GameplayManipulationToggled));
-
-            // This binding listens for whether the RaycastMarkersButton tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "RaycastMarkersButton", RaycastMarkersButtonToggled));
-
-            // This binding listens for whether the SurfacesFilter tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SurfacesFilterButton", SurfacesFilterToggled));
-
-            // This binding listens for whether the SpacesFilter tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SpacesFilterButton", SpacesFilterToggled));
-
-            // This binding listens for whether the StaticObjectsFilter tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "StaticObjectsFilterButton", StaticObjectsFilterToggled));
-
-            // This binding listens for whether the NetworksFilter tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "NetworksFilterButton", NetworksFilterToggled));
-
-            // This binding listens for whether the RaycastAreasButton tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "RaycastAreasButton", RaycastAreasButtonToggled));
-
-            // This binding listens for whether the RaycastLabesButton tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "RaycastLanesButton", RaycastLanesButtonToggled));
-
-            // This binding listens for whether the SubElementBulldozerButton tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SubElementBulldozerButton", SubElementBulldozerButtonToggled));
-
-            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", UpgradeIsMainToggled));
-
-            // This binding listens for whether the UpgradeIsMain or SubElementOfMainElement tool icon has been toggled.
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
+            CreateTrigger("ChangeSelectionMode", (int value) => m_SelectionMode.UpdateCallback(value));
         }
 
         /// <inheritdoc/>

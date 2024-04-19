@@ -20,6 +20,7 @@ const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
 const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
 const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
 const subElementBulldozeToolActive$ = bindValue<boolean>(mod.id, 'SubElementBulldozeToolActive');
+const selectionMode$ = bindValue<number>(mod.id, "SelectionMode");
 
 // These contain the coui paths to Unified Icon Library svg assets
 const couiStandard =                         "coui://uil/Standard/";
@@ -28,6 +29,9 @@ const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg"
 const lanesSrc =                         couiStandard + "Network.svg";
 const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
 const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
+const singleSrc =                        couiStandard + "TreeAdult.svg";
+const matchingSrc =                     couiStandard + "Trees.svg";
+const similarSrc =                      couiStandard + "TreesDeciduous.svg";
 /*const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
 const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
 const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
@@ -52,6 +56,17 @@ function handleClick(eventName: string) {
     trigger(mod.id, eventName);
 }
 
+// This functions trigger an event on C# side and C# designates the method to implement.
+function changeSelection(mode: SelectionMode) {
+    trigger(mod.id, "ChangeSelectionMode", mode);
+}
+
+enum SelectionMode 
+{
+    Single = 0,
+    Matching = 1,
+    Similar = 2,
+}
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
     
@@ -81,6 +96,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const areasFilter = useValue(areasFilter$);
         const markersFilter = useValue(markersFilter$);
         const upgradeIsMain = useValue(upgradeIsMain$);
+        const selectionMode = useValue(selectionMode$) as SelectionMode;
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -152,10 +168,17 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                     )}
                     { subElementBulldozerToolActive && (
                         // This section is only showing while using Subelement Bulldozer.
-                        <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={descriptionTooltip(subElementsofMainElementTitle ,subElementsOfMainElementDescription)}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                                <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={descriptionTooltip(upgradeIsMainTitle ,upgradeIsMainDescription)}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
-                        </VanillaComponentResolver.instance.Section>
+                        <>
+                            <VanillaComponentResolver.instance.Section title={"Selection"}>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Single}         tooltip={"Single"}                          onSelect={() => changeSelection(SelectionMode.Single)}              src={singleSrc}         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Matching}       tooltip={"Matching"}                          onSelect={() => changeSelection(SelectionMode.Matching)}            src={matchingSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Similar}        tooltip={"Similar"}                          onSelect={() => changeSelection(SelectionMode.Similar)}            src={similarSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                            </VanillaComponentResolver.instance.Section>
+                            <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={descriptionTooltip(subElementsofMainElementTitle ,subElementsOfMainElementDescription)}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={upgradeIsMain}      tooltip={descriptionTooltip(upgradeIsMainTitle ,upgradeIsMainDescription)}             onSelect={() => handleClick("UpgradeIsMain")}            src={upgradeIsMainSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                            </VanillaComponentResolver.instance.Section>
+                        </>
                     )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={descriptionTooltip(subElementBulldozerTitle ,subElementBulldozerDescription)}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
