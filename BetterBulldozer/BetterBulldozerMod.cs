@@ -76,7 +76,11 @@ namespace Better_Bulldozer
         public void OnLoad(UpdateSystem updateSystem)
         {
             Instance = this;
+#if DEBUG || VERBOSE
+            Logger = LogManager.GetLogger("Mods_Yenyang_Better_Bulldozer").SetShowsErrorsInUI(true);
+#else
             Logger = LogManager.GetLogger("Mods_Yenyang_Better_Bulldozer").SetShowsErrorsInUI(false);
+#endif
             Logger.Info(nameof(OnLoad));
 #if VERBOSE
             Logger.effectivenessLevel = Level.Verbose;

@@ -6,6 +6,7 @@ namespace Better_Bulldozer.Settings
 {
     using System.Collections.Generic;
     using Colossal;
+    using Colossal.IO.AssetDatabase.Internal;
 
     /// <summary>
     /// Localization for <see cref="BetterBulldozerMod"/> mod in English.
@@ -71,12 +72,20 @@ namespace Better_Bulldozer.Settings
                 { TooltipDescriptionKey("SubElementsOfMainElement"), "For removing subelements such as props, trees, decals, fences, hedges, subbuildings, extensions, and networks from the main asset." },
                 { TooltipTitleKey("UpgradeIsMain"), "Subelements of Subbuildings and Extensions" },
                 { TooltipDescriptionKey("UpgradeIsMain"), "For removing subelements such as props, trees, decals belonging to subbuildings and extensions of the main building." },
+                { TooltipTitleKey("Single"), "Single Item" },
+                { TooltipDescriptionKey("Single"), "Selects a single subelement at a time." },
+                { TooltipTitleKey("Matching"), "Exact Match" },
+                { TooltipDescriptionKey("Matching"), "Selects all exactly matching subelements within the building, subbuilding, extension or network. (i.e. all oak trees in this asset)" },
+                { TooltipTitleKey("Similar"), "Similar Category" },
+                { TooltipDescriptionKey("Similar"), "Selects all subelements in a similar category within the building, subbuilding, extension or network. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, all hedges and fences, and anything elevated above the ground. (i.e. all trees in this asset)" },
                 { SectionLabel("Tier"), "Tier" },
                 { WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement" },
                 { WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings." },
                 { WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing subelement networks has been disabled in the settings." },
                 { WarningTooltipKey("ExtensionRemovalWarning"), "Removing some extensions will break assets." },
                 { WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets." },
+                { WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead." },
+                { WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subelements from roads is not recommended because roads update frequently and the subelements will regenerate." },
             };
         }
 

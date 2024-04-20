@@ -16,6 +16,7 @@ namespace Better_Bulldozer.Tools
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -217,43 +218,122 @@ namespace Better_Bulldozer.Tools
                 if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
                     m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
-                    EntityManager.AddComponent<Highlighted>(currentRaycastEntity);
+                    buffer.AddComponent<Highlighted>(currentRaycastEntity);
                     buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                     m_MainEntities.Add(currentRaycastEntity);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {currentRaycastEntity.Index} {currentRaycastEntity.Version}");
-                    if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching && EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
+                    if (EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
                     {
-                        if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
+                        if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching)
                         {
-                            foreach (Game.Objects.SubObject subObject in ownerSubobjects)
+                            if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                             {
-                                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                                 {
-                                    EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
-                                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                                    m_MainEntities.Add(subObject.m_SubObject);
+                                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                    {
+                                        buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                                        m_MainEntities.Add(subObject.m_SubObject);
 
-                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subObject.m_SubObject.Index} {subObject.m_SubObject.Version}");
+                                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subObject.m_SubObject.Index} {subObject.m_SubObject.Version}");
+                                    }
                                 }
                             }
-                        }
-                        else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
-                        {
-                            foreach (Game.Net.SubLane subLane in ownerSublanes)
+                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
                             {
-                                if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef subLanePrefabRef) && subLanePrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                foreach (Game.Net.SubLane subLane in ownerSublanes)
                                 {
-                                    EntityManager.AddComponent<Highlighted>(subLane.m_SubLane);
-                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
-                                    m_MainEntities.Add(subLane.m_SubLane);
+                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef subLanePrefabRef) && subLanePrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                    {
+                                        buffer.AddComponent<Highlighted>(subLane.m_SubLane);
+                                        buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                                        m_MainEntities.Add(subLane.m_SubLane);
 
-                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subLane.m_SubLane.Index} {subLane.m_SubLane.Version}");
+                                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subLane.m_SubLane.Index} {subLane.m_SubLane.Version}");
+                                    }
                                 }
                             }
+
+                            if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
+                            {
+                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead.");
+                            }
+                            else
+                            {
+                                m_WarningTooltipSystem.RemoveTooltip("NetworksUseSingleItem");
+                            }
                         }
-                        else if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
+                        else if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Similar)
                         {
-                            // add tooltip
+                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} similar.");
+                            if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
+                            {
+                                if (EntityManager.HasComponent<Tree>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Plant>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Plant>(), ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Game.Objects.StreetLight>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.StreetLight>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Game.Objects.Quantity>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Quantity>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Game.Prefabs.BrandObjectData>(prefabRef.m_Prefab))
+                                {
+                                    CheckForSimilarSubObjectsPrefabs(ComponentType.ReadOnly<Game.Prefabs.BrandObjectData>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Game.Objects.ActivityLocation>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else if (EntityManager.HasComponent<Game.Objects.Elevation>(currentRaycastEntity))
+                                {
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Elevation>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                }
+                                else
+                                {
+                                    foreach (Game.Objects.SubObject subObject in ownerSubobjects)
+                                    {
+                                        if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                        {
+                                            buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                                            buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                                            m_MainEntities.Add(subObject.m_SubObject);
+
+                                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subObject.m_SubObject.Index} {subObject.m_SubObject.Version}");
+                                        }
+                                    }
+                                }
+                            }
+                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
+                            {
+                                foreach (Game.Net.SubLane subLane in ownerSublanes)
+                                {
+                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef fencePrefabEntity) && EntityManager.TryGetComponent(prefabRef.m_Prefab, out UtilityLaneData utilityLaneData) && (utilityLaneData.m_UtilityTypes & UtilityTypes.Fence) == UtilityTypes.Fence)
+                                    {
+                                        buffer.AddComponent<Highlighted>(subLane.m_SubLane);
+                                        buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                                        m_MainEntities.Add(subLane.m_SubLane);
+                                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subLane.m_SubLane} {subLane.m_SubLane}");
+                                    }
+                                }
+                            }
+
+                            if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
+                            {
+                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead.");
+                            }
+                            else
+                            {
+                                m_WarningTooltipSystem.RemoveTooltip("NetworksUseSingleItem");
+                            }
                         }
                     }
 
@@ -263,14 +343,14 @@ namespace Better_Bulldozer.Tools
                         {
                             foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                             {
-                                EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
+                                buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                 buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
 
                                 if (EntityManager.TryGetBuffer(subObject.m_SubObject, false, out DynamicBuffer<Game.Objects.SubObject> deepDynamicBuffer))
                                 {
                                     foreach (Game.Objects.SubObject deepSubObject in deepDynamicBuffer)
                                     {
-                                        EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
+                                        buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                         buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                                     }
                                 }
@@ -318,6 +398,15 @@ namespace Better_Bulldozer.Tools
             else
             {
                 m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
+            }
+
+            if (EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1) && prefabBase1 is RoadPrefab)
+            {
+                m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subelements from roads is not recommended because roads update frequently and the subelements will regenerate.");
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromRoads");
             }
 
             if (m_ApplyAction.WasPressedThisFrame())
@@ -418,7 +507,52 @@ namespace Better_Bulldozer.Tools
 
             return inputDeps;
         }
-    }
 
-    
+        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, ComponentType excludeComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        {
+            foreach (Game.Objects.SubObject subObject in subObjects)
+            {
+                if (EntityManager.HasComponent(subObject.m_SubObject, excludeComponent))
+                {
+                    continue;
+                }
+
+                if (EntityManager.HasComponent(subObject.m_SubObject, necessaryComponent))
+                {
+                    buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    list.Add(subObject.m_SubObject);
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                }
+            }
+        }
+
+        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        {
+            foreach (Game.Objects.SubObject subObject in subObjects)
+            {
+                if (EntityManager.HasComponent(subObject.m_SubObject, necessaryComponent))
+                {
+                    buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    list.Add(subObject.m_SubObject);
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                }
+            }
+        }
+
+        private void CheckForSimilarSubObjectsPrefabs(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        {
+            foreach (Game.Objects.SubObject subObject in subObjects)
+            {
+                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && EntityManager.HasComponent(prefabRef.m_Prefab, necessaryComponent))
+                {
+                    buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    list.Add(subObject.m_SubObject);
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                }
+            }
+        }
+    }
 }
