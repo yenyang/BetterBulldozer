@@ -15,6 +15,7 @@ namespace Better_Bulldozer.Tools
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
 
@@ -36,7 +37,6 @@ namespace Better_Bulldozer.Tools
         private RenderingSystem m_RenderingSystem;
         private EntityQuery m_HighlightedQuery;
         private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
-
 
         /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
@@ -202,11 +202,12 @@ namespace Better_Bulldozer.Tools
         {
             inputDeps = Dependency;
             bool raycastFlag = GetRaycastResult(out Entity currentEntity, out RaycastHit hit);
-            bool hasOwnerComponentFlag = EntityManager.HasComponent<Owner>(currentEntity);
+            bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentEntity, out Owner owner);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
             bool hasSubObjectsFlag = EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer);
+            NativeList<Entity> multipleSelections = new NativeList<Entity>(Allocator.Temp);
 
             // This section handles highlight removal for single highlighted entity.
             if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
@@ -231,7 +232,7 @@ namespace Better_Bulldozer.Tools
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
                 // This section handles highlighting single elements.
-                if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag) // Single subelement highlight
+                if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single) // Single subelement highlight
                 {
                     m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
                     if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
@@ -255,7 +256,7 @@ namespace Better_Bulldozer.Tools
                 }
 
                 // This section handles highlighting subelements with subobjects.
-                else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag && !hasNodeComponentFlag)
+                else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single)
                 {
                     foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                     {
@@ -269,6 +270,22 @@ namespace Better_Bulldozer.Tools
                     m_HighlighedSubobjectsEntity = currentEntity;
                     buffer.AddComponent<Highlighted>(currentEntity);
                     buffer.AddComponent<BatchesUpdated>(currentEntity);
+                }
+
+                else if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching && EntityManager.TryGetComponent(currentEntity, out PrefabRef prefabRef))
+                {
+                    if (m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase) && prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
+                    {
+                        foreach (Game.Objects.SubObject subObject in ownerSubobjects)
+                        {
+                            if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                            {
+                                multipleSelections.Add(subObject.m_SubObject);
+                                buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                                buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                            }
+                        }
+                    }
                 }
 
                 // This section removes tooltips.
@@ -315,7 +332,7 @@ namespace Better_Bulldozer.Tools
             if (m_ApplyAction.WasPressedThisFrame())
             {
                 // This handles deleteting editor contrainter for net lane prefabs placed with EDT.
-                if (EntityManager.TryGetComponent(currentEntity, out Owner owner)
+                if (hasOwnerComponentFlag
                     && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                     && ownerBuffer.Length == 1
                     && EntityManager.HasComponent<Game.Tools.EditorContainer>(owner.m_Owner))
