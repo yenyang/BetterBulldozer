@@ -12,6 +12,7 @@ namespace Better_Bulldozer.Tools
     using Game.Common;
     using Game.Input;
     using Game.Net;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
@@ -32,11 +33,11 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_OwnedQuery;
         private float m_Radius = 100f;
         private ILog m_Log;
-        private Entity m_SingleHighlightedEntity = Entity.Null;
-        private Entity m_HighlighedSubobjectsEntity = Entity.Null;
+        private Entity m_PreviousRaycastedEntity;
         private RenderingSystem m_RenderingSystem;
         private EntityQuery m_HighlightedQuery;
         private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
+        private NativeList<Entity> m_MainEntities;
 
         /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
@@ -129,6 +130,7 @@ namespace Better_Bulldozer.Tools
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_BetterBulldozerUISystem = World.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             m_WarningTooltipSystem = World.GetOrCreateSystemManaged<SubelementBulldozerWarningTooltipSystem>();
+            m_MainEntities = new NativeList<Entity>(Allocator.Persistent);
             base.OnCreate();
             m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
@@ -176,113 +178,102 @@ namespace Better_Bulldozer.Tools
         protected override void OnStopRunning()
         {
             m_ApplyAction.shouldBeEnabled = false;
-            if (m_SingleHighlightedEntity != Entity.Null && m_HighlighedSubobjectsEntity == Entity.Null)
-            {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
-                EntityManager.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                EntityManager.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-
-            if (!m_HighlightedQuery.IsEmptyIgnoreFilter)
-            {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
-                EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
-                EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
-                m_HighlighedSubobjectsEntity = Entity.Null;
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-
+            EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
+            EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
+            m_PreviousRaycastedEntity = Entity.Null;
             m_WarningTooltipSystem.ClearTooltips();
             base.OnStopRunning();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            m_MainEntities.Dispose();
         }
 
         /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             inputDeps = Dependency;
-            bool raycastFlag = GetRaycastResult(out Entity currentEntity, out RaycastHit hit);
-            bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentEntity, out Owner owner);
-            bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentEntity);
-            bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentEntity);
+            bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
+            bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
+            bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentRaycastEntity);
+            bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
-            bool hasSubObjectsFlag = EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer);
-            NativeList<Entity> multipleSelections = new NativeList<Entity>(Allocator.Temp);
 
-            // This section handles highlight removal for single highlighted entity.
-            if (m_SingleHighlightedEntity != Entity.Null && m_SingleHighlightedEntity != currentEntity && m_HighlighedSubobjectsEntity == Entity.Null)
+            // This section handles highlight removal.
+            if (m_PreviousRaycastedEntity != currentRaycastEntity || !raycastFlag || currentRaycastEntity == Entity.Null)
             {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing single highlight.");
-                buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                m_SingleHighlightedEntity = Entity.Null;
-            }
-
-            // This section handles highlight removal for multiple highlighted entities.
-            else if (((raycastFlag == false || !hasOwnerComponentFlag || hasNodeComponentFlag) && !m_HighlightedQuery.IsEmptyIgnoreFilter) || (m_HighlighedSubobjectsEntity != Entity.Null && m_HighlighedSubobjectsEntity != currentEntity))
-            {
-                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} removing multiple highlights.");
                 EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
                 EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
-                m_HighlighedSubobjectsEntity = Entity.Null;
-                m_SingleHighlightedEntity = Entity.Null;
+                m_PreviousRaycastedEntity = currentRaycastEntity;
+                m_MainEntities.Clear();
             }
 
 
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
-                // This section handles highlighting single elements.
-                if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single) // Single subelement highlight
+                if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
                     m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
-                    if (m_SingleHighlightedEntity == currentEntity && !EntityManager.HasComponent<Highlighted>(currentEntity))
+                    EntityManager.AddComponent<Highlighted>(currentRaycastEntity);
+                    buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
+                    m_MainEntities.Add(currentRaycastEntity);
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {currentRaycastEntity.Index} {currentRaycastEntity.Version}");
+                    if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching && EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
                     {
-                        buffer.AddComponent<Highlighted>(currentEntity);
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-                        m_SingleHighlightedEntity = currentEntity;
-                        m_HighlighedSubobjectsEntity = Entity.Null;
-                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights.");
-                    }
-                    else if (m_SingleHighlightedEntity != currentEntity)
-                    {
-                        buffer.AddComponent<Highlighted>(currentEntity);
-                        buffer.RemoveComponent<Highlighted>(m_SingleHighlightedEntity);
-                        buffer.AddComponent<BatchesUpdated>(m_SingleHighlightedEntity);
-                        buffer.AddComponent<BatchesUpdated>(currentEntity);
-                        m_SingleHighlightedEntity = currentEntity;
-                        m_HighlighedSubobjectsEntity = Entity.Null;
-                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added single highlights and removed old highlight.");
-                    }
-                }
-
-                // This section handles highlighting subelements with subobjects.
-                else if (raycastFlag && hasOwnerComponentFlag && hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single)
-                {
-                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
-                    {
-                        buffer.AddComponent<Highlighted>(subObject.m_SubObject);
-                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                    }
-
-                    m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} added muiltiple highlights.");
-                    m_SingleHighlightedEntity = Entity.Null;
-                    m_HighlighedSubobjectsEntity = currentEntity;
-                    buffer.AddComponent<Highlighted>(currentEntity);
-                    buffer.AddComponent<BatchesUpdated>(currentEntity);
-                }
-
-                else if (raycastFlag && hasOwnerComponentFlag && !hasSubObjectsFlag && !hasNodeComponentFlag && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching && EntityManager.TryGetComponent(currentEntity, out PrefabRef prefabRef))
-                {
-                    if (m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase) && prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
-                    {
-                        foreach (Game.Objects.SubObject subObject in ownerSubobjects)
+                        if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                         {
-                            if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                            foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                             {
-                                multipleSelections.Add(subObject.m_SubObject);
-                                buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                {
+                                    EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
+                                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                                    m_MainEntities.Add(subObject.m_SubObject);
+
+                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subObject.m_SubObject.Index} {subObject.m_SubObject.Version}");
+                                }
+                            }
+                        }
+                        else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
+                        {
+                            foreach (Game.Net.SubLane subLane in ownerSublanes)
+                            {
+                                if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef subLanePrefabRef) && subLanePrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                {
+                                    EntityManager.AddComponent<Highlighted>(subLane.m_SubLane);
+                                    buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
+                                    m_MainEntities.Add(subLane.m_SubLane);
+
+                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {subLane.m_SubLane.Index} {subLane.m_SubLane.Version}");
+                                }
+                            }
+                        }
+                        else if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
+                        {
+                            // add tooltip
+                        }
+                    }
+
+                    foreach (Entity entity in m_MainEntities)
+                    {
+                        if (EntityManager.TryGetBuffer(currentRaycastEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                        {
+                            foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                            {
+                                EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
                                 buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+
+                                if (EntityManager.TryGetBuffer(subObject.m_SubObject, false, out DynamicBuffer<Game.Objects.SubObject> deepDynamicBuffer))
+                                {
+                                    foreach (Game.Objects.SubObject deepSubObject in deepDynamicBuffer)
+                                    {
+                                        EntityManager.AddComponent<Highlighted>(subObject.m_SubObject);
+                                        buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                                    }
+                                }
                             }
                         }
                     }
@@ -311,7 +302,7 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("ExtensionRemovalWarning");
             }
 
-            if (raycastFlag && !hasNodeComponentFlag && EntityManager.HasComponent<Edge>(currentEntity) && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
+            if (raycastFlag && !hasNodeComponentFlag && EntityManager.HasComponent<Edge>(currentRaycastEntity) && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
             {
                 m_WarningTooltipSystem.RegisterTooltip("SubelementNetworkRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets.");
             }
@@ -331,85 +322,103 @@ namespace Better_Bulldozer.Tools
 
             if (m_ApplyAction.WasPressedThisFrame())
             {
-                // This handles deleteting editor contrainter for net lane prefabs placed with EDT.
-                if (hasOwnerComponentFlag
-                    && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
+                foreach (Entity entity in m_MainEntities)
+                {
+                    Entity currentEntity = entity;
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting {currentEntity.Index} {currentEntity.Version}.");
+                    if (EntityManager.TryGetComponent(currentEntity, out Owner currentOwner)
+                    && EntityManager.TryGetBuffer(currentOwner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                     && ownerBuffer.Length == 1
-                    && EntityManager.HasComponent<Game.Tools.EditorContainer>(owner.m_Owner))
-                {
-                    currentEntity = owner.m_Owner;
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
-                }
-
-
-                if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
-                {
-                    if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
+                    && EntityManager.HasComponent<Game.Tools.EditorContainer>(currentOwner.m_Owner))
                     {
-                        if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
+                        currentEntity = currentOwner.m_Owner;
+                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
+                    }
+
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting network stuff.");
+                    if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
+                    {
+                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 1");
+                        if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
                         {
-                            buffer.AddComponent<Deleted>(segmentEdge.m_Start);
-                        }
-                        else
-                        {
-                            foreach (ConnectedEdge edge in startConnectedEdges)
+                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 2");
+                            if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
                             {
-                                if (edge.m_Edge != currentEntity)
+                                buffer.AddComponent<Deleted>(segmentEdge.m_Start);
+                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} deleted segment edge start");
+                            }
+                            else
+                            {
+                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 3");
+                                foreach (ConnectedEdge edge in startConnectedEdges)
                                 {
-                                    EntityManager.AddComponent<Updated>(edge.m_Edge);
-                                    if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
+                                    if (edge.m_Edge != currentEntity)
                                     {
-                                        EntityManager.AddComponent<Updated>(distantEdge.m_Start);
-                                        EntityManager.AddComponent<Updated>(distantEdge.m_End);
+                                        buffer.AddComponent<Updated>(edge.m_Edge);
+                                        if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
+                                        {
+                                            buffer.AddComponent<Updated>(distantEdge.m_Start);
+                                            buffer.AddComponent<Updated>(distantEdge.m_End);
+                                        }
                                     }
                                 }
+                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 6");
+                                buffer.AddComponent<Updated>(segmentEdge.m_Start);
                             }
-
-                            EntityManager.AddComponent<Updated>(segmentEdge.m_Start);
                         }
-                    }
-
-                    if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
-                    {
-                        if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
+                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 7");
+                        if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
                         {
-                            buffer.AddComponent<Deleted>(segmentEdge.m_End);
-                        }
-                        else
-                        {
-                            foreach (ConnectedEdge edge in endConnectedEdges)
+                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 8");
+                            if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
                             {
-                                if (edge.m_Edge != currentEntity)
+                                buffer.AddComponent<Deleted>(segmentEdge.m_End);
+                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} deleted segment edge end");
+                            }
+                            else
+                            {
+                                foreach (ConnectedEdge edge in endConnectedEdges)
                                 {
-                                    EntityManager.AddComponent<Updated>(edge.m_Edge);
-                                    if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
+                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 9");
+                                    if (edge.m_Edge != currentEntity)
                                     {
-                                        EntityManager.AddComponent<Updated>(distantEdge.m_Start);
-                                        EntityManager.AddComponent<Updated>(distantEdge.m_End);
+                                        buffer.AddComponent<Updated>(edge.m_Edge);
+                                        if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
+                                        {
+                                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 10");
+                                            buffer.AddComponent<Updated>(distantEdge.m_Start);
+                                            buffer.AddComponent<Updated>(distantEdge.m_End);
+                                        }
                                     }
                                 }
-                            }
 
-                            EntityManager.AddComponent<Updated>(segmentEdge.m_End);
+                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 11");
+                                buffer.AddComponent<Updated>(segmentEdge.m_End);
+                            }
                         }
                     }
-                }
 
-                if (hasSubObjectsFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
-                {
-                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} finished network stuff.");
+                    if (EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer) && (!EntityManager.HasComponent<Extension>(currentEntity) || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
                     {
-                        buffer.AddComponent<Deleted>(subObject.m_SubObject);
+                        foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                        {
+                            buffer.AddComponent<Deleted>(subObject.m_SubObject);
+                        }
+                    }
+
+                    if ((!EntityManager.HasComponent<Extension>(currentEntity) && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)) || (BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)))
+                    {
+                        buffer.AddComponent<Deleted>(currentEntity);
+                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Deleted {currentEntity.Index} {currentEntity.Version}");
                     }
                 }
 
-                if ((raycastFlag && hasOwnerComponentFlag && !hasExtensionComponentFlag && !hasNodeComponentFlag) || (raycastFlag && hasOwnerComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasNodeComponentFlag))
-                {
-                    buffer.AddComponent<Deleted>(currentEntity);
-                }
             }
 
             return inputDeps;
         }
     }
+
+    
 }
