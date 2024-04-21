@@ -118,5 +118,7 @@ namespace Better_Bulldozer.Utils
         {
             return (T)obj;
         }
+
+        public static readonly BindingFlags allFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.GetProperty;
     }
 }

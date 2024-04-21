@@ -4,10 +4,15 @@
 
 namespace Better_Bulldozer.Tools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
     using Better_Bulldozer.Settings;
     using Better_Bulldozer.Systems;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
+    using Game;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
@@ -16,7 +21,6 @@ namespace Better_Bulldozer.Tools
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
-    using System.Collections.Generic;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -39,6 +43,8 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_HighlightedQuery;
         private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
         private NativeList<Entity> m_MainEntities;
+        private ComponentType m_LevelLockedComponentType;
+        private bool m_FoundPlopTheGrowables;
 
         /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
@@ -194,6 +200,25 @@ namespace Better_Bulldozer.Tools
         }
 
         /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach (Assembly assembly in assemblies)
+            {
+                Type type = assembly.GetType("PlopTheGrowables.LevelLocked");
+                if (type != null)
+                {
+                    m_Log.Info($"Found {type.FullName} in {type.Assembly.FullName}. ");
+                    m_LevelLockedComponentType = ComponentType.ReadOnly(type);
+                    m_FoundPlopTheGrowables = true;
+                }
+            }
+
+        }
+
+        /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             inputDeps = Dependency;
@@ -211,7 +236,6 @@ namespace Better_Bulldozer.Tools
                 m_PreviousRaycastedEntity = currentRaycastEntity;
                 m_MainEntities.Clear();
             }
-
 
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
             {
@@ -316,7 +340,7 @@ namespace Better_Bulldozer.Tools
                             {
                                 foreach (Game.Net.SubLane subLane in ownerSublanes)
                                 {
-                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef fencePrefabEntity) && EntityManager.TryGetComponent(prefabRef.m_Prefab, out UtilityLaneData utilityLaneData) && (utilityLaneData.m_UtilityTypes & UtilityTypes.Fence) == UtilityTypes.Fence)
+                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef fencePrefabEntity) && EntityManager.TryGetComponent(fencePrefabEntity.m_Prefab, out UtilityLaneData utilityLaneData) && (utilityLaneData.m_UtilityTypes & UtilityTypes.Fence) == UtilityTypes.Fence)
                                     {
                                         buffer.AddComponent<Highlighted>(subLane.m_SubLane);
                                         buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
@@ -400,14 +424,36 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
             }
 
-            if (EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1) && prefabBase1 is RoadPrefab)
+            if (EntityManager.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
             {
-                m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subelements from roads is not recommended because roads update frequently and the subelements will regenerate.");
+                if (prefabBase1 is RoadPrefab)
+                {
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subobjects from roads is not recommended because roads update frequently and the subobjects will regenerate.");
+                }
+                else
+                {
+                    m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromRoads");
+                }
+
+                if (EntityManager.TryGetComponent(prefabRef1.m_Prefab, out SpawnableBuildingData spawnableBuildingData) && spawnableBuildingData.m_Level < 5 && m_FoundPlopTheGrowables && !EntityManager.HasComponent(owner.m_Owner, m_LevelLockedComponentType))
+                {
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromGrowable", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing subelements from growables that can level up is not recommended because when they level up all the subobjects, fences, and hedges will regenerate.");
+                }
+                else
+                {
+                    m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromGrowable");
+                }
+
+                if (EntityManager.HasComponent<ServiceObjectData>(prefabRef1.m_Prefab))
+                {
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromServiceBuildings", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Removing subelements from service buildings should be done after all upgrades are purchased since all the subobjects, fences, and hedges will regenerate when an upgrade is applied.");
+                }
+                else
+                {
+                    m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
+                }
             }
-            else
-            {
-                m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromRoads");
-            }
+
 
             if (m_ApplyAction.WasPressedThisFrame())
             {
@@ -422,7 +468,7 @@ namespace Better_Bulldozer.Tools
                     {
                         currentEntity = currentOwner.m_Owner;
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
-                    }
+                    }   
 
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting network stuff.");
                     if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
