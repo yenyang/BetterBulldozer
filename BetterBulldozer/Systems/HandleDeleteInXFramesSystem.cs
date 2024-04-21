@@ -16,16 +16,16 @@ namespace Better_Bulldozer.Systems
     /// <summary>
     /// A system that prevents objects from being overriden when placed on each other.
     /// </summary>
-    public partial class HandleDeleteNextFrameSystem : GameSystemBase
+    public partial class HandleDeleteInXFramesSystem : GameSystemBase
     {
         private ILog m_Log;
         private EntityQuery m_DeleteNextFrameQuery;
         private ToolOutputBarrier m_ToolOutputBarrier;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HandleDeleteNextFrameSystem"/> class.
+        /// Initializes a new instance of the <see cref="HandleDeleteInXFramesSystem"/> class.
         /// </summary>
-        public HandleDeleteNextFrameSystem()
+        public HandleDeleteInXFramesSystem()
         {
         }
 
@@ -33,7 +33,7 @@ namespace Better_Bulldozer.Systems
         protected override void OnCreate()
         {
             m_Log = BetterBulldozerMod.Instance.Logger;
-            m_Log.Info($"{nameof(HandleDeleteNextFrameSystem)} Created.");
+            m_Log.Info($"{nameof(HandleDeleteInXFramesSystem)} Created.");
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             base.OnCreate();
         }

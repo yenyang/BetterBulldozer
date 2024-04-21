@@ -432,7 +432,7 @@ namespace Better_Bulldozer.Tools
             {
                 m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
             }
-
+            /*
             if (EntityManager.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
             {
                 if (prefabBase1 is RoadPrefab)
@@ -461,7 +461,7 @@ namespace Better_Bulldozer.Tools
                 {
                     m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
                 }
-            }
+            }*/
 
 
             if (m_ApplyAction.WasPressedThisFrame())
