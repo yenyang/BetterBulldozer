@@ -5,8 +5,8 @@
 namespace Better_Bulldozer.Tools
 {
     using System;
-    using System.Collections.Generic;
     using System.Reflection;
+    using Better_Bulldozer.Components;
     using Better_Bulldozer.Settings;
     using Better_Bulldozer.Systems;
     using Colossal.Entities;
@@ -24,6 +24,7 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using static Game.Prefabs.TriggerPrefabData;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -43,6 +44,7 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_HighlightedQuery;
         private SubelementBulldozerWarningTooltipSystem m_WarningTooltipSystem;
         private NativeList<Entity> m_MainEntities;
+        private NativeList<Entity> m_PrefabEntities;
         private ComponentType m_LevelLockedComponentType;
         private bool m_FoundPlopTheGrowables;
 
@@ -138,6 +140,7 @@ namespace Better_Bulldozer.Tools
             m_BetterBulldozerUISystem = World.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             m_WarningTooltipSystem = World.GetOrCreateSystemManaged<SubelementBulldozerWarningTooltipSystem>();
             m_MainEntities = new NativeList<Entity>(Allocator.Persistent);
+            m_PrefabEntities = new NativeList<Entity>(Allocator.Persistent);
             base.OnCreate();
             m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
             {
@@ -197,6 +200,7 @@ namespace Better_Bulldozer.Tools
         {
             base.OnDestroy();
             m_MainEntities.Dispose();
+            m_PrefabEntities.Dispose();
         }
 
         /// <inheritdoc/>
@@ -228,6 +232,7 @@ namespace Better_Bulldozer.Tools
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
 
+
             // This section handles highlight removal.
             if (m_PreviousRaycastedEntity != currentRaycastEntity || !raycastFlag || currentRaycastEntity == Entity.Null)
             {
@@ -235,6 +240,7 @@ namespace Better_Bulldozer.Tools
                 EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
                 m_PreviousRaycastedEntity = currentRaycastEntity;
                 m_MainEntities.Clear();
+                m_PrefabEntities.Clear();
             }
 
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
@@ -250,6 +256,7 @@ namespace Better_Bulldozer.Tools
                     {
                         if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching)
                         {
+                            m_PrefabEntities.Add(prefabRef.m_Prefab);
                             if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                             {
                                 foreach (Game.Objects.SubObject subObject in ownerSubobjects)
@@ -295,34 +302,35 @@ namespace Better_Bulldozer.Tools
                             {
                                 if (EntityManager.HasComponent<Tree>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Plant>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Plant>(), ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Plant>(), ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.StreetLight>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.StreetLight>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.StreetLight>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.Quantity>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Quantity>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Quantity>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Prefabs.BrandObjectData>(prefabRef.m_Prefab))
                                 {
-                                    CheckForSimilarSubObjectsPrefabs(ComponentType.ReadOnly<Game.Prefabs.BrandObjectData>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjectsPrefabs(ComponentType.ReadOnly<Game.Prefabs.BrandObjectData>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.ActivityLocation>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.Elevation>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Elevation>(), ownerSubobjects, ref m_MainEntities, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Elevation>(), ownerSubobjects, ref buffer);
                                 }
                                 else
                                 {
+                                    m_PrefabEntities.Add(prefabRef.m_Prefab);
                                     foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                                     {
                                         if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
@@ -346,6 +354,7 @@ namespace Better_Bulldozer.Tools
                                         buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
                                         m_MainEntities.Add(subLane.m_SubLane);
                                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subLane.m_SubLane} {subLane.m_SubLane}");
+                                        m_PrefabEntities.Add(fencePrefabEntity.m_Prefab);
                                     }
                                 }
                             }
@@ -468,7 +477,7 @@ namespace Better_Bulldozer.Tools
                     {
                         currentEntity = currentOwner.m_Owner;
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
-                    }   
+                    }
 
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting network stuff.");
                     if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
@@ -549,12 +558,24 @@ namespace Better_Bulldozer.Tools
                     }
                 }
 
+                if (m_PrefabEntities.Length > 0 && !EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(owner.m_Owner))
+                {
+                    EntityManager.AddBuffer<PermanentlyRemovedSubElementPrefab>(owner.m_Owner);
+                }
+
+                if (m_PrefabEntities.Length > 0 && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: false, out DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedPrefabBuffer))
+                {
+                    foreach (Entity entity in m_PrefabEntities)
+                    {
+                        removedPrefabBuffer.Add(new PermanentlyRemovedSubElementPrefab(entity));
+                    }
+                }
             }
 
             return inputDeps;
         }
 
-        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, ComponentType excludeComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, ComponentType excludeComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
@@ -567,13 +588,17 @@ namespace Better_Bulldozer.Tools
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                    list.Add(subObject.m_SubObject);
+                    m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    {
+                        m_PrefabEntities.Add(prefabRef.m_Prefab);
+                    }
                 }
             }
         }
 
-        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        private void CheckForSimilarSubObjects(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
@@ -581,13 +606,17 @@ namespace Better_Bulldozer.Tools
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                    list.Add(subObject.m_SubObject);
+                    m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    {
+                        m_PrefabEntities.Add(prefabRef.m_Prefab);
+                    }
                 }
             }
         }
 
-        private void CheckForSimilarSubObjectsPrefabs(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref NativeList<Entity> list, ref EntityCommandBuffer buffer)
+        private void CheckForSimilarSubObjectsPrefabs(ComponentType necessaryComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
@@ -595,8 +624,12 @@ namespace Better_Bulldozer.Tools
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
-                    list.Add(subObject.m_SubObject);
+                    m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                    if (!m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    {
+                        m_PrefabEntities.Add(prefabRef.m_Prefab);
+                    }
                 }
             }
         }
