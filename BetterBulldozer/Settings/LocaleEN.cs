@@ -90,9 +90,9 @@ namespace Better_Bulldozer.Settings
                 { WarningTooltipKey("ExtensionRemovalWarning"), "Removing some extensions will break assets." },
                 { WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets." },
                 { WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead." },
-                { WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subelements from roads is not recommended because roads update frequently and the subelements will regenerate." },
-                { WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing subelements from growables that can level up is not recommended because when they level up all the subobjects, fences, and hedges will regenerate." },
-                { WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing subelements from service buildings to avoid regeneration." },
+                { WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing single subelements from roads is not recommended due to frequent regeneration." },
+                { WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single subelements from growables that can level up is not recommended due to level up regenerate." },
+                { WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single subelements from service buildings to avoid regeneration." },
 
             };
         }

@@ -147,7 +147,7 @@ namespace Better_Bulldozer.Systems
             AddBinding(m_GameplayManipulation = new ValueBinding<bool>(ModId, "GameplayManipulation", false));
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
-            m_SelectionMode = CreateBinding("SelectionMode", (int)SelectionMode.Single);
+            m_SelectionMode = CreateBinding("SelectionMode", (int)SelectionMode.Matching);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));

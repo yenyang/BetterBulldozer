@@ -436,12 +436,12 @@ namespace Better_Bulldozer.Tools
             {
                 m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
             }
-            /*
-            if (EntityManager.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
+            
+            if (EntityManager.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1) && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single)
             {
                 if (prefabBase1 is RoadPrefab)
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing subobjects from roads is not recommended because roads update frequently and the subobjects will regenerate.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing single subelements from roads is not recommended due to frequent regeneration.");
                 }
                 else
                 {
@@ -450,22 +450,22 @@ namespace Better_Bulldozer.Tools
 
                 if (EntityManager.TryGetComponent(prefabRef1.m_Prefab, out SpawnableBuildingData spawnableBuildingData) && spawnableBuildingData.m_Level < 5 && m_FoundPlopTheGrowables && !EntityManager.HasComponent(owner.m_Owner, m_LevelLockedComponentType))
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromGrowable", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing subelements from growables that can level up is not recommended because when they level up all the subobjects, fences, and hedges will regenerate.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromGrowable", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single subelements from growables that can level up is not recommended due to level up regenerate.");
                 }
                 else
                 {
                     m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromGrowable");
                 }
 
-                if (EntityManager.HasComponent<ServiceObjectData>(prefabRef1.m_Prefab))
+                if (EntityManager.HasComponent<CityServiceBuilding>(prefabRef1.m_Prefab))
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromServiceBuildings", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Removing subelements from service buildings should be done after all upgrades are purchased since all the subobjects, fences, and hedges will regenerate when an upgrade is applied.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromServiceBuildings", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single subelements from service buildings to avoid regeneration.");
                 }
                 else
                 {
                     m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
                 }
-            }*/
+            }
 
 
             if (m_ApplyAction.WasPressedThisFrame())
