@@ -256,7 +256,11 @@ namespace Better_Bulldozer.Tools
                     {
                         if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching)
                         {
-                            m_PrefabEntities.Add(prefabRef.m_Prefab);
+                            if (!hasExtensionComponentFlag && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
+                            {
+                                m_PrefabEntities.Add(prefabRef.m_Prefab);
+                            }
+
                             if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                             {
                                 foreach (Game.Objects.SubObject subObject in ownerSubobjects)
@@ -590,7 +594,7 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
-                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.Extension>(subObject.m_SubObject))
                     {
                         m_PrefabEntities.Add(prefabRef.m_Prefab);
                     }
@@ -608,7 +612,7 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
-                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && !m_PrefabEntities.Contains(prefabRef.m_Prefab) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.Extension>(subObject.m_SubObject))
                     {
                         m_PrefabEntities.Add(prefabRef.m_Prefab);
                     }
@@ -626,7 +630,7 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     m_MainEntities.Add(subObject.m_SubObject);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
-                    if (!m_PrefabEntities.Contains(prefabRef.m_Prefab))
+                    if (!m_PrefabEntities.Contains(prefabRef.m_Prefab) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.Extension>(subObject.m_SubObject))
                     {
                         m_PrefabEntities.Add(prefabRef.m_Prefab);
                     }

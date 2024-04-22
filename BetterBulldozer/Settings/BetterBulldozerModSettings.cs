@@ -4,9 +4,11 @@
 
 namespace Better_Bulldozer.Settings
 {
+    using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
     using Game.Modding;
     using Game.Settings;
+    using Unity.Entities;
 
     /// <summary>
     /// The mod settings for the Anarchy Mod.
@@ -34,6 +36,16 @@ namespace Better_Bulldozer.Settings
         /// Gets or sets a value indicating whether to allow removal of upgrades.
         /// </summary>
         public bool AllowRemovingExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically remove manicured grass.
+        /// </summary>
+        public bool AutomaticRemovalManicuredGrass { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically remove fences and hedges.
+        /// </summary>
+        // public bool AutomaticRemovalFencesAndHedges { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
@@ -68,6 +80,20 @@ namespace Better_Bulldozer.Settings
             Contra = true;
             AllowRemovingSubElementNetworks = true;
             AllowRemovingExtensions = true;
+            AutomaticRemovalManicuredGrass = false;
+
+            // AutomaticRemovalFencesAndHedges = false;
+        }
+
+        /// <inheritdoc/>
+        public override void Apply()
+        {
+            base.Apply();
+            AutomaticallyRemoveManicuredGrassSurfaceSystem automaticallyRemoveManicuredGrassSurfaceSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>();
+            if (AutomaticRemovalManicuredGrass != automaticallyRemoveManicuredGrassSurfaceSystem.Enabled)
+            {
+                automaticallyRemoveManicuredGrassSurfaceSystem.Enabled = AutomaticRemovalManicuredGrass;
+            }
         }
     }
 }

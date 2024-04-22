@@ -8,6 +8,7 @@ namespace Better_Bulldozer.Systems
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
+    using Game.Buildings;
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
@@ -92,6 +93,19 @@ namespace Better_Bulldozer.Systems
 
                             buffer.SetComponent(subObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 5 });
                             m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnUpdate)} Will delete entity {subObject.m_SubObject.Index}.{subObject.m_SubObject.Version} from {entity.Index}.{entity.Version}");
+
+                            if (EntityManager.TryGetBuffer(subObject.m_SubObject, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                            {
+                                foreach (Game.Objects.SubObject deepSubObject in dynamicBuffer)
+                                {
+                                    if (!EntityManager.HasComponent<DeleteInXFrames>(deepSubObject.m_SubObject))
+                                    {
+                                        buffer.AddComponent<DeleteInXFrames>(deepSubObject.m_SubObject);
+                                    }
+
+                                    buffer.SetComponent(deepSubObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                                }
+                            }
                         }
                     }
                 }

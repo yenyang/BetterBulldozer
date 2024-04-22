@@ -44,6 +44,11 @@ namespace Better_Bulldozer.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingSubElementNetworks)), "Allow removing networks such as roads, paths, markers, etc from buildings. Removing subelement networks may break connectivity within an asset." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingExtensions)), "Allow Removing Extensions" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingExtensions)), "Extensions are building upgrades that do not within the footprint of the main building lot. This will allow you to remove them, but removing some extensions may break connectivity within the asset." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalManicuredGrass)), "Automatically Remove Manicured Grass" },
+                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalManicuredGrass)), "Automitically removes Grass Surface 01 and Grass Surface 02 from buildings plopped and spawned." },
+
+                // { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalFencesAndHedges)), "Automatically Remove Fences and Hedges" },
+                // { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalFencesAndHedges)), "Automitically removes fences and hedges from buildings plopped and spawned." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "Reset Better Bulldozer Settings" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "After confirmation this will reset Better Bulldozer Settings." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "Reset Better Bulldozer  Settings?" },
@@ -112,6 +117,5 @@ namespace Better_Bulldozer.Settings
         {
             return $"BetterBulldozer.SECTION_TITLE[{key}]";
         }
-
     }
 }
