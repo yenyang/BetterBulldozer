@@ -334,7 +334,11 @@ namespace Better_Bulldozer.Tools
                                 }
                                 else
                                 {
-                                    m_PrefabEntities.Add(prefabRef.m_Prefab);
+                                    if (!hasExtensionComponentFlag && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
+                                    {
+                                        m_PrefabEntities.Add(prefabRef.m_Prefab);
+                                    }
+
                                     foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                                     {
                                         if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
@@ -436,7 +440,7 @@ namespace Better_Bulldozer.Tools
             {
                 m_WarningTooltipSystem.RemoveTooltip("RemovingMarkerNetworksProhibited");
             }
-            
+
             if (EntityManager.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1) && m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Single)
             {
                 if (prefabBase1 is RoadPrefab)
@@ -514,6 +518,7 @@ namespace Better_Bulldozer.Tools
                                 buffer.AddComponent<Updated>(segmentEdge.m_Start);
                             }
                         }
+
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 7");
                         if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
                         {
@@ -559,6 +564,10 @@ namespace Better_Bulldozer.Tools
                     {
                         buffer.AddComponent<Deleted>(currentEntity);
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Deleted {currentEntity.Index} {currentEntity.Version}");
+                        if (EntityManager.HasComponent<Extension>(currentEntity) || EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity))
+                        {
+                            buffer.AddComponent<Updated>(owner.m_Owner);
+                        }
                     }
                 }
 
@@ -571,7 +580,17 @@ namespace Better_Bulldozer.Tools
                 {
                     foreach (Entity entity in m_PrefabEntities)
                     {
-                        removedPrefabBuffer.Add(new PermanentlyRemovedSubElementPrefab(entity));
+                        if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
+                        {
+                            Entity recordEntity = EntityManager.CreateEntity();
+
+                            OwnerRecord prefabIdentity = new OwnerRecord(owner.m_Owner);
+                            EntityManager.AddComponent<OwnerRecord>(recordEntity);
+                            EntityManager.SetComponentData(recordEntity, prefabIdentity);
+                            EntityManager.AddComponent<PrefabRef>(recordEntity);
+                            EntityManager.SetComponentData(recordEntity, new PrefabRef() { m_Prefab = entity });
+                            removedPrefabBuffer.Add(new PermanentlyRemovedSubElementPrefab(recordEntity));
+                        }
                     }
                 }
             }

@@ -17,29 +17,29 @@ namespace Better_Bulldozer.Components
     public struct PermanentlyRemovedSubElementPrefab : IBufferElementData, IQueryTypeParameter, IEquatable<PermanentlyRemovedSubElementPrefab>, ISerializable
     {
         /// <summary>
-        /// A reference to the prefab entity that was removed and is no longer a subelement.
+        /// A reference to an entity used to record owner and prefabRef.
         /// </summary>
-        public Entity m_PrefabEntity;
+        public Entity m_RecordEntity;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PermanentlyRemovedSubElementPrefab"/> struct.
         /// </summary>
-        /// <param name="prefabEntity">A reference to the prefab entity that was removed and is no longer a subelement.</param>
+        /// <param name="prefabEntity">A reference to an entity used to record owner and prefabRef.</param>
         public PermanentlyRemovedSubElementPrefab(Entity prefabEntity)
         {
-            m_PrefabEntity = prefabEntity;
+            m_RecordEntity = prefabEntity;
         }
 
         /// <inheritdoc/>
         public bool Equals(PermanentlyRemovedSubElementPrefab other)
         {
-            return m_PrefabEntity.Equals(other.m_PrefabEntity);
+            return m_RecordEntity.Equals(other.m_RecordEntity);
         }
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return m_PrefabEntity.GetHashCode();
+            return m_RecordEntity.GetHashCode();
         }
 
         /// <inheritdoc/>
@@ -47,16 +47,7 @@ namespace Better_Bulldozer.Components
             where TWriter : IWriter
         {
             writer.Write(1);
-            PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
-            if (prefabSystem.TryGetPrefab(m_PrefabEntity, out PrefabBase prefabBase))
-            {
-                writer.Write(prefabBase.GetPrefabID().ToString());
-                BetterBulldozerMod.Instance.Logger.Debug($"{nameof(PermanentlyRemovedSubElementPrefab)}.{nameof(Serialize)} {prefabBase.GetPrefabID()}");
-            }
-            else
-            {
-                BetterBulldozerMod.Instance.Logger.Warn($"Could not serialized {nameof(PermanentlyRemovedSubElementPrefab)}");
-            }
+            writer.Write( m_RecordEntity );
         }
 
         /// <inheritdoc/>
@@ -64,16 +55,7 @@ namespace Better_Bulldozer.Components
             where TReader : IReader
         {
             reader.Read(out int version);
-            reader.Read(out PrefabID prefabID);
-            PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
-            if (prefabSystem.TryGetPrefab(prefabID, out PrefabBase prefabBase))
-            {
-                prefabSystem.TryGetEntity(prefabBase, out m_PrefabEntity);
-            }
-            else
-            {
-                BetterBulldozerMod.Instance.Logger.Warn($"Could not Deserialize {nameof(PermanentlyRemovedSubElementPrefab)}");
-            }
+            reader.Read(out m_RecordEntity);
         }
     }
 }

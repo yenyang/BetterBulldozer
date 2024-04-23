@@ -74,7 +74,10 @@ namespace Better_Bulldozer.Systems
                     NativeList<Entity> m_RemoveIfMatchingPrefabEntity = new NativeList<Entity>(Allocator.Temp);
                     foreach (PermanentlyRemovedSubElementPrefab subElementPrefab in prefabMatches)
                     {
-                        m_RemoveIfMatchingPrefabEntity.Add(subElementPrefab.m_PrefabEntity);
+                        if (EntityManager.TryGetComponent(subElementPrefab.m_RecordEntity, out PrefabRef prefabRef))
+                        {
+                            m_RemoveIfMatchingPrefabEntity.Add(prefabRef.m_Prefab);
+                        }
                     }
 
                     foreach (Game.Objects.SubObject subObject in subObjectBuffer)
@@ -129,7 +132,10 @@ namespace Better_Bulldozer.Systems
                     NativeList<Entity> m_RemoveIfMatchingPrefabEntity = new NativeList<Entity>(Allocator.Temp);
                     foreach (PermanentlyRemovedSubElementPrefab subElementPrefab in prefabMatches)
                     {
-                        m_RemoveIfMatchingPrefabEntity.Add(subElementPrefab.m_PrefabEntity);
+                        if (EntityManager.TryGetComponent(subElementPrefab.m_RecordEntity, out PrefabRef prefabRef))
+                        {
+                            m_RemoveIfMatchingPrefabEntity.Add(prefabRef.m_Prefab);
+                        }
                     }
 
                     foreach (Game.Net.SubLane subLane in subLaneBuffer)
