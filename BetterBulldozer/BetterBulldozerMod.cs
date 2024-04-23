@@ -107,8 +107,10 @@ namespace Better_Bulldozer
             updateSystem.UpdateAt<SubelementBulldozerWarningTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateAt<RemoveRegeneratedSubelementPrefabsSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<HandleDeleteInXFramesSystem>(SystemUpdatePhase.ToolUpdate);
+
             // updateSystem.UpdateAfter<AutomaticallyRemoveFencesAndHedges>(SystemUpdatePhase.Modification2B);
             updateSystem.UpdateBefore<AutomaticallyRemoveManicuredGrassSurfaceSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<CleanUpOwnerRecordsSystem>(SystemUpdatePhase.GameSimulation);
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Complete.");
         }
 
