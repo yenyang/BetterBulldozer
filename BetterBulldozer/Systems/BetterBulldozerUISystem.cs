@@ -147,7 +147,7 @@ namespace Better_Bulldozer.Systems
             AddBinding(m_GameplayManipulation = new ValueBinding<bool>(ModId, "GameplayManipulation", false));
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
-            m_SelectionMode = CreateBinding("SelectionMode", (int)SelectionMode.Matching);
+            m_SelectionMode = CreateBinding("SelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousSelectionMode);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -160,9 +160,9 @@ namespace Better_Bulldozer.Systems
             AddBinding(new TriggerBinding(ModId, "RaycastAreasButton", RaycastAreasButtonToggled));
             AddBinding(new TriggerBinding(ModId, "RaycastLanesButton", RaycastLanesButtonToggled));
             AddBinding(new TriggerBinding(ModId, "SubElementBulldozerButton", SubElementBulldozerButtonToggled));
-            AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", UpgradeIsMainToggled));
-            AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", SubElementsOfMainElementToggled));
-            CreateTrigger("ChangeSelectionMode", (int value) => m_SelectionMode.UpdateCallback(value));
+            AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", () => m_UpgradeIsMain.Update(true)));
+            AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", () => m_UpgradeIsMain.Update(false)));
+            CreateTrigger("ChangeSelectionMode", (int value) => ChangeSelectionMode(value));
         }
 
         /// <inheritdoc/>
@@ -465,14 +465,11 @@ namespace Better_Bulldozer.Systems
             }
         }
 
-        /// <summary>
-        /// For setting upgrade is main when button is pressed.
-        /// </summary>
-        private void UpgradeIsMainToggled() => m_UpgradeIsMain.Update(true);
-
-        /// <summary>
-        /// For unsetting upgrade is main when subeleemnts of main element button pressed.
-        /// </summary>
-        private void SubElementsOfMainElementToggled() => m_UpgradeIsMain.Update(false);
+        private void ChangeSelectionMode(int value)
+        {
+            m_SelectionMode.Value = value;
+            BetterBulldozerMod.Instance.Settings.PreviousSelectionMode = (SelectionMode)value;
+            BetterBulldozerMod.Instance.Settings.ApplyAndSave();
+        }
     }
 }
