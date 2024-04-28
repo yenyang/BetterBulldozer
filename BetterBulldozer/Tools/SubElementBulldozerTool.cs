@@ -62,14 +62,6 @@ namespace Better_Bulldozer.Tools
         public float Radius { get => m_Radius; set => m_Radius = value; }
 
         /// <inheritdoc/>
-        public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
-        {
-            base.GetAvailableSnapMask(out onMask, out offMask);
-            onMask |= Snap.ContourLines;
-            offMask |= Snap.ContourLines;
-        }
-
-        /// <inheritdoc/>
         public override PrefabBase GetPrefab()
         {
             return m_BulldozeToolSystem.GetPrefab();
