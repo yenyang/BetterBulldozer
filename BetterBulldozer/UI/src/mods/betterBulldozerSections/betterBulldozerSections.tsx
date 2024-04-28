@@ -6,14 +6,6 @@ import mod from "../../../mod.json";
 import { tool } from "cs2/bindings";
 import locale from "../lang/en-US.json";
 import { getModule } from "cs2/modding";
-import subElementsOfMainElementSrc from "./HouseMainElements.svg";
-import surfacesSrc                      from "./ShovelSurface.svg";
-import upgradeIsMainSrc                 from "./HouseSmallSubElements.svg";
-import staticObjectMarkersSrc           from "./MarkerSpawner.svg";
-import spacesSrc                       from "./PeopleAreaTool.svg";
-import singleSrc                      from "./SingleRhombus.svg";
-import matchingSrc                      from "./SameRhombus.svg";
-import similarSrc                       from "./SimilarRhombus.svg";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
@@ -31,18 +23,17 @@ const gameplayManipulationSrc =         couiStandard +  "CubeSimulation.svg";
 const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg";
 const lanesSrc =                         couiStandard + "Network.svg";
 const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
-const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
-/*
-const singleSrc =                        couiStandard + "TreeAdult.svg";
-const matchingSrc =                     couiStandard + "Trees.svg";
-const similarSrc =                      couiStandard + "TreesDeciduous.svg";
-*/
-/*
+const subElementBulldozerSrc =           couiStandard + "Jackhammer.svg";
+
+const singleSrc =                        couiStandard + "SingleRhombus.svg";
+const matchingSrc =                     couiStandard + "SameRhombus.svg";
+const similarSrc =                      couiStandard + "SimilarRhombus.svg";
+
 const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
 const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
 const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
 const staticObjectMarkersSrc =          couiStandard + "MarkerSpawner.svg";
-const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";*/
+const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";
 
 // Saving strings for events and translations.
 const surfacesID =              "SurfacesFilterButton";

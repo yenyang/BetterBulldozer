@@ -40,6 +40,7 @@ namespace Better_Bulldozer.Settings
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove manicured grass.
         /// </summary>
+        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticlyRemoveManicuredGrassSystem))]
         public bool AutomaticRemovalManicuredGrass { get; set; }
 
         /// <summary>
@@ -69,6 +70,20 @@ namespace Better_Bulldozer.Settings
         }
 
         /// <summary>
+        /// Sets a value indicating whether: to safely remove mod.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        public bool SafelyRemove
+        {
+            set
+            {
+                SafelyRemoveSystem safelyRemoveSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<SafelyRemoveSystem>();
+                safelyRemoveSystem.Enabled = true;
+            }
+        }
+
+        /// <summary>
         /// Checks if prevent accidental allow removing upgrades is off or on.
         /// </summary>
         /// <returns>Opposite of AllowRemovingExtensions.</returns>
@@ -85,15 +100,6 @@ namespace Better_Bulldozer.Settings
             // AutomaticRemovalFencesAndHedges = false;
         }
 
-        /// <inheritdoc/>
-        public override void Apply()
-        {
-            base.Apply();
-            AutomaticallyRemoveManicuredGrassSurfaceSystem automaticallyRemoveManicuredGrassSurfaceSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>();
-            if (AutomaticRemovalManicuredGrass != automaticallyRemoveManicuredGrassSurfaceSystem.Enabled)
-            {
-                automaticallyRemoveManicuredGrassSurfaceSystem.Enabled = AutomaticRemovalManicuredGrass;
-            }
-        }
+        private void ManageAutomaticlyRemoveManicuredGrassSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>().Enabled = value;
     }
 }

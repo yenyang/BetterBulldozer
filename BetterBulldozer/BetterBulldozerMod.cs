@@ -107,6 +107,7 @@ namespace Better_Bulldozer
             updateSystem.UpdateAt<SubelementBulldozerWarningTooltipSystem>(SystemUpdatePhase.UITooltip);
             updateSystem.UpdateAt<RemoveRegeneratedSubelementPrefabsSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<HandleDeleteInXFramesSystem>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<SafelyRemoveSystem>(SystemUpdatePhase.ToolUpdate);
 
             // updateSystem.UpdateAfter<AutomaticallyRemoveFencesAndHedges>(SystemUpdatePhase.Modification2B);
             updateSystem.UpdateBefore<AutomaticallyRemoveManicuredGrassSurfaceSystem>(SystemUpdatePhase.Modification1);

@@ -24,7 +24,6 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using static Game.Prefabs.TriggerPrefabData;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -47,6 +46,12 @@ namespace Better_Bulldozer.Tools
         private NativeList<Entity> m_PrefabEntities;
         private ComponentType m_LevelLockedComponentType;
         private bool m_FoundPlopTheGrowables;
+        private EntityQuery m_TreePrefabQuery;
+        private EntityQuery m_PlantPrefabQuery;
+        private EntityQuery m_StreetLightPrefabQuery;
+        private EntityQuery m_BrandObjectPrefabQuery;
+        private EntityQuery m_ActivityLocationPrefabQuery;
+        private EntityQuery m_QuantityPrefabQuery;
 
         /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
@@ -225,6 +230,31 @@ namespace Better_Bulldozer.Tools
         /// <inheritdoc/>
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            m_TreePrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<TreeData>()
+                .Build();
+
+            m_PlantPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<PlantData>()
+                .WithNone<TreeData>()
+                .Build();
+
+            m_BrandObjectPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<BrandObjectData>()
+                .Build();
+
+            m_StreetLightPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<StreetLightData>()
+                .Build();
+
+            m_QuantityPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<QuantityObjectData>()
+                .Build();
+
+            m_ActivityLocationPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<ActivityLocationData>()
+                .Build();
+
             inputDeps = Dependency;
             bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
@@ -306,27 +336,27 @@ namespace Better_Bulldozer.Tools
                             {
                                 if (EntityManager.HasComponent<Tree>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_TreePrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Plant>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Plant>(), ComponentType.ReadOnly<Tree>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_PlantPrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.StreetLight>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.StreetLight>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_StreetLightPrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.Quantity>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Quantity>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_QuantityPrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Prefabs.BrandObjectData>(prefabRef.m_Prefab))
                                 {
-                                    CheckForSimilarSubObjectsPrefabs(ComponentType.ReadOnly<Game.Prefabs.BrandObjectData>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_BrandObjectPrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.ActivityLocation>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjectsByQuery(m_ActivityLocationPrefabQuery, ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.Elevation>(currentRaycastEntity))
                                 {
@@ -477,7 +507,6 @@ namespace Better_Bulldozer.Tools
                 foreach (Entity entity in m_MainEntities)
                 {
                     Entity currentEntity = entity;
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting {currentEntity.Index} {currentEntity.Version}.");
                     if (EntityManager.TryGetComponent(currentEntity, out Owner currentOwner)
                     && EntityManager.TryGetBuffer(currentOwner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                     && ownerBuffer.Length == 1
@@ -487,21 +516,16 @@ namespace Better_Bulldozer.Tools
                         m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Setting current entity to owner");
                     }
 
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} starting network stuff.");
                     if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
                     {
-                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 1");
                         if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
                         {
-                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 2");
                             if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
                             {
                                 buffer.AddComponent<Deleted>(segmentEdge.m_Start);
-                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} deleted segment edge start");
                             }
                             else
                             {
-                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 3");
                                 foreach (ConnectedEdge edge in startConnectedEdges)
                                 {
                                     if (edge.m_Edge != currentEntity)
@@ -514,44 +538,37 @@ namespace Better_Bulldozer.Tools
                                         }
                                     }
                                 }
-                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 6");
+
                                 buffer.AddComponent<Updated>(segmentEdge.m_Start);
                             }
                         }
 
-                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 7");
                         if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
                         {
-                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 8");
                             if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
                             {
                                 buffer.AddComponent<Deleted>(segmentEdge.m_End);
-                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} deleted segment edge end");
                             }
                             else
                             {
                                 foreach (ConnectedEdge edge in endConnectedEdges)
                                 {
-                                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 9");
                                     if (edge.m_Edge != currentEntity)
                                     {
                                         buffer.AddComponent<Updated>(edge.m_Edge);
                                         if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
                                         {
-                                            m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 10");
                                             buffer.AddComponent<Updated>(distantEdge.m_Start);
                                             buffer.AddComponent<Updated>(distantEdge.m_End);
                                         }
                                     }
                                 }
 
-                                m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} 11");
                                 buffer.AddComponent<Updated>(segmentEdge.m_End);
                             }
                         }
                     }
 
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} finished network stuff.");
                     if (EntityManager.TryGetBuffer(currentEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer) && (!EntityManager.HasComponent<Extension>(currentEntity) || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
                     {
                         foreach (Game.Objects.SubObject subObject in dynamicBuffer)
@@ -563,7 +580,6 @@ namespace Better_Bulldozer.Tools
                     if ((!EntityManager.HasComponent<Extension>(currentEntity) && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)) || (BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)))
                     {
                         buffer.AddComponent<Deleted>(currentEntity);
-                        m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Deleted {currentEntity.Index} {currentEntity.Version}");
                         if (EntityManager.HasComponent<Extension>(currentEntity) || EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity))
                         {
                             buffer.AddComponent<Updated>(owner.m_Owner);
@@ -648,12 +664,34 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
                     m_MainEntities.Add(subObject.m_SubObject);
-                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjects)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjectsPrefabs)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
                     if (!m_PrefabEntities.Contains(prefabRef.m_Prefab) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.Extension>(subObject.m_SubObject))
                     {
                         m_PrefabEntities.Add(prefabRef.m_Prefab);
                     }
                 }
+            }
+        }
+
+        private void CheckForSimilarSubObjectsByQuery(EntityQuery query, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
+        {
+            NativeList<Entity> prefabEntities = query.ToEntityListAsync(Allocator.Temp, out JobHandle jobHandle);
+            jobHandle.Complete();
+
+            foreach (Game.Objects.SubObject subObject in subObjects)
+            {
+                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && prefabEntities.Contains(prefabRef.m_Prefab))
+                {
+                    buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                    buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                    m_MainEntities.Add(subObject.m_SubObject);
+                    m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(CheckForSimilarSubObjectsByQuery)} Added to main entities {subObject.m_SubObject} {subObject.m_SubObject}");
+                }
+            }
+
+            foreach (Entity prefabEntity in prefabEntities)
+            {
+                m_PrefabEntities.Add(prefabEntity);
             }
         }
     }

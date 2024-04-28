@@ -17,7 +17,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// Cleans up old entities after owners were deleted and before serialization.
+    /// Cleans up old entities after owners were deleted periodicly.
     /// </summary>
     public partial class CleanUpOwnerRecordsSystem : GameSystemBase
     {
