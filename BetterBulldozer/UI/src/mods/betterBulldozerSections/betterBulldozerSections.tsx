@@ -11,6 +11,9 @@ import surfacesSrc                      from "./ShovelSurface.svg";
 import upgradeIsMainSrc                 from "./HouseSmallSubElements.svg";
 import staticObjectMarkersSrc           from "./MarkerSpawner.svg";
 import spacesSrc                       from "./PeopleAreaTool.svg";
+import singleSrc                      from "./SingleRhombus.svg";
+import matchingSrc                      from "./SameRhombus.svg";
+import similarSrc                       from "./SimilarRhombus.svg";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
 const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
@@ -29,10 +32,13 @@ const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg"
 const lanesSrc =                         couiStandard + "Network.svg";
 const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
 const subElementBulldozerSrc =           couiStandard + "HouseAndNetwork.svg";
+/*
 const singleSrc =                        couiStandard + "TreeAdult.svg";
 const matchingSrc =                     couiStandard + "Trees.svg";
 const similarSrc =                      couiStandard + "TreesDeciduous.svg";
-/*const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
+*/
+/*
+const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
 const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
 const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
 const staticObjectMarkersSrc =          couiStandard + "MarkerSpawner.svg";
