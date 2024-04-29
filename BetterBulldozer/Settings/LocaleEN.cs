@@ -34,6 +34,17 @@ namespace Better_Bulldozer.Settings
             return $"BetterBulldozer.WARNING_TOOLTIP[{key}]";
         }
 
+
+        /// <summary>
+        /// Returns the locale key for a tooltip title key.
+        /// </summary>
+        /// <param name="key">The bracketed portion of locale key.</param>
+        /// <returns>Localization key for translations.</returns>
+        public static string TooltipTitleKey(string key)
+        {
+            return $"BetterBulldozer.TOOLTIP_TITLE[{key}]";
+        }
+
         /// <inheritdoc/>
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
         {
@@ -87,6 +98,8 @@ namespace Better_Bulldozer.Settings
                 { TooltipDescriptionKey("Matching"), "Selects all exactly matching sub-elements within the building, subbuilding, extension or network and 'permanently removes' them. (i.e. all oak trees in this asset). 'Permanent removal' means whenever they are regenerated they will automatically be removed again soon afterwards." },
                 { TooltipTitleKey("Similar"), "Similar Category" },
                 { TooltipDescriptionKey("Similar"), "Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, all hedges and fences, and anything elevated above the ground. (i.e. all trees in this asset). 'Permanent removal' means whenever they are regenerated they will automatically be removed again soon afterwards." },
+                { TooltipTitleKey("Reset"), "Reset Asset" },
+                { TooltipDescriptionKey("Reset"), "Reset assets by selecting ones that have any sub-elements 'permanently removed' using Exact Match or Similar Category." },
                 { SectionLabel("Tier"), "Tier" },
                 { WarningTooltipKey("BulldozeSubelement"), "Bulldoze Sub-Element" },
                 { WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings." },
@@ -110,11 +123,6 @@ namespace Better_Bulldozer.Settings
         private string TooltipDescriptionKey(string key)
         {
             return $"BetterBulldozer.TOOLTIP_DESCRIPTION[{key}]";
-        }
-
-        private string TooltipTitleKey(string key)
-        {
-            return $"BetterBulldozer.TOOLTIP_TITLE[{key}]";
         }
 
         private string SectionLabel(string key)

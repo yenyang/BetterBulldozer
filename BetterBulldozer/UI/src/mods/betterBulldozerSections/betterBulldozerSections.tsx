@@ -28,6 +28,7 @@ const subElementBulldozerSrc =           couiStandard + "Jackhammer.svg";
 const singleSrc =                        couiStandard + "SingleRhombus.svg";
 const matchingSrc =                     couiStandard + "SameRhombus.svg";
 const similarSrc =                      couiStandard + "SimilarRhombus.svg";
+const resetSrc =                        couiStandard + "Reset.svg";
 
 const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
 const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
@@ -63,6 +64,7 @@ enum SelectionMode
     Single = 0,
     Matching = 1,
     Similar = 2,
+    Reset = 3,
 }
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
@@ -131,6 +133,8 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const matchingTooltipDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[Matching]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[Matching]"]);
         const similarTooltipTitle =         translate("BetterBulldozer.TOOLTIP_TITLE[Similar]" ,locale["BetterBulldozer.TOOLTIP_TITLE[Similar]"]);
         const similarTooltipDescription =   translate("BetterBulldozer.TOOLTIP_DESCRIPTION[Similar]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[Similar]"]);
+        const resetTooltipTitle =           translate("BetterBulldozer.TOOLTIP_TITLE[Reset]" ,locale["BetterBulldozer.TOOLTIP_TITLE[Reset]"]);
+        const resetTooltipDescription =     translate("BetterBulldozer.TOOLTIP_DESCRIPTION[Reset]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[Reset]"]);
 
         // These convert integer casts of Enums into booleans.
         const raycastingMarkers : boolean = raycastTarget == 2;
@@ -176,6 +180,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                                     <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Single}         tooltip={descriptionTooltip(singleTooltipTitle, singleTooltipDescription)}                          onSelect={() => changeSelection(SelectionMode.Single)}              src={singleSrc}         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                                     <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Matching}       tooltip={descriptionTooltip(matchingTooltipTitle, matchingTooltipDescription)}                          onSelect={() => changeSelection(SelectionMode.Matching)}            src={matchingSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                                     <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Similar}        tooltip={descriptionTooltip(similarTooltipTitle, similarTooltipDescription)}                          onSelect={() => changeSelection(SelectionMode.Similar)}            src={similarSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                    <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={selectionMode == SelectionMode.Reset}          tooltip={descriptionTooltip(resetTooltipTitle, resetTooltipDescription)}                          onSelect={() => changeSelection(SelectionMode.Reset)}            src={resetSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                             </VanillaComponentResolver.instance.Section>
                             <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Tier]", locale["BetterBulldozer.SECTION_TITLE[Tier]"])}>
                                     <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={!upgradeIsMain}    tooltip={descriptionTooltip(subElementsofMainElementTitle ,subElementsOfMainElementDescription)}   onSelect={() => handleClick("SubElementsOfMainElement")} src={subElementsOfMainElementSrc}      focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>

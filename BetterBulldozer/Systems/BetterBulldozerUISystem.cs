@@ -95,6 +95,11 @@ namespace Better_Bulldozer.Systems
             /// Same family of prefab with same owner.
             /// </summary>
             Similar,
+
+            /// <summary>
+            /// Handles reseting assets.
+            /// </summary>
+            Reset,
         }
 
         /// <summary>

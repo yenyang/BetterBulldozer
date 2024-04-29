@@ -24,6 +24,7 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -79,6 +80,18 @@ namespace Better_Bulldozer.Tools
             base.InitializeRaycast();
 
             m_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+            if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Reset)
+            {
+                m_ToolRaycastSystem.typeMask = TypeMask.Net | TypeMask.StaticObjects;
+                m_ToolRaycastSystem.netLayerMask = Layer.Road | Layer.Taxiway | Layer.SubwayTrack | Layer.PublicTransportRoad | Layer.TrainTrack | Layer.TramTrack | Layer.PowerlineHigh | Layer.PowerlineLow;
+                m_ToolRaycastSystem.utilityTypeMask = UtilityTypes.LowVoltageLine | UtilityTypes.HighVoltageLine;
+                if (m_BetterBulldozerUISystem.UpgradeIsMain)
+                {
+                    m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain;
+                }
+                return;
+            }
+
             if (m_RenderingSystem.markersVisible && m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers)
             {
                 m_ToolRaycastSystem.typeMask = m_BetterBulldozerUISystem.MarkersFilter;
@@ -243,26 +256,67 @@ namespace Better_Bulldozer.Tools
                 .WithAll<QuantityObjectData>()
                 .Build();
 
-            m_ActivityLocationPrefabQuery = SystemAPI.QueryBuilder()
-                .WithAll<ActivityLocationData>()
-                .Build();
-
             inputDeps = Dependency;
             bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentRaycastEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
+            bool hasCustomBufferFlag = EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
 
-
             // This section handles highlight removal.
-            if (m_PreviousRaycastedEntity != currentRaycastEntity || !raycastFlag || currentRaycastEntity == Entity.Null)
+            if (m_PreviousRaycastedEntity != currentRaycastEntity || !raycastFlag || currentRaycastEntity == Entity.Null || (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Reset && !hasCustomBufferFlag))
             {
                 EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
                 EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
                 m_PreviousRaycastedEntity = currentRaycastEntity;
                 m_MainEntities.Clear();
                 m_PrefabEntities.Clear();
+            }
+
+            // This handles resetting selection.
+            if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Reset)
+            {
+                if (!hasCustomBufferFlag || !raycastFlag)
+                {
+                    m_WarningTooltipSystem.RemoveTooltip("ResetAsset");
+                    return inputDeps;
+                }
+                else if (m_HighlightedQuery.IsEmptyIgnoreFilter)
+                {
+                    buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
+                    buffer.AddComponent<Highlighted>(currentRaycastEntity);
+
+                    if (EntityManager.TryGetBuffer(currentRaycastEntity, false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                    {
+                        foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                        {
+                            if (!EntityManager.HasComponent<Extension>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject))
+                            {
+                                buffer.AddComponent<Highlighted>(subObject.m_SubObject);
+                                buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
+                            }
+                        }
+                    }
+                }
+
+                m_WarningTooltipSystem.RegisterTooltip("ResetAsset", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.TooltipTitleKey("Reset"), "Reset Asset");
+
+                if (m_ApplyAction.WasPressedThisFrame())
+                {
+                    buffer.RemoveComponent<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
+                    buffer.AddComponent<Updated>(currentRaycastEntity);
+                    if (hasOwnerComponentFlag)
+                    {
+                        buffer.AddComponent<Updated>(owner.m_Owner);
+                    }
+                }
+
+                return inputDeps;
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("ResetAsset");
             }
 
             if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
@@ -348,7 +402,7 @@ namespace Better_Bulldozer.Tools
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.ActivityLocation>(currentRaycastEntity))
                                 {
-                                    CheckForSimilarSubObjectsByQuery(m_ActivityLocationPrefabQuery, ownerSubobjects, ref buffer);
+                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref buffer);
                                 }
                                 else if (EntityManager.HasComponent<Game.Objects.Elevation>(currentRaycastEntity))
                                 {
@@ -423,7 +477,7 @@ namespace Better_Bulldozer.Tools
                 }
 
                 // This section removes tooltips.
-                else
+                else if (!raycastFlag || !hasOwnerComponentFlag || hasNodeComponentFlag)
                 {
                     m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
                 }
@@ -491,6 +545,12 @@ namespace Better_Bulldozer.Tools
                 {
                     m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
                 }
+            }
+            else
+            {
+                m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromRoads");
+                m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromGrowable");
+                m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
             }
 
 
@@ -572,10 +632,6 @@ namespace Better_Bulldozer.Tools
                     if ((!EntityManager.HasComponent<Extension>(currentEntity) && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)) || (BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)))
                     {
                         buffer.AddComponent<Deleted>(currentEntity);
-                        if (EntityManager.HasComponent<Extension>(currentEntity) || EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentEntity))
-                        {
-                            buffer.AddComponent<Updated>(owner.m_Owner);
-                        }
                     }
                 }
 

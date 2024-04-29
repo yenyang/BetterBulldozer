@@ -43,6 +43,7 @@ namespace Better_Bulldozer.Systems
                 return false;
             }
 
+            m_Log.Debug($"{nameof(SubelementBulldozerWarningTooltipSystem)}.{nameof(RegisterTooltip)} Registering new tooltip {path}.");
             m_Tooltips.Add(path, new StringTooltip() { path = path, value = LocalizedString.IdWithFallback(localeKey, fallback), color = color });
             return true;
         }
@@ -55,6 +56,7 @@ namespace Better_Bulldozer.Systems
         {
             if (m_Tooltips.ContainsKey(path))
             {
+                m_Log.Debug($"{nameof(SubelementBulldozerWarningTooltipSystem)}.{nameof(RemoveTooltip)} Removing tooltip {path}.");
                 m_Tooltips.Remove(path);
             }
         }
@@ -64,6 +66,7 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public void ClearTooltips()
         {
+            m_Log.Debug($"{nameof(SubelementBulldozerWarningTooltipSystem)}.{nameof(ClearTooltips)}");
             m_Tooltips.Clear();
         }
 
