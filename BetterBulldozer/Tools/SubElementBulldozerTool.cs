@@ -24,7 +24,6 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEngine;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -403,10 +402,6 @@ namespace Better_Bulldozer.Tools
                                 else if (EntityManager.HasComponent<Game.Objects.ActivityLocation>(currentRaycastEntity))
                                 {
                                     CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.ActivityLocation>(), ownerSubobjects, ref buffer);
-                                }
-                                else if (EntityManager.HasComponent<Game.Objects.Elevation>(currentRaycastEntity))
-                                {
-                                    CheckForSimilarSubObjects(ComponentType.ReadOnly<Game.Objects.Elevation>(), ownerSubobjects, ref buffer);
                                 }
                                 else
                                 {

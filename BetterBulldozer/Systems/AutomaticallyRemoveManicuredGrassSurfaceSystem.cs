@@ -86,7 +86,8 @@ namespace Better_Bulldozer.Systems
                         if (entity != Entity.Null)
                         {
                             m_GrassSurfacePrefabEntities.Add(entity);
-                            m_Log.Debug($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnGameLoadingComplete)} added entity {entity.Index}:{entity.Version}");
+
+                            // m_Log.Debug($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnGameLoadingComplete)} added entity {entity.Index}:{entity.Version}");
                         }
                     }
                 }
