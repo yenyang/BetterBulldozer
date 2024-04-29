@@ -12,6 +12,7 @@ const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation')
 const bypassConfirmation$ = bindValue<boolean>(mod.id, 'BypassConfirmation');
 const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
 const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
+const isGame$ = bindValue<boolean>(mod.id, 'IsGame');
 const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
 const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
 const subElementBulldozeToolActive$ = bindValue<boolean>(mod.id, 'SubElementBulldozeToolActive');
@@ -95,7 +96,9 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const areasFilter = useValue(areasFilter$);
         const markersFilter = useValue(markersFilter$);
         const upgradeIsMain = useValue(upgradeIsMain$);
+        const isGame = useValue(isGame$);
         const selectionMode = useValue(selectionMode$) as SelectionMode;
+        
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -151,11 +154,11 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         var result : JSX.Element = Component();
         // It is important that we coordinate how to handle the tool options panel because it is possibile to create a mod that works for your mod but prevents others from doing the same thing.
         // If bulldoze tool active add better bulldozer sections.
-        if (bulldozeToolActive) {
+        if (bulldozeToolActive && isGame) {
             result.props.children?.push(
                 /* 
                 Adds a section for filters if raycasting areas or markers. Each of those sections has two buttons.
-                Adds a section for tool mode with 4 buttons.
+                Adds a section for tool mode with buttons.
                 All properties of the buttons and sections have been previously defined in variables above.
                 */
                <>

@@ -8,7 +8,9 @@ namespace Better_Bulldozer.Systems
     using Better_Bulldozer.Helpers;
     using Better_Bulldozer.Tools;
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
+    using Game;
     using Game.Areas;
     using Game.Common;
     using Game.Prefabs;
@@ -42,6 +44,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_BypassConfirmation;
         private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
+        private ValueBindingHelper<bool> m_IsGame;
         private ValueBindingHelper<int> m_SelectionMode;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
@@ -153,6 +156,7 @@ namespace Better_Bulldozer.Systems
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
             m_SelectionMode = CreateBinding("SelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousSelectionMode);
+            m_IsGame = CreateBinding("IsGame", false);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -168,6 +172,20 @@ namespace Better_Bulldozer.Systems
             AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", () => m_UpgradeIsMain.Update(true)));
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", () => m_UpgradeIsMain.Update(false)));
             CreateTrigger("ChangeSelectionMode", (int value) => ChangeSelectionMode(value));
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            if (mode == GameMode.Game)
+            {
+                m_IsGame.Value = true;
+                return;
+            }
+
+            m_IsGame.Value = false;
+            return;
         }
 
         /// <inheritdoc/>
