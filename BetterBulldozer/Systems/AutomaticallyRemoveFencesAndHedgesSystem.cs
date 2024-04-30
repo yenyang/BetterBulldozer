@@ -133,6 +133,16 @@ namespace Better_Bulldozer.Systems
 
             foreach (Entity entity in entities)
             {
+                if (!EntityManager.TryGetComponent(entity, out PrefabRef ownerPrefabRef))
+                {
+                    continue;
+                }
+
+                if (EntityManager.HasComponent<EditorContainerData>(ownerPrefabRef.m_Prefab))
+                {
+                    continue;
+                }
+
                 if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Net.SubLane> dynamicBuffer))
                 {
                     continue;
