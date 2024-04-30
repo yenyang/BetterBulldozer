@@ -4,11 +4,12 @@
 
 namespace Better_Bulldozer.Systems
 {
+    using Better_Bulldozer.Components;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
-    using Game.Net;
     using Game.Prefabs;
     using Game.Tools;
     using Unity.Collections;
@@ -21,10 +22,11 @@ namespace Better_Bulldozer.Systems
     public partial class AutomaticallyRemoveFencesAndHedges : GameSystemBase
     {
         private ILog m_Log;
-        private EntityQuery m_TempHedgesQuery;
+        private EntityQuery m_UpdatedWithSubLanesQuery;
         private EntityQuery m_FencePrefabEntities;
         private EntityQuery m_HedgePrefabEntities;
         private PrefabSystem m_PrefabSystem;
+        private ModificationEndBarrier m_Barrier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveFencesAndHedges"/> class.
@@ -38,26 +40,8 @@ namespace Better_Bulldozer.Systems
         {
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_Log.Info($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnCreate)}.");
-            m_PrefabSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<PrefabSystem>();
-            m_TempHedgesQuery = GetEntityQuery(new EntityQueryDesc[]
-            {
-                new EntityQueryDesc
-                {
-                    All = new ComponentType[]
-                    {
-                        ComponentType.ReadWrite<Temp>(),
-                        ComponentType.ReadOnly<Game.Net.UtilityLane>(),
-                        ComponentType.ReadOnly<Lane>(),
-                        ComponentType.ReadOnly<Game.Objects.Plant>(),
-                        ComponentType.ReadOnly<PrefabRef>(),
-                    },
-                    None = new ComponentType[]
-                    {
-                        ComponentType.ReadOnly<Deleted>(),
-                        ComponentType.ReadOnly<Overridden>(),
-                    },
-                },
-            });
+            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_FencePrefabEntities = GetEntityQuery(new EntityQueryDesc[]
             {
                 new EntityQueryDesc
@@ -92,20 +76,18 @@ namespace Better_Bulldozer.Systems
                 },
             });
 
-            RequireForUpdate(m_TempHedgesQuery);
             base.OnCreate();
         }
 
         /// <inheritdoc/>
-        protected override void OnUpdate()
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
-            NativeArray<Entity> entities = m_TempHedgesQuery.ToEntityArray(Allocator.Temp);
+            base.OnGameLoadingComplete(purpose, mode);
+#if DEBUG
             NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle fencePrefabJobHandle);
             NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle hedgePrefabJobHandle);
             fencePrefabJobHandle.Complete();
             hedgePrefabJobHandle.Complete();
-
-            m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)}.");
 
             foreach (Entity fenceEntity in fencePrefabEntities)
             {
@@ -123,24 +105,55 @@ namespace Better_Bulldozer.Systems
                 }
             }
 
+            fencePrefabEntities.Dispose();
+            hedgePrefabEntities.Dispose();
+#endif
+            Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
+            m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
+                .WithAllRW<Game.Net.SubLane>()
+                .WithAll<Updated>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
+            RequireForUpdate(m_UpdatedWithSubLanesQuery);
+
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+            NativeArray<Entity> entities = m_UpdatedWithSubLanesQuery.ToEntityArray(Allocator.Temp);
+            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle fencePrefabJobHandle);
+            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle hedgePrefabJobHandle);
+            fencePrefabJobHandle.Complete();
+            hedgePrefabJobHandle.Complete();
+
+
+
             foreach (Entity entity in entities)
             {
-                if (!EntityManager.TryGetComponent(entity, out PrefabRef currentPrefabRef))
+                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Net.SubLane> dynamicBuffer))
                 {
-                    entities.Dispose();
-                    m_Log.Warn($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} couldn't find current creation definition.");
-                    return;
+                    continue;
                 }
 
-                if (fencePrefabEntities.Contains(currentPrefabRef.m_Prefab) || hedgePrefabEntities.Contains(currentPrefabRef.m_Prefab))
+                foreach (Game.Net.SubLane subLane in dynamicBuffer)
                 {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} found creation data.");
-                    EntityManager.DestroyEntity(entity);
-                }
+                    if (!EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef))
+                    {
+                        continue;
+                    }
 
-                if (m_PrefabSystem.TryGetPrefab(currentPrefabRef.m_Prefab, out PrefabBase prefabBase))
-                {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} Prefab {prefabBase.name}.");
+                    if (fencePrefabEntities.Contains(prefabRef.m_Prefab) || hedgePrefabEntities.Contains(prefabRef.m_Prefab))
+                    {
+                        if (!EntityManager.HasComponent<DeleteInXFrames>(subLane.m_SubLane))
+                        {
+                            buffer.AddComponent<DeleteInXFrames>(subLane.m_SubLane);
+                        }
+
+                        buffer.SetComponent(subLane.m_SubLane, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                    }
                 }
             }
 

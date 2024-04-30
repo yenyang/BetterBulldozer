@@ -40,13 +40,20 @@ namespace Better_Bulldozer.Settings
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove manicured grass.
         /// </summary>
-        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticlyRemoveManicuredGrassSystem))]
+        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveManicuredGrassSystem))]
         public bool AutomaticRemovalManicuredGrass { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove fences and hedges.
         /// </summary>
-        // public bool AutomaticRemovalFencesAndHedges { get; set; }
+        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveFencesAndHedgesSystem))]
+        public bool AutomaticRemovalFencesAndHedges { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically remove branding objects.
+        /// </summary>
+        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveBrandingObjects))]
+        public bool AutomaticRemovalBrandingObjects { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
@@ -105,10 +112,25 @@ namespace Better_Bulldozer.Settings
             AllowRemovingExtensions = true;
             AutomaticRemovalManicuredGrass = false;
             PreviousSelectionMode = BetterBulldozerUISystem.SelectionMode.Matching;
-
-            // AutomaticRemovalFencesAndHedges = false;
+            AutomaticRemovalFencesAndHedges = false;
         }
 
-        private void ManageAutomaticlyRemoveManicuredGrassSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>().Enabled = value;
+        /// <summary>
+        /// Sets Enabled for AutomaticallyRemoveManicuredGrassSurfaceSystem.
+        /// </summary>
+        /// <param name="value">Toggle value.</param>
+        public void ManageAutomaticallyRemoveManicuredGrassSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>().Enabled = value;
+
+        /// <summary>
+        /// Sets Enabled for AutomaticallyRemoveFencesAndHedges.
+        /// </summary>
+        /// <param name="value">Toggle value.</param>
+        public void ManageAutomaticallyRemoveFencesAndHedgesSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveFencesAndHedges>().Enabled = value;
+
+        /// <summary>
+        /// Sets Enabled for AutomaticallyRemoveBrandingObjects.
+        /// </summary>
+        /// <param name="value">Toggle value.</param>
+        public void ManageAutomaticallyRemoveBrandingObjects(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveBrandingObjects>().Enabled = value;
     }
 }

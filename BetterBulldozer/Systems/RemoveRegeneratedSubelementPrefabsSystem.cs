@@ -40,14 +40,15 @@ namespace Better_Bulldozer.Systems
         protected override void OnUpdate()
         {
             m_PermanentlyRemovedSubObjectQuery = SystemAPI.QueryBuilder()
-                .WithAll<PermanentlyRemovedSubElementPrefab, Updated>()
-                .WithAny<Game.Objects.SubObject>()
+                .WithAll<PermanentlyRemovedSubElementPrefab>()
+                .WithAllRW<Game.Objects.SubObject>()
+                .WithAny<Updated>()
                 .WithNone<Temp, Deleted>()
                 .Build();
 
             m_PermanentlyRemovedSubLaneQuery = SystemAPI.QueryBuilder()
                 .WithAll<PermanentlyRemovedSubElementPrefab, Updated>()
-                .WithAny<Game.Net.SubLane>()
+                .WithAllRW<Game.Net.SubLane>()
                 .WithNone<Temp, Deleted>()
                 .Build();
 
