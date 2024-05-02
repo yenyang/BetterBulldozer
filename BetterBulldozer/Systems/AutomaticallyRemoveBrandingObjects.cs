@@ -46,23 +46,13 @@ namespace Better_Bulldozer.Systems
             m_UpdateQuery = GetEntityQuery (
                 new EntityQueryDesc
                 {
-                    All = new ComponentType[1] { ComponentType.ReadOnly<Game.Objects.SubObject>() },
-                    Any = new ComponentType[2]
-                    {
-                        ComponentType.ReadOnly<Updated>(),
-                        ComponentType.ReadOnly<Deleted>(),
-                    },
-                    None = new ComponentType[] {ComponentType.ReadOnly<Temp>() },
+                    All = new ComponentType[] { ComponentType.ReadOnly<Game.Objects.SubObject>(), ComponentType.ReadOnly<Updated>() },
+                    None = new ComponentType[] {ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
                 }, new EntityQueryDesc
                 {
-                    All = new ComponentType[1] { ComponentType.ReadOnly<Event>() },
-                    Any = new ComponentType[1]
-                    {
-                        ComponentType.ReadOnly<RentersUpdated>(),
-                    },
-                    None = new ComponentType[] { ComponentType.ReadOnly<Temp>() },
+                    All = new ComponentType[] { ComponentType.ReadOnly<Event>(), ComponentType.ReadOnly<RentersUpdated>() },
+                    None = new ComponentType[] { ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
                 }
-
             );
 
             RequireForUpdate(m_UpdateQuery);
