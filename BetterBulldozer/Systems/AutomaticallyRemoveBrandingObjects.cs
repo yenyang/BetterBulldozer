@@ -52,14 +52,17 @@ namespace Better_Bulldozer.Systems
                         ComponentType.ReadOnly<Updated>(),
                         ComponentType.ReadOnly<Deleted>(),
                     },
+                    None = new ComponentType[] {ComponentType.ReadOnly<Temp>() },
                 }, new EntityQueryDesc
                 {
-                        All = new ComponentType[1] { ComponentType.ReadOnly<Event>() },
-                        Any = new ComponentType[1]
+                    All = new ComponentType[1] { ComponentType.ReadOnly<Event>() },
+                    Any = new ComponentType[1]
                     {
-                    ComponentType.ReadOnly<RentersUpdated>(),
+                        ComponentType.ReadOnly<RentersUpdated>(),
                     },
+                    None = new ComponentType[] { ComponentType.ReadOnly<Temp>() },
                 }
+
             );
 
             RequireForUpdate(m_UpdateQuery);
