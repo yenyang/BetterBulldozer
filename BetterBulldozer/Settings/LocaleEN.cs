@@ -51,8 +51,8 @@ namespace Better_Bulldozer.Settings
             return new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), "Better Bulldozer" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingSubElementNetworks)), "Allow Removing Subelement Networks" },
-                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingSubElementNetworks)), "Allow removing networks such as roads, paths, markers, etc from buildings. Removing subelement networks may break connectivity within an asset." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingSubElementNetworks)), "Allow Removing Sub-Element Networks" },
+                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingSubElementNetworks)), "Allow removing networks such as roads, paths, markers, etc from buildings. Removing Sub-Element networks may break connectivity within an asset." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingExtensions)), "Allow Removing Extensions" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AllowRemovingExtensions)), "Extensions are building upgrades that do are within the footprint of the main building lot. This will allow you to remove them, but removing some extensions may break connectivity within the asset." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalManicuredGrass)), "Automatically Remove Manicured Grass" },
@@ -68,14 +68,14 @@ namespace Better_Bulldozer.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.SafelyRemove)), "This is only recommended if you have used Matching and Similar selection modes of the Remove Sub-Elements tool mode to 'permanently remove' specific types or categories of sub-elements. This removes all history of what was 'permanently removed' by removing all Better Bulldozer mod components and storage entities from your save file. This cannot be undone." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.SafelyRemove)), "Safely Remove Better Bulldozer mod?" },
 
-                { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton", "Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! You cannot demolish these within buildings." },
+                { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton", "Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! Also use Remove Sub-Elements to remove from buildings." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton", "Allows you to use the bulldozer on moving objects such as vehicles or cims." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton", "Disables the prompt for whether you are sure you want to demolish a building." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton", "Makes the bulldozer EXCLUSIVELY target surfaces or spaces inside or outside of buildings so you can remove them in one click. You must turn this off to bulldoze anything else." },
                 { "YY_BETTER_BULLDOZER.Filter", "Filter" },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton", "For removing surfaces inside or outside of buildings in one click." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton", "For removing spaces including: Walking, Park, and Hangout areas. They are not currently visible with this tool, but will be highlighted when hovered. With this enabled you can target them inside or outside buildings and remove with one click." },
-                { "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton", " For removing invisible parking decals, various spots, points, and spawners. Also use Remove Sub-Elements to remove from buildings. Without Remove Sub-Elements, trying to target those inside buildings will remove the building!" },
+                { "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton", "For removing invisible parking decals, various spots, points, and spawners. Also use Remove Sub-Elements to remove from buildings. Without Remove Sub-Elements, trying to target those inside buildings will remove the building!" },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton", "For removing invisible networks. Also use Remove Sub-Elements to remove from buildings, if it not disabled in settings. Without Remove Sub-Elements, trying to target those inside buildings will have no effect." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton", "For removing Net-Lane and Net-Lane-Geometry prefabs such as interconnected fences, interconnected hedges, and linear street markings. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it." },
                 { TooltipTitleKey("GameplayManipulationButton"), "Remove Moving Objects and Cims" },
@@ -109,7 +109,7 @@ namespace Better_Bulldozer.Settings
                 { WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing sub-element networks may break assets." },
                 { WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple sub-element networks is not supported. Use Single Item selection instead." },
                 { WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing single sub-elements from roads is not recommended due to frequent regeneration." },
-                { WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single sub-elements from growables that can level up is not recommended due to level up regenerate." },
+                { WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single sub-elements from growables that can level up is not recommended due to level up regeneration." },
                 { WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single sub-elements from service buildings to avoid regeneration." },
 
             };

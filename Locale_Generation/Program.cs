@@ -4,9 +4,7 @@ using System.Text.Json;
 using Colossal;
 using Better_Bulldozer;
 using Better_Bulldozer.Settings;
-using Better_Bulldozer.Localization;
 
-/*
 var setting = new BetterBulldozerModSettings(new BetterBulldozerMod());
 
 var locale = new LocaleEN(setting);
@@ -19,8 +17,8 @@ var str = JsonSerializer.Serialize(e, new JsonSerializerOptions()
 });
 
 File.WriteAllText("C:\\Users\\TJ\\source\\repos\\BetterBulldozer\\BetterBulldozer\\UI\\src\\mods\\lang\\en-US.json", str);
-*/
 
+/*
 string[] languages = { "de-DE", "es-ES", "fr-FR", "it-IT", "ko-KR", "pl-PL", "pt-BR", "ru-RU", "zh-HANS" };
 
 foreach (string lang in languages)
@@ -36,4 +34,4 @@ foreach (string lang in languages)
     });
 
     File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\BetterBulldozer\\BetterBulldozer\\lang\\{lang}.json", str);
-}
+}*/
