@@ -9,9 +9,13 @@ namespace Better_Bulldozer.Localization
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.InteropServices.WindowsRuntime;
     using System.Text;
+    using Colossal.AssetPipeline.Diagnostic;
+    using Colossal.IO.AssetDatabase;
     using Colossal.Localization;
     using Colossal.Logging;
+    using CSVFile;
     using Game.Modding;
     using Game.SceneFlow;
 
@@ -37,28 +41,24 @@ namespace Better_Bulldozer.Localization
         /// Packing of translation keys for options menu use is supported to reduce key length and make things more readable - see the documentation for <see cref="Localization.UnpackOptionsKey(string, ModSetting)"/>.
         /// </summary>
         /// <param name="log">Log to use.</param>
-        public static void LoadTranslations(/*ModSetting settings,*/ ILog log)
+        public static Dictionary<string, string> LoadTranslations(/*ModSetting settings,*/ string localeID)
         {
             Assembly thisAssembly = Assembly.GetExecutingAssembly();
             string[] resourceNames = thisAssembly.GetManifestResourceNames();
-
             try
             {
-                log.Info($"Reading localizations");
-
-                foreach (string localeID in GameManager.instance.localizationManager.GetSupportedLocales())
-                {
+                //log.Info($"Reading localizations");
                     string resourceName = $"{thisAssembly.GetName().Name}.l10n.{localeID}.csv";
-
-                    if (resourceNames.Contains(resourceName))
+                var file = Path.Combine("C:/Users/TJ/source/repos/BetterBulldozer/BetterBulldozer/l10n/", $"{localeID}.csv");
+                    if (File.Exists(file))
                     {
-                        log.Info($"Found localization file {resourceName}");
+                        //log.Info($"Found localization file {resourceName}");
                         try
                         {
-                            log.Info($"Reading embedded translation file {resourceName}");
+                            //log.Info($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
+                            using StreamReader reader = new StreamReader(file);
                             {
                                 // Dictionary to store translations.
                                 Dictionary<string, string> translations = new ();
@@ -167,14 +167,14 @@ namespace Better_Bulldozer.Localization
                                     // Was key empty?
                                     if (string.IsNullOrWhiteSpace(key))
                                     {
-                                        log.Info($" - Invalid key in line {line}");
+                                        //log.Info($" - Invalid key in line {line}");
                                         continue;
                                     }
 
                                     // Otherwise, did we get two delimited fields (key and value?)
                                     if (builder.Length == 0)
                                     {
-                                        log.Info($" - No value field found in line {line}");
+                                        //log.Info($" - No value field found in line {line}");
                                         continue;
                                     }
 
@@ -187,35 +187,32 @@ namespace Better_Bulldozer.Localization
                                     if (!translations.ContainsKey(key))
                                     {
                                         translations.Add(key, value);
-                                        log.Verbose($"[{nameof(LoadTranslations)}]  Adding key: {key} value: {value} to {resourceName}");
+//log.Verbose($"[{nameof(LoadTranslations)}]  Adding key: {key} value: {value} to {resourceName}");
                                     }
                                     else
                                     {
-                                        log.Info($" - Ignoring duplicate translation key {key} in embedded file {resourceName}");
+                                       // log.Info($" - Ignoring duplicate translation key {key} in embedded file {resourceName}");
                                     }
                                 }
-
-                                // Add translation..
-                                log.Info($" - Adding translation for {localeID} with {translations.Count} entries");
-                                GameManager.instance.localizationManager.AddSource(localeID, new MemorySource(translations));
+                                return translations;
                             }
                         }
                         catch (Exception e)
                         {
                             // Don't let a single failure stop us.
-                            log.Error(e, $"Exception reading localization from embedded file {resourceName}");
+                           // log.Error(e, $"Exception reading localization from embedded file {resourceName}");
                         }
                     }
                     else
                     {
-                        log.Warn($"Did not find localization file {resourceName}");
+                        //log.Warn($"Did not find localization file {resourceName}");
                     }
-                }
             }
             catch (Exception e)
             {
-                log.Error(e, "Exception reading embedded settings localization files");
+                //log.Error(e, "Exception reading embedded settings localization files");
             }
+            return new Dictionary<string, string>();
         }
 
         /// <summary>

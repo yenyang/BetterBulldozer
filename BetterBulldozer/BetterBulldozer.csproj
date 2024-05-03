@@ -32,13 +32,30 @@
 	  <None Remove="images\**" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Compile Remove="Localization\Localization.cs" />
-	</ItemGroup>
-	<ItemGroup>
+	  <None Remove="l10n\de-DE.csv" />
+	  <None Remove="l10n\es-ES.csv" />
+	  <None Remove="l10n\fr-FR.csv" />
+	  <None Remove="l10n\it-IT.csv" />
+	  <None Remove="l10n\ko-KR.csv" />
+	  <None Remove="l10n\pl-PL.csv" />
+	  <None Remove="l10n\pt-BR.csv" />
+	  <None Remove="l10n\ru-RU.csv" />
+	  <None Remove="l10n\zh-HANS.csv" />
 	  <None Remove="StyleCop\stylecop.json" />
 	</ItemGroup>
 	<ItemGroup>
 	  <AdditionalFiles Include="StyleCop\stylecop.json" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="l10n\de-DE.csv" />
+	  <EmbeddedResource Include="l10n\es-ES.csv" />
+	  <EmbeddedResource Include="l10n\fr-FR.csv" />
+	  <EmbeddedResource Include="l10n\it-IT.csv" />
+	  <EmbeddedResource Include="l10n\ko-KR.csv" />
+	  <EmbeddedResource Include="l10n\pl-PL.csv" />
+	  <EmbeddedResource Include="l10n\pt-BR.csv" />
+	  <EmbeddedResource Include="l10n\ru-RU.csv" />
+	  <EmbeddedResource Include="l10n\zh-HANS.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -142,10 +159,10 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
-		<None Include="Localization\Localization.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="lang\" />
 	  <Folder Include="Settings\" />
 	  <Folder Include="Tools\" />
 	  <Folder Include="Properties\Previews\" />

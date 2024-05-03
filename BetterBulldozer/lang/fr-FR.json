@@ -1,0 +1,11 @@
+{
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton": "Permet de détruire seulement les surfaces ciblées à l'intérieur ou à l'extérieur d'un bâtiment afin de les supprimées à l'aide d'un seul clic. Vous devez désactiver cette option pour détruire autre chose.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton": "Vous permet de voir et cibler SEULEMENT les objets statiques ou les réseaux invisibles. Une fois cette option activée, vous pouvez détruire les routes invisibles, les calques invisibles, les générateurs d'agent et de voitures, etc. Nous vous conseillons FORTEMENT de sauvegarder votre partie avant d'utiliser cette fonction.\r\nVous ne pouvez pas détruire ceux qui font parti des bâtiments.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton": "Permet d'utiliser le bulldozer sur les objets en mouvement tels que les véhicules ou les cims.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton": "Désactive les confirmations de message qui demande si vous êtes sûr de vouloir détruire un bâtiment.",
+  "YY_BETTER_BULLDOZER.Filter": "Filtre",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton": "Pour enlever les surfaces à l'intérieur ou à l'extérieur d'un bâtiment en un seul clic.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "Pour supprimer des espaces, y compris : les zones de marche, de parc et les endroits où les cims peuvent flâner. Ils ne sont pas actuellement visibles avec cet outil, mais seront surlignés lorsqu'ils sont survolés. Avec cette option, vous pouvez les cibler à l'intérieur ou à l'extérieur des bâtiments et les supprimer d'un seul clic.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton": "Pour supprimer les calques invisibles de stationnement et autres calques, les générateurs de cims et de trafic. Seulement ceux en dehors des bâtiments peuvent être retirés. Si vous essayez de cibler ceux qui se trouvent à l'intérieur des bâtiments cela supprimera le bâtiment!",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton": "Permet de supprimer les réseaux invisibles. Seulement ceux en dehors des bâtiments peuvent être supprimé. Si vous essayez sur les réseaux qui se trouvent à l'intérieur d'un bâtiment, cela ne fonctionnera pas."
+}

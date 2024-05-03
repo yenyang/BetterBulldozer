@@ -1,0 +1,11 @@
+{
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton": "Lässt den Bulldozer NUR Oberflächen in oder außerhalb von Gebäuden markieren, damit man sie mit einem klick entfernen kann. Du musst dies ausschalten, um etwas anderes zu löschen.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton": "Zeigt und lässt den Bulldozer NUR statische Objektmarkierungen oder unsichtbare Netzwerke markieren. Hiermit kannst du unsichtbare Netzwerke, unsichtbare Parkplätze sowie unsichtbare Punkte und Spawner entfernen, jedoch nicht in Gebäuden. SPEICHERN vor Benutzung STARK EMPFOHLEN.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton": "Lässt den Bulldozer bewegliche Objekte wie Fahrzeuge und Cims löschen.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton": "Deaktiviert die Frage, ob du dir sicher bist, dass du ein Gebäude zerstören willst.",
+  "YY_BETTER_BULLDOZER.Filter": "Filter",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton": "Zum Entfernen von Oberflächen innerhalb oder außerhalb von Gebäuden mit einem Klick.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "Zum Entfernen von Räumen: Wander, Park und Hangout Bereiche. Sie sind derzeit nicht mit diesem Werkzeug sichtbar, werden aber beim Auswählen hervorgehoben. Mit dieser Option kann man sie innerhalb oder außerhalb von Gebäuden mit einem Klick entfernen.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton": "Zum Entfernen unsichtbarer Parkplätze, verschiedene Punkte und Spawnern. Nur die, die außerhalb von Gebäuden sind, können entfernt werden. Versuche dies in Gebäuden zu tun, wird das Gebäude entfernen!",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton": "Zum Entfernen unsichtbarer Netzwerke. Nur die außerhalb von Gebäuden können entfernt werden. Der Versuch diejenigen in Gebäuden zu entfernen, hat keine Auswirkungen."
+}

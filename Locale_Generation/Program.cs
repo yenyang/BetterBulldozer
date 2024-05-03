@@ -4,7 +4,9 @@ using System.Text.Json;
 using Colossal;
 using Better_Bulldozer;
 using Better_Bulldozer.Settings;
+using Better_Bulldozer.Localization;
 
+/*
 var setting = new BetterBulldozerModSettings(new BetterBulldozerMod());
 
 var locale = new LocaleEN(setting);
@@ -17,30 +19,21 @@ var str = JsonSerializer.Serialize(e, new JsonSerializerOptions()
 });
 
 File.WriteAllText("C:\\Users\\TJ\\source\\repos\\BetterBulldozer\\BetterBulldozer\\UI\\src\\mods\\lang\\en-US.json", str);
+*/
 
+string[] languages = { "de-DE", "es-ES", "fr-FR", "it-IT", "ko-KR", "pl-PL", "pt-BR", "ru-RU", "zh-HANS" };
 
-/*
-var file = "C:\\Users\\TJ\\source\\repos\\Tree_Controller\\Tree_Controller\\l10n\\attempt 2\\CSL2 Mod_ Tree Controller (translations) (1)\\l10n.csv";
-if (File.Exists(file))
+foreach (string lang in languages)
 {
-    var fileLines = File.ReadAllLines(file).Select(x => x.Split('\t'));
-    Console.Write("file exists");
-    string[] languages = { "de-DE", "es-ES", "fr-FR", "it-IT", "ja-JP", "ko-KR", "pl-PL", "pt-BR", "ru-RU", "zh-HANS", "zh-HANT" };
-    foreach (string lang in languages) {
-        var valueColumn = Array.IndexOf(fileLines.First(), lang);
-        if (valueColumn > 0)
-        {
-            var e = new Dictionary<string, string>();
-            IDictionary<string, string?> f = fileLines.Skip(1).ToDictionary(x => x[0], x => x.ElementAtOrDefault(valueColumn));
-            e = f as Dictionary<string, string>;
-            var str = JsonSerializer.Serialize(e, new JsonSerializerOptions()
-            {
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            });
+    Dictionary<string, string>? e;
+    var _ = new Dictionary<string, string>();
+    IDictionary<string, string?> f = Localization.LoadTranslations(lang);
+    e = f as Dictionary<string, string>;
+    var str = JsonSerializer.Serialize(e, new JsonSerializerOptions()
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    });
 
-            File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\Tree_Controller\\Tree_Controller\\lang\\{lang}.json", str);
-            Console.Write(lang.ToString());
-        }
-    }
-}*/
+    File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\BetterBulldozer\\BetterBulldozer\\lang\\{lang}.json", str);
+}
