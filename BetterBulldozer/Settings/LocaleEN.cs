@@ -102,6 +102,7 @@ namespace Better_Bulldozer.Settings
                 { TooltipTitleKey("Reset"), "Reset Asset" },
                 { TooltipDescriptionKey("Reset"), "Reset assets by selecting ones that have any sub-elements 'permanently removed' using Exact Match or Similar Category." },
                 { SectionLabel("Tier"), "Tier" },
+                { SectionLabel("Selection"), "Selection" },
                 { WarningTooltipKey("BulldozeSubelement"), "Bulldoze Sub-Element" },
                 { WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings." },
                 { WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing sub-element networks has been disabled in the settings." },
