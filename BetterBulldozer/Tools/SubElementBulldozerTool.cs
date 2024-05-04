@@ -13,6 +13,7 @@ namespace Better_Bulldozer.Tools
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Areas;
     using Game.Buildings;
     using Game.Common;
     using Game.Input;
@@ -259,6 +260,7 @@ namespace Better_Bulldozer.Tools
             bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentRaycastEntity);
+            bool hasExtractorComponentFlag = EntityManager.HasComponent<Extractor>(currentRaycastEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
             bool hasCustomBufferFlag = EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
@@ -318,7 +320,7 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("ResetAsset");
             }
 
-            if (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
+            if (!hasExtractorComponentFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
             {
                 if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
@@ -482,7 +484,10 @@ namespace Better_Bulldozer.Tools
             else
             {
                 m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
-                m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings.");
+                if (hasExtensionComponentFlag)
+                {
+                    m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings.");
+                }
             }
 
             if (raycastFlag && !hasNodeComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
