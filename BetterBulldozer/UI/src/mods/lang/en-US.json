@@ -25,7 +25,7 @@
   "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "For removing spaces including: Walking, Park, and Hangout areas. They are not currently visible with this tool, but will be highlighted when hovered. With this enabled you can target them inside or outside buildings and remove with one click.",
   "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton": "For removing invisible parking decals, various spots, points, and spawners. Also use Remove Sub-Elements to remove from buildings. Without Remove Sub-Elements, trying to target those inside buildings will remove the building!",
   "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton": "For removing invisible networks. Also use Remove Sub-Elements to remove from buildings, if it not disabled in settings. Without Remove Sub-Elements, trying to target those inside buildings will have no effect.",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton": "For removing Net-Lane and Net-Lane-Geometry prefabs such as interconnected fences, interconnected hedges, and linear street markings. Trying to target those inside networks will remove the network! You cannot create these in-game without a mod for it.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastLanesButton": "For removing Net-Lane and Net-Lane-Geometry prefabs such as interconnected fences, interconnected hedges, and linear street markings. You cannot create these in-game without a mod for it.",
   "BetterBulldozer.TOOLTIP_TITLE[GameplayManipulationButton]": "Remove Moving Objects and Cims",
   "BetterBulldozer.TOOLTIP_TITLE[RaycastAreasButton]": "Remove Surfaces and Spaces",
   "BetterBulldozer.TOOLTIP_TITLE[RaycastMarkersButton]": "Remove Markers",

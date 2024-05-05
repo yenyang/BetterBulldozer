@@ -1,4 +1,4 @@
-﻿// <copyright file="BulldozeToolSystemInitializeRaycastPatch.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="ToolBaseSystemGetRaycastResultPatch.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -6,10 +6,8 @@ namespace Better_Bulldozer.Patches
 {
     using System;
     using Better_Bulldozer.Systems;
-    using Colossal.Entities;
     using Game.Common;
     using Game.Prefabs;
-    using Game.Rendering;
     using Game.Tools;
     using HarmonyLib;
     using Unity.Entities;
