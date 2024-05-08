@@ -8,20 +8,15 @@
 		<!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
 		<CustomManagedPath></CustomManagedPath>
 		
-		<!--Path to the text file where PDX account data is stored which is required to publish the mod-->
-		<!--Keep it outside of project in order to not commit it or share accidentally-->
-		<!--The file should contain 2 lines:-->
-		<!--Your.PDX@Account.login-->
-		<!--Your-PDX-Account-Pa$$word-->
-		<PDXAccountDataPath>$(USERPROFILE)\pdx\pdx_account.txt</PDXAccountDataPath>
-		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.1.2</AssemblyVersion>
-		<FileVersion>1.1.2</FileVersion>
-		<Version>1.1.2</Version>
+		<AssemblyVersion>1.2.0</AssemblyVersion>
+		<FileVersion>1.2.0</FileVersion>
+		<Version>1.2.0</Version>
+		<RootNamespace>Better_Bulldozer</RootNamespace>
 	</PropertyGroup>
-	
+
+	<Import Project="Keys.props" />
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
@@ -31,36 +26,10 @@
 	  <None Remove="images\**" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="l10n\de-DE.csv" />
-	  <None Remove="l10n\en-US.csv" />
-	  <None Remove="l10n\es-ES.csv" />
-	  <None Remove="l10n\fr-FR.csv" />
-	  <None Remove="l10n\it-IT.csv" />
-	  <None Remove="l10n\ja-JP.csv" />
-	  <None Remove="l10n\ko-KR.csv" />
-	  <None Remove="l10n\pl-PL.csv" />
-	  <None Remove="l10n\pt-BR.csv" />
-	  <None Remove="l10n\ru-RU.csv" />
-	  <None Remove="l10n\zh-HANS.csv" />
-	  <None Remove="l10n\zh-HANT.csv" />
 	  <None Remove="StyleCop\stylecop.json" />
 	</ItemGroup>
 	<ItemGroup>
 	  <AdditionalFiles Include="StyleCop\stylecop.json" />
-	</ItemGroup>
-	<ItemGroup>
-	  <EmbeddedResource Include="l10n\de-DE.csv" />
-	  <EmbeddedResource Include="l10n\en-US.csv" />
-	  <EmbeddedResource Include="l10n\es-ES.csv" />
-	  <EmbeddedResource Include="l10n\fr-FR.csv" />
-	  <EmbeddedResource Include="l10n\it-IT.csv" />
-	  <EmbeddedResource Include="l10n\ja-JP.csv" />
-	  <EmbeddedResource Include="l10n\ko-KR.csv" />
-	  <EmbeddedResource Include="l10n\pl-PL.csv" />
-	  <EmbeddedResource Include="l10n\pt-BR.csv" />
-	  <EmbeddedResource Include="l10n\ru-RU.csv" />
-	  <EmbeddedResource Include="l10n\zh-HANS.csv" />
-	  <EmbeddedResource Include="l10n\zh-HANT.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -167,11 +136,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Localization\" />
-	  <Folder Include="Properties\Previews\" />
+	  <Folder Include="lang\" />
+	  <Folder Include="Settings\" />
+	  <Folder Include="Tools\" />
+	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="Utils\" />
-	  <Folder Include="UI\" />
-	  <Folder Include="Systems\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -235,5 +204,12 @@
 	  <Reference Update="System.Xml.Linq">
 	    <Private>False</Private>
 	  </Reference>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Content Include="lang\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 </Project>

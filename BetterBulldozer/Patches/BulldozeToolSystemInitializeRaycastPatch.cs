@@ -12,6 +12,7 @@ namespace Better_Bulldozer.Patches
     using Game.Tools;
     using HarmonyLib;
     using Unity.Entities;
+    using UnityEngine;
 
     /// <summary>
     /// Patches Bulldoze Tool System Inititialize Raycast to add Markers as something to raycast.

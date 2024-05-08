@@ -1,4 +1,8 @@
-﻿# Patch V1.1.2
-* Added Dependency for Unified Icon Library.
-* Fixed Raycasting Lanes.
-* Added utilities networks to raycast marker networks. Also removes their floating icons with them.
+﻿# Patch V1.2.0
+* Added Remove Sub-Elements Tool mode for removing props, trees, plants, decals, fences, hedges, sub-buildings, networks, and extensions from buildings and network assets.
+* Opt-in option to automatically remove grass surfaces.
+* Opt-in option to automatically remove fences and hedges (still visible during placement and while moving)
+* Opt-in option to automatically remove branding objects and advertisements (still visible during placement and while moving)
+* Tooltip titles
+* Updated Localization via I18nEverywhere soft dependency.
+* Remove Net-Lanes no longer will remove roads in preparation for EDT.
