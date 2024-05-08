@@ -1,0 +1,23 @@
+{
+  "Options.SECTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod]": "Better Bulldozer",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AllowRemovingSubElementNetworks]": "容許移除子元素網絡",
+  "Options.OPTION_DESCRIPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AllowRemovingSubElementNetworks]": "容許從建築物移除網路（例如道路、標記等）。移除子元素網路有可能會破壞物件中的連接",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AllowRemovingExtensions]": "允許移除拓展部分",
+  "Options.OPTION_DESCRIPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AllowRemovingExtensions]": "擴建是指在主建築場地範圍內進行的建築升級。 這將允許您刪除它們，但刪除某些擴充功能可能會破壞資產內的連接。",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalManicuredGrass]": "自動去除修剪過的草坪",
+  "Options.OPTION_DESCRIPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalManicuredGrass]": "自動從生成的建築物中移除草地表面 01 和草地表面 02。",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalFencesAndHedges]": "自動移除柵欄和樹籬",
+  "Options.OPTION_DESCRIPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalFencesAndHedges]": "自動從生成的建築物移除柵欄和樹籬。當它們更新時，會暫時顯示柵欄和樹籬。",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalBrandingObjects]": "自動刪除品牌物件和廣告",
+  "Options.OPTION_DESCRIPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.AutomaticRemovalBrandingObjects]": "自動從生成的建築物移除品牌物件和廣告。當它們更新時，會暫時顯示柵欄和樹籬。",
+  "Options.OPTION[BetterBulldozer.Better_Bulldozer.BetterBulldozerMod.BetterBulldozerModSettings.ResetModSettings]": "重設移除器設定",
+  "BetterBulldozer.TOOLTIP_TITLE[NetworksFilterButton]": "網絡過濾",
+  "BetterBulldozer.TOOLTIP_TITLE[SubElementsOfMainElement]": "主資源中的子元素",
+  "BetterBulldozer.TOOLTIP_TITLE[UpgradeIsMain]": "子建築與擴建部分中的子元素",
+  "BetterBulldozer.TOOLTIP_TITLE[Matching]": "精確比對",
+  "BetterBulldozer.TOOLTIP_TITLE[Similar]": "相似類別",
+  "BetterBulldozer.TOOLTIP_DESCRIPTION[Similar]": "選擇建築物、子建築物、擴建部分或網路中類似類別的所有子元素並「永久刪除」它們。 類別包括：樹木、植物、路燈、垃圾桶、品牌物品和廣告、活動地點以及所有樹籬和柵欄。 （即該資產中的所有樹木）。 「永久刪除」意味著每當它們重新生成時，它們很快就會自動再次刪除。",
+  "BetterBulldozer.TOOLTIP_TITLE[Reset]": "重設資源",
+  "BetterBulldozer.TOOLTIP_DESCRIPTION[Reset]": "透過使用精確比對或類似類別選擇具有「永久刪除」任何子元素的資源來重設資源。",
+  "BetterBulldozer.WARNING_TOOLTIP[RemovingSubelementsFromServiceBuildings]": "建議在從服務建築移除一個子元素前購買所有升級以避免它們再次出現。"
+}

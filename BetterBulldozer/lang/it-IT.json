@@ -1,11 +1,8 @@
 {
-  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton": "Il bulldozer selezionerà ESCLUSIVAMENTE superfici o spazi all'interno o all'esterno di edifici, così da poterli rimuovere in un solo click. È necessario deselezionare l'opzione per cancellare qualsiasi altro elemento.",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton": "Mostra e seleziona ESCLUSIVAMENTE le linee guida di oggetti statici o percorsi invisibili. Abilitando l'opzione puoi demolire percorsi invisibili, posteggi auto invisibili, e vari simboli, punti e spawn point, ma ASSICURATI DI SALVARE PRIMA! Non puoi demolire all'interno di edifici.",
   "YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton": "Permette di usare il bulldozer su oggetti mobili come veicoli o cittadini.",
   "YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton": "Disabilita domanda di sicurezza in caso tu sia sicuro di voler demolire un edificio.",
+  "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastAreasButton": "Il bulldozer selezionerà ESCLUSIVAMENTE superfici o spazi all'interno o all'esterno di edifici, così da poterli rimuovere in un solo click. È necessario deselezionare l'opzione per cancellare qualsiasi altro elemento.",
   "YY_BETTER_BULLDOZER.Filter": "Filtro",
   "YY_BETTER_BULLDOZER_DESCRIPTION.SurfacesFilterButton": "Per rimuovere superfici all'interno o all'esterno di edifici in un solo click.",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "Per rimuovere spazi, tra cui: area percorribile a piedi, parco e punto di ritrovo. Gli elementi non sono al momento visibili con questo strumento, ma saranno evidenziati quando puntati col cursore. Con questa opzione abilitata puoi selezionarli all'interno o all'esterno di edifici e eliminarli con un click.",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.StaticObjectsFilterButton": "Per rimuovere posteggi auto invisibili, vari simboli, punti e spawn point. Solo quelli all'esterno di edifici possono essere rimossi. Provare a selezionare quelli all'interno di edifici eliminerà l'edificio!",
-  "YY_BETTER_BULLDOZER_DESCRIPTION.NetworksFilterButton": "Per rimuovere percorsi invisibili. Solo quelli all'esterno di edifici possono essere rimossi. Provare a selezionare quelli all'interno di edifici non avrà alcun effetto."
+  "YY_BETTER_BULLDOZER_DESCRIPTION.SpacesFilterButton": "Per rimuovere spazi, tra cui: area percorribile a piedi, parco e punto di ritrovo. Gli elementi non sono al momento visibili con questo strumento, ma saranno evidenziati quando puntati col cursore. Con questa opzione abilitata puoi selezionarli all'interno o all'esterno di edifici e eliminarli con un click."
 }
