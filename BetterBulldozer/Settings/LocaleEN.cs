@@ -6,7 +6,6 @@ namespace Better_Bulldozer.Settings
 {
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.IO.AssetDatabase.Internal;
 
     /// <summary>
     /// Localization for <see cref="BetterBulldozerMod"/> mod in English.

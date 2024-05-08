@@ -324,7 +324,7 @@ namespace Better_Bulldozer.Tools
             {
                 if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Subelement");
+                    m_WarningTooltipSystem.RegisterTooltip("BulldozeSubelement", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("BulldozeSubelement"), "Bulldoze Sub-Element");
                     buffer.AddComponent<Highlighted>(currentRaycastEntity);
                     buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                     m_MainEntities.Add(currentRaycastEntity);
@@ -369,7 +369,7 @@ namespace Better_Bulldozer.Tools
 
                             if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
                             {
-                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead.");
+                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple sub-element networks is not supported. Use Single Item selection instead.");
                             }
                             else
                             {
@@ -442,7 +442,7 @@ namespace Better_Bulldozer.Tools
 
                             if (prefabBase is NetPrefab || prefabBase is RoadPrefab)
                             {
-                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple subelement networks is not supported. Use Single Item selection instead.");
+                                m_WarningTooltipSystem.RegisterTooltip("NetworksUseSingleItem", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("NetworksUseSingleItem"), "Removing multiple sub-element networks is not supported. Use Single Item selection instead.");
                             }
                             else
                             {
@@ -501,7 +501,7 @@ namespace Better_Bulldozer.Tools
 
             if (raycastFlag && !hasNodeComponentFlag && EntityManager.HasComponent<Edge>(currentRaycastEntity) && BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
             {
-                m_WarningTooltipSystem.RegisterTooltip("SubelementNetworkRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing subelement networks may break assets.");
+                m_WarningTooltipSystem.RegisterTooltip("SubelementNetworkRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("SubelementNetworkRemovalWarning"), "Removing sub-element networks may break assets.");
             }
             else
             {
@@ -510,7 +510,7 @@ namespace Better_Bulldozer.Tools
 
             if (m_BetterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Markers && (m_BetterBulldozerUISystem.MarkersFilter & TypeMask.Net) == TypeMask.Net && !BetterBulldozerMod.Instance.Settings.AllowRemovingSubElementNetworks)
             {
-                m_WarningTooltipSystem.RegisterTooltip("RemovingMarkerNetworksProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing subelement networks has been disabled in the settings.");
+                m_WarningTooltipSystem.RegisterTooltip("RemovingMarkerNetworksProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("RemovingMarkerNetworksProhibited"), "Removing sub-element networks has been disabled in the settings.");
             }
             else
             {
@@ -521,7 +521,7 @@ namespace Better_Bulldozer.Tools
             {
                 if (prefabBase1 is RoadPrefab)
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing single subelements from roads is not recommended due to frequent regeneration.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromRoads", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromRoads"), "Removing single sub-elements from roads is not recommended due to frequent regeneration.");
                 }
                 else
                 {
@@ -530,7 +530,7 @@ namespace Better_Bulldozer.Tools
 
                 if (EntityManager.TryGetComponent(prefabRef1.m_Prefab, out SpawnableBuildingData spawnableBuildingData) && spawnableBuildingData.m_Level < 5 && m_FoundPlopTheGrowables && !EntityManager.HasComponent(owner.m_Owner, m_LevelLockedComponentType))
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromGrowable", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single subelements from growables that can level up is not recommended due to level up regenerate.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromGrowable", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("RemovingSubelementsFromGrowable"), "Removing single sub-elements from growables that can level up is not recommended due to level up regeneration.");
                 }
                 else
                 {
@@ -539,7 +539,7 @@ namespace Better_Bulldozer.Tools
 
                 if (EntityManager.HasComponent<CityServiceBuilding>(prefabRef1.m_Prefab))
                 {
-                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromServiceBuildings", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single subelements from service buildings to avoid regeneration.");
+                    m_WarningTooltipSystem.RegisterTooltip("RemovingSubelementsFromServiceBuildings", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single sub-elements from service buildings to avoid regeneration.");
                 }
                 else
                 {
