@@ -40,6 +40,9 @@ Selection Modes:
 * Similar Category - Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, and all hedges and fences. (i.e. all trees in this asset).
 * Reset Asset - Reset assets by selecting ones that have any sub-elements 'permanently removed' using Exact Match or Similar Category.
 
+## Safely Remove Button
+There is a safely remove button in the options menu. It is only recommeneded if you have been using Exact Match and Similar Category to remove sub-elements. Pressing this button and confirming it will reset all assets that have had sub-elements 'permanently removed'.
+
 ## Invisible Paths and Markers
 Drawing invisible paths and markers is an unsupported feature of the game. You need DevUI to access the 'Add Object' menu via the home button to draw invisible paths and markers, unless another mod makes this more convenient.
 

@@ -5,4 +5,4 @@
 * Opt-in option to automatically remove branding objects and advertisements (still visible during placement and while moving)
 * Tooltip titles
 * Updated Localization via I18nEverywhere soft dependency.
-* Remove Net-Lanes no longer will remove roads.
+* Remove Net-Lanes no longer will remove roads in preparation for EDT.
