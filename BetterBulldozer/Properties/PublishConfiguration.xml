@@ -45,8 +45,11 @@ Terminology:
 Selection Modes:
 * Single Item - similar but more powerful than DevUI: Simulation -&gt; Debug Toggle + UIBindings -&gt; ActionsSection -&gt; Delete. Props, trees, decals, fences, and hedges can/will regenerate later. Sub-buildings, some extensions, and networks do not regenerate.
 * Exact Match - Selects all exact matches of that sub-element. (i.e. All oak trees in this park). Networks are not supported. 'Permanently Removes' props, trees, decals, fences, hedges.
-* Similar Category - Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, and all hedges and fences. (i.e. all trees in this asset).
+* Similar Category - Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, and all hedges and fences. (i.e. all trees in this asset). 'Permanently Removes' props, trees, decals, fences, hedges.
 * Reset Asset - Reset assets by selecting ones that have any sub-elements 'permanently removed' using Exact Match or Similar Category.
+
+## Safely Remove Button
+There is a safely remove button in the options menu. It is only recommeneded if you have been using Exact Match and Similar Category to remove sub-elements. Pressing this button and confirming it will reset all assets that have had sub-elements 'permanently removed'.
 
 ## Invisible Paths and Markers
 Drawing invisible paths and markers is an unsupported feature of the game. You need DevUI to access the 'Add Object' menu via the home button to draw invisible paths and markers, unless another mod makes this more convenient.
@@ -73,9 +76,9 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <Thumbnail Value="Properties/Thumbnail.png" />
   <!--Screenshot, can be set multiple-->
   <Screenshot Value="Properties/Previews/chickenCoop.jpg" />
-  <Screenshot Value="Properties/Previews/neighborhood.jpg" />
-  <Screenshot Value="Properties/Previews/turboRoundabout.jpg" />
-  <Screenshot Value="Properties/Previews/fenceRemoval.jpg" />
+  <Screenshot Value="Properties/Previews/neighborhood.png" />
+  <Screenshot Value="Properties/Previews/turboRoundabout.png" />
+  <Screenshot Value="Properties/Previews/fenceRemoval.png" />
   <!--Tag, can be set multiple-->
   <Tag Value="Code Mod" />
   <!--Link to the forum post where the mod can be discussed-->
@@ -95,7 +98,7 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
 * Opt-in option to automatically remove branding objects and advertisements (still visible during placement and while moving)
 * Tooltip titles
 * Updated Localization via I18nEverywhere soft dependency.
-* Remove Net-Lanes no longer will remove roads.</ChangeLog>
+* Remove Net-Lanes no longer will remove roads in preparation for EDT.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

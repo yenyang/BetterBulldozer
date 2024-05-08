@@ -37,7 +37,7 @@ Terminology:
 Selection Modes:
 * Single Item - similar but more powerful than DevUI: Simulation -> Debug Toggle + UIBindings -> ActionsSection -> Delete. Props, trees, decals, fences, and hedges can/will regenerate later. Sub-buildings, some extensions, and networks do not regenerate.
 * Exact Match - Selects all exact matches of that sub-element. (i.e. All oak trees in this park). Networks are not supported. 'Permanently Removes' props, trees, decals, fences, hedges.
-* Similar Category - Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, and all hedges and fences. (i.e. all trees in this asset).
+* Similar Category - Selects all sub-elements in a similar category within the building, subbuilding, extension or network and 'permanently removes' them. Categories include: trees, plants, street lights, trash bins, branding objects and advertisements, activity locations, and all hedges and fences. (i.e. all trees in this asset). 'Permanently Removes' props, trees, decals, fences, hedges.
 * Reset Asset - Reset assets by selecting ones that have any sub-elements 'permanently removed' using Exact Match or Similar Category.
 
 ## Safely Remove Button
