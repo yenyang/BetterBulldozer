@@ -6,8 +6,10 @@ namespace Better_Bulldozer.Settings
 {
     using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
+    using Game;
     using Game.Modding;
     using Game.Settings;
+    using Game.Tools;
     using Unity.Entities;
 
     /// <summary>
@@ -44,16 +46,57 @@ namespace Better_Bulldozer.Settings
         public bool AutomaticRemovalManicuredGrass { get; set; }
 
         /// <summary>
+        /// Sets a value indicating whether to remove owned grass surfaces.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        public bool RemovedOwnedGrassSurfaces
+        {
+            set
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RemoveExistingOwnedGrassSurfaces>().Enabled = true;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to automatically remove fences and hedges.
         /// </summary>
         [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveFencesAndHedgesSystem))]
         public bool AutomaticRemovalFencesAndHedges { get; set; }
 
         /// <summary>
+        /// Sets a value indicating whether to restore fences and hedges.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIDisableByCondition(typeof(BetterBulldozerModSettings), nameof(AutomaticRemovalFencesAndHedges))]
+        [SettingsUIConfirmation]
+        public bool RestoreFencesAndHedges
+        {
+            set
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreFencesAndHedgesSystem>().Enabled = true;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to automatically remove branding objects.
         /// </summary>
         [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveBrandingObjects))]
         public bool AutomaticRemovalBrandingObjects { get; set; }
+
+        /// <summary>
+        /// Sets a value indicating whether to restore branding objects.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIDisableByCondition(typeof(BetterBulldozerModSettings), nameof(AutomaticRemovalBrandingObjects))]
+        [SettingsUIConfirmation]
+        public bool RestoreBrandingObjects
+        {
+            set
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreBrandingObjects>().Enabled = true;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
@@ -98,11 +141,6 @@ namespace Better_Bulldozer.Settings
             }
         }
 
-        /// <summary>
-        /// Checks if prevent accidental allow removing upgrades is off or on.
-        /// </summary>
-        /// <returns>Opposite of AllowRemovingExtensions.</returns>
-        public bool IsRemovingExtensionsProhibited() => !AllowRemovingExtensions;
 
         /// <inheritdoc/>
         public override void SetDefaults()
@@ -125,12 +163,28 @@ namespace Better_Bulldozer.Settings
         /// Sets Enabled for AutomaticallyRemoveFencesAndHedges.
         /// </summary>
         /// <param name="value">Toggle value.</param>
-        public void ManageAutomaticallyRemoveFencesAndHedgesSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveFencesAndHedges>().Enabled = value;
+        public void ManageAutomaticallyRemoveFencesAndHedgesSystem(bool value)
+        {
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveFencesAndHedges>().Enabled = value;
+            if (!value && World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>().actionMode.IsGame())
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreFencesAndHedgesSystem>().Enabled = true;
+            }
+        }
 
         /// <summary>
         /// Sets Enabled for AutomaticallyRemoveBrandingObjects.
         /// </summary>
         /// <param name="value">Toggle value.</param>
-        public void ManageAutomaticallyRemoveBrandingObjects(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveBrandingObjects>().Enabled = value;
+        public void ManageAutomaticallyRemoveBrandingObjects(bool value)
+        {
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveBrandingObjects>().Enabled = value;
+            if (!value && World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>().actionMode.IsGame())
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreBrandingObjects>().Enabled = true;
+            }
+        }
+
+        private bool IsRemovingExtensionsProhibited() => !AllowRemovingExtensions;
     }
 }

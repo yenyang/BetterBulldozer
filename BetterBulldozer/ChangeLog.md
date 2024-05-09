@@ -1,8 +1,5 @@
-﻿# Patch V1.2.0
-* Added Remove Sub-Elements Tool mode for removing props, trees, plants, decals, fences, hedges, sub-buildings, networks, and extensions from buildings and network assets.
-* Opt-in option to automatically remove grass surfaces.
-* Opt-in option to automatically remove fences and hedges (still visible during placement and while moving)
-* Opt-in option to automatically remove branding objects and advertisements (still visible during placement and while moving)
-* Tooltip titles
-* Updated Localization via I18nEverywhere soft dependency.
-* Remove Net-Lanes no longer will remove roads in preparation for EDT.
+﻿# Hotfix V1.2.1
+* Added Options menu button to Restore Fences and Hedges
+* Added Options menu button to Restore Branding Objects
+* Added Options menu button to Remove all Owned Grass Surfaces
+* Additional English descriptions for options to automatically remove elements.

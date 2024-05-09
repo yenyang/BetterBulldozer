@@ -47,7 +47,7 @@ namespace Better_Bulldozer.Systems
                 new EntityQueryDesc
                 {
                     All = new ComponentType[] { ComponentType.ReadOnly<Game.Objects.SubObject>(), ComponentType.ReadOnly<Updated>() },
-                    None = new ComponentType[] {ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
+                    None = new ComponentType[] { ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
                 }, new EntityQueryDesc
                 {
                     All = new ComponentType[] { ComponentType.ReadOnly<Event>(), ComponentType.ReadOnly<RentersUpdated>() },
@@ -58,6 +58,7 @@ namespace Better_Bulldozer.Systems
             RequireForUpdate(m_UpdateQuery);
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             base.OnCreate();
+            Enabled = false;
         }
 
         /// <inheritdoc/>

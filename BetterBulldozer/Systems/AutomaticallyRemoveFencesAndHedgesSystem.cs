@@ -75,8 +75,8 @@ namespace Better_Bulldozer.Systems
                     },
                 },
             });
-
             base.OnCreate();
+            Enabled = false;
         }
 
         /// <inheritdoc/>
