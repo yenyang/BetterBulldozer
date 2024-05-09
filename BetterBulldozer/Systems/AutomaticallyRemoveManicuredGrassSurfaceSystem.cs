@@ -67,6 +67,7 @@ namespace Better_Bulldozer.Systems
             m_GrassSurfacePrefabEntities = new NativeList<Entity>(m_GrassSurfacePrefabIDs.Count, Allocator.Persistent);
             RequireForUpdate(m_CreationDefinitionQuery);
             base.OnCreate();
+            Enabled = false;
         }
 
         /// <inheritdoc/>
