@@ -21,9 +21,12 @@ The mod is fully or partially translated into: Chinese Simplified, German, Korea
 * Icon to EXCLUSIVELY target Net-Lanes and Net-Lane-Geometry prefabs with the bulldozer such as interconnected fences, interconnected hedges, linear street markings. You cannot create these in-game without EDT Mod.
 * Automatically manages the "Show Markers" DevUI option while plopping, drawing, and bulldozing applicable objects and networks. 
 * Opt-in option to automatically remove manicured grass surfaces during placement or spawning.
-* Opt-in option to automatically remove fences and hedges after placement, spawning, and updating. (still visible during placement and while moving)
-* Opt-in option to automatically remove branding objects and advertisements after placement, spawning, and updating. (still visible during placement and while moving)
+* Opt-in option to automatically remove fences and hedges after placement, spawning, updating, and when a save is loaded. (still visible during placement and while moving). Intended for players who want to draw their own fences everywhere and do not want to delete them from each asset.
+* Opt-in option to automatically remove branding objects and advertisements after placement, spawning, updating, and when a save is loaded. (still visible during placement and while moving). Intended for players who do not want any branding objects anywhere and may want control over where and when they occur.
 * Remove Sub-Elements Tool Mode See Below.
+* Options menu button to restore fences and hedges that were automatically removed. This restoration takes time.
+* Options menu button to restore branding objects and adverstisements that were automatically removed. This restoration takes time.
+* Options menu button to remove all manicured grass surfaces from buildings.
 
 ## Remove Sub-Elements Tool Mode
 Removes props, trees, decals, fences, hedges, sub-buildings, extensions, and networks from assets. This tool can break connectivity within assets. Some elements are more safe to remove such as: props, trees, decals, fences, hedges, and sub-buildings. Some elements are less safe to remove such as: networks and extensions. You can prohibit removing those in the settings.
