@@ -2,6 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
@@ -12,6 +13,7 @@ namespace Better_Bulldozer.Systems
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;

@@ -46,6 +46,19 @@ namespace Better_Bulldozer.Settings
         public bool AutomaticRemovalManicuredGrass { get; set; }
 
         /// <summary>
+        /// Sets a value indicating whether to remove owned grass surfaces.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        public bool RemovedOwnedGrassSurfaces
+        {
+            set
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RemoveExistingOwnedGrassSurfaces>().Enabled = true;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to automatically remove fences and hedges.
         /// </summary>
         [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveFencesAndHedgesSystem))]
@@ -56,6 +69,7 @@ namespace Better_Bulldozer.Settings
         /// </summary>
         [SettingsUIButton]
         [SettingsUIDisableByCondition(typeof(BetterBulldozerModSettings), nameof(AutomaticRemovalFencesAndHedges))]
+        [SettingsUIConfirmation]
         public bool RestoreFencesAndHedges
         {
             set
@@ -75,6 +89,7 @@ namespace Better_Bulldozer.Settings
         /// </summary>
         [SettingsUIButton]
         [SettingsUIDisableByCondition(typeof(BetterBulldozerModSettings), nameof(AutomaticRemovalBrandingObjects))]
+        [SettingsUIConfirmation]
         public bool RestoreBrandingObjects
         {
             set
