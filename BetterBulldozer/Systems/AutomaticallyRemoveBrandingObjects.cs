@@ -29,6 +29,7 @@ namespace Better_Bulldozer.Systems
         private EntityQuery m_UpdateEventQuery;
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
+        private ToolSystem m_ToolSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveBrandingObjects"/> class.
@@ -43,6 +44,7 @@ namespace Better_Bulldozer.Systems
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_Log.Info($"{nameof(AutomaticallyRemoveBrandingObjects)}.{nameof(OnCreate)}.");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_UpdateQuery = GetEntityQuery (
                 new EntityQueryDesc
                 {
@@ -52,9 +54,7 @@ namespace Better_Bulldozer.Systems
                 {
                     All = new ComponentType[] { ComponentType.ReadOnly<Event>(), ComponentType.ReadOnly<RentersUpdated>() },
                     None = new ComponentType[] { ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
-                }
-            );
-
+                });
             RequireForUpdate(m_UpdateQuery);
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             base.OnCreate();
@@ -65,7 +65,10 @@ namespace Better_Bulldozer.Systems
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
-            Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
+            if (mode.IsGame())
+            {
+                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
+            }
         }
 
         /// <inheritdoc/>
@@ -75,18 +78,11 @@ namespace Better_Bulldozer.Systems
                 .WithAll<BrandObjectData>()
                 .Build();
 
-            /*
-            m_UpdatedWithSubObjectsQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<Game.Objects.SubObject>()
-                .WithAny<Updated>()
-                .WithNone<Temp, Deleted>()
-                .Build();
-
-            m_UpdateEventQuery = SystemAPI.QueryBuilder()
-                .WithAll<Event>()
-                .WithAny<RentersUpdated, SubObjectsUpdated>()
-                .Build();*/
-
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                Enabled = false;
+                return;
+            }
 
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
             NativeList<Entity> brandingObjectPrefabsEntities = m_BrandObjectPrefabQuery.ToEntityListAsync(Allocator.Temp, out JobHandle brandingObjectJobHandle);

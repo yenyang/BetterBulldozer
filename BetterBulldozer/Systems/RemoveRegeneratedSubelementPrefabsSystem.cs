@@ -25,6 +25,7 @@ namespace Better_Bulldozer.Systems
         private EntityQuery m_PermanentlyRemovedSubLaneQuery;
         private EntityQuery m_RentersUpdatedQuery;
         private ModificationEndBarrier m_ModificationEndBarrier;
+        private ToolSystem m_ToolSystem;
         private PrefabSystem m_PrefabSystem;
         private ILog m_Log;
 
@@ -35,12 +36,18 @@ namespace Better_Bulldozer.Systems
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_ModificationEndBarrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnCreate)}");
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                return;
+            }
+
             m_PermanentlyRemovedSubObjectQuery = SystemAPI.QueryBuilder()
                 .WithAll<PermanentlyRemovedSubElementPrefab>()
                 .WithAllRW<Game.Objects.SubObject>()

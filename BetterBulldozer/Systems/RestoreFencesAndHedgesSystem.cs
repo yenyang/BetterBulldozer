@@ -6,9 +6,7 @@
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
-    using Colossal.Entities;
     using Colossal.Logging;
-    using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
     using Game.Prefabs;
@@ -28,6 +26,7 @@ namespace Better_Bulldozer.Systems
         private EntityQuery m_SubLanesQuery;
         private PrefabSystem m_PrefabSystem;
         private ToolOutputBarrier m_Barrier;
+        private ToolSystem m_ToolSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RestoreFencesAndHedgesSystem"/> class.
@@ -43,13 +42,20 @@ namespace Better_Bulldozer.Systems
             m_Log.Info($"{nameof(RestoreFencesAndHedgesSystem)}.{nameof(OnCreate)}.");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
-
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             base.OnCreate();
+            Enabled = false;
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                Enabled = false;
+                return;
+            }
+
             m_SubLanesQuery = SystemAPI.QueryBuilder()
 
                 .WithAllRW<Game.Net.SubLane>()

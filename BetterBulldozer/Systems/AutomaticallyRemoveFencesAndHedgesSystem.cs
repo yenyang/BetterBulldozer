@@ -27,6 +27,7 @@ namespace Better_Bulldozer.Systems
         private EntityQuery m_HedgePrefabEntities;
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
+        private ToolSystem m_ToolSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveFencesAndHedges"/> class.
@@ -42,6 +43,7 @@ namespace Better_Bulldozer.Systems
             m_Log.Info($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnCreate)}.");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_FencePrefabEntities = GetEntityQuery(new EntityQueryDesc[]
             {
                 new EntityQueryDesc
@@ -108,12 +110,21 @@ namespace Better_Bulldozer.Systems
             fencePrefabEntities.Dispose();
             hedgePrefabEntities.Dispose();
 #endif
-            Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges;
+            if (mode.IsGame())
+            {
+                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges;
+            }
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                Enabled = false;
+                return;
+            }
+
             m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
                 .WithAllRW<Game.Net.SubLane>()
                 .WithAll<Updated>()

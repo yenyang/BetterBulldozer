@@ -71,7 +71,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Klyte45, Algernon - Help with UI, Cooperative Development and Code Sharing
 * T.D.W., krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
 * City Rat - Icons
-* Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg (French), yui hei lai (Chinese Traditional)
+* Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg and Morgan (French), yui hei lai (Chinese Traditional)
 * Testing, Feedback - Dante, starrysum, HarbourMaster Jay, Dome, Tigon Ologdring, BruceyBoy, RaftermanNZ, Elektrotek, SpaceChad 
 
 This mod is not affiliated with any C:S1 mod with similar titles.</LongDescription>
@@ -87,18 +87,17 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.1" />
+  <ModVersion Value="1.2.2" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.7" />
   <Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.2" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Hotfix V1.2.1
-* Added Options menu button to Restore Fences and Hedges
-* Added Options menu button to Restore Branding Objects
-* Added Options menu button to Remove all Owned Grass Surfaces
-* Additional English descriptions for options to automatically remove elements.</ChangeLog>
+  <ChangeLog># Patch V1.2.2
+* Fixed setting toolmode in game and switching to editor prevents use of editor bulldozer.
+* Removed most systems from editor.
+* Updated localization.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
