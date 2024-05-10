@@ -25,6 +25,7 @@ namespace Better_Bulldozer.Systems
         private ILog m_Log;
         private EntityQuery m_SubObjectQuery;
         private PrefabSystem m_PrefabSystem;
+        private ToolSystem m_ToolSystem;
         private ToolOutputBarrier m_Barrier;
 
         /// <summary>
@@ -41,6 +42,7 @@ namespace Better_Bulldozer.Systems
             m_Log.Info($"{nameof(AutomaticallyRemoveBrandingObjects)}.{nameof(OnCreate)}.");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            m_ToolSystem = World.GetExistingSystemManaged<ToolSystem>();
             base.OnCreate();
             Enabled = false;
         }
@@ -48,6 +50,12 @@ namespace Better_Bulldozer.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                Enabled = false;
+                return;
+            }
+
             m_SubObjectQuery = SystemAPI.QueryBuilder()
                 .WithAll<Game.Objects.SubObject>()
                 .WithNone<Temp, Deleted, DeleteInXFrames>()

@@ -6,6 +6,7 @@ namespace Better_Bulldozer.Patches
 {
     using System;
     using Better_Bulldozer.Systems;
+    using Game;
     using Game.Common;
     using Game.Prefabs;
     using Game.Tools;
@@ -37,7 +38,7 @@ namespace Better_Bulldozer.Patches
 
             ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolSystem>();
             BulldozeToolSystem bulldozeToolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BulldozeToolSystem>();
-            if (toolSystem.activeTool != bulldozeToolSystem)
+            if (toolSystem.activeTool != bulldozeToolSystem || !toolSystem.actionMode.IsGame())
             {
                 entity = Entity.Null;
                 hit = default;

@@ -5,6 +5,7 @@
 namespace Better_Bulldozer.Patches
 {
     using Better_Bulldozer.Systems;
+    using Game;
     using Game.Areas;
     using Game.Common;
     using Game.Net;
@@ -25,6 +26,12 @@ namespace Better_Bulldozer.Patches
         /// </summary>
         public static void Postfix()
         {
+            ToolSystem toolSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolSystem>();
+            if (!toolSystem.actionMode.IsGame())
+            {
+                return;
+            }
+
             ToolRaycastSystem toolRaycastSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<ToolRaycastSystem>();
             BetterBulldozerUISystem betterBulldozerUISystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             RenderingSystem renderingSystem = World.DefaultGameObjectInjectionWorld?.GetOrCreateSystemManaged<RenderingSystem>();

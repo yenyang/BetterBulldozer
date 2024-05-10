@@ -36,6 +36,7 @@ namespace Better_Bulldozer.Systems
         private EntityQuery m_OwnedAreaQuery;
         private PrefabSystem m_PrefabSystem;
         private ToolOutputBarrier m_Barrier;
+        private ToolSystem m_ToolSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoveExistingOwnedGrassSurfaces"/> class.
@@ -79,6 +80,7 @@ namespace Better_Bulldozer.Systems
             m_Log.Info($"{nameof(RemoveExistingOwnedGrassSurfaces)}.{nameof(OnCreate)}.");
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
+            m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_GrassSurfacePrefabEntities = new NativeList<Entity>(m_GrassSurfacePrefabIDs.Count, Allocator.Persistent);
             base.OnCreate();
             Enabled = false;
@@ -87,6 +89,12 @@ namespace Better_Bulldozer.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (!m_ToolSystem.actionMode.IsGame())
+            {
+                Enabled = false;
+                return;
+            }
+
             m_OwnedAreaQuery = SystemAPI.QueryBuilder()
                 .WithAll<Owner, Area, Surface, PrefabRef>()
                 .WithNone<Temp, Deleted, DeleteInXFrames>()
