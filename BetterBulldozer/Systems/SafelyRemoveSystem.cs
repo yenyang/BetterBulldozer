@@ -34,23 +34,44 @@ namespace Better_Bulldozer.Systems
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             base.OnCreate();
             Enabled = false;
+
+            m_PermanentlyRemovedSubElementPrefabQuery = GetEntityQuery(new EntityQueryDesc[]
+           {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<PermanentlyRemovedSubElementPrefab>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
+           });
+
+            m_OwnerRecordQuery = GetEntityQuery(new EntityQueryDesc[]
+           {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<OwnerRecord>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Temp>(),
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
+           });
+
+            RequireAnyForUpdate(m_PermanentlyRemovedSubElementPrefabQuery, m_OwnerRecordQuery);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            m_PermanentlyRemovedSubElementPrefabQuery = SystemAPI.QueryBuilder()
-                .WithAll<PermanentlyRemovedSubElementPrefab>()
-                .WithNone<Deleted>()
-                .Build();
-
-            m_OwnerRecordQuery = SystemAPI.QueryBuilder()
-                .WithAll<OwnerRecord>()
-                .WithNone<Temp, Deleted>()
-                .Build();
-
-            RequireAnyForUpdate(m_PermanentlyRemovedSubElementPrefabQuery, m_OwnerRecordQuery);
-
             RemoveCustomBufferJob removeCustomBufferJob = new RemoveCustomBufferJob()
             {
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),

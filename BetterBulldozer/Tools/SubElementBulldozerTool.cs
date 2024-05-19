@@ -89,6 +89,7 @@ namespace Better_Bulldozer.Tools
                 {
                     m_ToolRaycastSystem.raycastFlags |= RaycastFlags.UpgradeIsMain;
                 }
+
                 return;
             }
 

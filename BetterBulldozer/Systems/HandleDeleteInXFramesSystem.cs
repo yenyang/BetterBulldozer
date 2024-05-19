@@ -8,6 +8,8 @@ namespace Better_Bulldozer.Systems
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
+    using Game.Areas;
+    using Game.Buildings;
     using Game.Common;
     using Game.Simulation;
     using Game.Tools;
@@ -15,7 +17,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Entities;
 
     /// <summary>
-    /// A system that deletes something in a certain amount of frames.
+    /// A system that deletes or buries and overrides something in a certain amount of frames.
     /// </summary>
     public partial class HandleDeleteInXFramesSystem : GameSystemBase
     {
@@ -58,33 +60,18 @@ namespace Better_Bulldozer.Systems
             {
                 if (EntityManager.TryGetComponent(entity, out DeleteInXFrames counter))
                 {
-                    if (m_SimulationSystem.selectedSpeed > 0)
-                    {
-                        uint updateFrame = SimulationUtils.GetUpdateFrame(m_SimulationSystem.frameIndex, BuildingUpkeepSystem.kUpdatesPerDay, 16);
-                        if (EntityManager.HasComponent<UpdateFrame>(entity))
-                        {
-                            UpdateFrame frame = EntityManager.GetSharedComponentManaged<UpdateFrame>(entity);
-                            if (frame.m_Index == updateFrame)
-                            {
-                                m_Log.Debug("Skipping due to update frame.");
-                                continue;
-                            }
-                        }
-
-
-                        if (EntityManager.TryGetComponent(entity, out Owner owner) && EntityManager.HasComponent<UpdateFrame>(owner.m_Owner))
-                        {
-                            UpdateFrame frame = EntityManager.GetSharedComponentManaged<UpdateFrame>(owner.m_Owner);
-                            if (frame.m_Index == updateFrame)
-                            {
-                                m_Log.Debug("Skipping due to owner update frame.");
-                                continue;
-                            }
-                        }
-                    }
-
                     if (counter.m_FramesRemaining == 0)
                     {
+                        /*
+                        if (EntityManager.HasComponent<Game.Objects.Transform>(entity) && !EntityManager.HasComponent<Extension>(entity) && !EntityManager.HasComponent<Extractor>(entity) && !EntityManager.HasComponent<Game.Objects.SubObject>(entity))
+                        {
+                            buffer.SetComponent(entity, new Game.Objects.Transform(default, default));
+                            buffer.AddComponent<Overridden>(entity);
+                            buffer.AddComponent<Updated>(entity);
+                            buffer.RemoveComponent<DeleteInXFrames>(entity);
+                            continue;
+                        }*/
+
                         buffer.AddComponent<Deleted>(entity);
                     }
                     else

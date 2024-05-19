@@ -7,6 +7,7 @@ namespace Better_Bulldozer.Systems
     using Better_Bulldozer.Components;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.Serialization.Entities;
     using Game;
     using Game.Buildings;
     using Game.Common;
@@ -38,36 +39,81 @@ namespace Better_Bulldozer.Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnCreate)}");
+
+
+            m_PermanentlyRemovedSubObjectQuery = GetEntityQuery(new EntityQueryDesc[]
+            {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadWrite<Game.Objects.SubObject>(),
+                        ComponentType.ReadOnly<PermanentlyRemovedSubElementPrefab>(),
+                        ComponentType.ReadOnly<Updated>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Temp>(),
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
+            });
+
+            m_PermanentlyRemovedSubLaneQuery = GetEntityQuery(new EntityQueryDesc[]
+            {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadWrite<Game.Net.SubLane>(),
+                        ComponentType.ReadOnly<PermanentlyRemovedSubElementPrefab>(),
+                        ComponentType.ReadOnly<Updated>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Temp>(),
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
+            });
+
+            m_RentersUpdatedQuery = GetEntityQuery(new EntityQueryDesc[]
+            {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Event>(),
+                        ComponentType.ReadOnly<RentersUpdated>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Temp>(),
+                        ComponentType.ReadOnly<Deleted>(),
+                    },
+                },
+            });
+
+            RequireAnyForUpdate(m_PermanentlyRemovedSubObjectQuery, m_PermanentlyRemovedSubLaneQuery, m_RentersUpdatedQuery);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            if (mode == GameMode.Game)
+            {
+                Enabled = true;
+            }
+            else
+            {
+                Enabled = false;
+            }
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            if (!m_ToolSystem.actionMode.IsGame())
-            {
-                return;
-            }
-
-            m_PermanentlyRemovedSubObjectQuery = SystemAPI.QueryBuilder()
-                .WithAll<PermanentlyRemovedSubElementPrefab>()
-                .WithAllRW<Game.Objects.SubObject>()
-                .WithAny<Updated>()
-                .WithNone<Temp, Deleted>()
-                .Build();
-
-            m_PermanentlyRemovedSubLaneQuery = SystemAPI.QueryBuilder()
-                .WithAll<PermanentlyRemovedSubElementPrefab, Updated>()
-                .WithAllRW<Game.Net.SubLane>()
-                .WithNone<Temp, Deleted>()
-                .Build();
-
-            m_RentersUpdatedQuery = SystemAPI.QueryBuilder()
-                .WithAll<Event, RentersUpdated>()
-                .WithNone<Temp, Deleted>()
-                .Build();
-
-            RequireAnyForUpdate(m_PermanentlyRemovedSubObjectQuery, m_PermanentlyRemovedSubLaneQuery, m_RentersUpdatedQuery);
-
             m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnUpdate)}");
             EntityCommandBuffer buffer = m_ModificationEndBarrier.CreateCommandBuffer();
 
@@ -101,6 +147,7 @@ namespace Better_Bulldozer.Systems
                         {
                             actualSublaneEntitiesList.Add(rentersUpdated.m_Property);
                         }
+
                         continue;
                     }
 
