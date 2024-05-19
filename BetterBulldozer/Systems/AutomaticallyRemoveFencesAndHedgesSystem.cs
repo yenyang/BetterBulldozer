@@ -10,7 +10,9 @@ namespace Better_Bulldozer.Systems
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
+    using Game.Net;
     using Game.Prefabs;
+    using Game.Rendering;
     using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -142,7 +144,7 @@ namespace Better_Bulldozer.Systems
             {
                 m_FencePrefabs = fencePrefabEntities,
                 m_HedgePrefabs = hedgePrefabEntities,
-                m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>(),
+                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(),
                 m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
                 m_SubLanes = fenceAndHedgeSublanes,
             };
@@ -172,7 +174,7 @@ namespace Better_Bulldozer.Systems
         private struct GatherSubLanesJob : IJobChunk
         {
             [ReadOnly]
-            public ComponentTypeHandle<Owner> m_OwnerType;
+            public BufferTypeHandle<Game.Net.SubLane> m_SubLaneType;
             [ReadOnly]
             public NativeList<Entity> m_FencePrefabs;
             [ReadOnly]
@@ -183,13 +185,16 @@ namespace Better_Bulldozer.Systems
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                NativeArray<Owner> ownerNativeArray = chunk.GetNativeArray(ref m_OwnerType);
+                BufferAccessor<Game.Net.SubLane> subLaneBufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
-                    Owner owner = ownerNativeArray[i];
-                    if (m_PrefabRefLookup.HasComponent(owner.m_Owner) && m_PrefabRefLookup.TryGetComponent(owner.m_Owner, out PrefabRef prefabRef) && (m_FencePrefabs.Contains(prefabRef.m_Prefab) || m_HedgePrefabs.Contains(prefabRef.m_Prefab)))
+                    DynamicBuffer<Game.Net.SubLane> dynamicBuffer = subLaneBufferAccessor[i];
+                    foreach (Game.Net.SubLane subLane in dynamicBuffer)
                     {
-                        m_SubLanes.Add(owner.m_Owner);
+                        if (m_PrefabRefLookup.HasComponent(subLane.m_SubLane) && m_PrefabRefLookup.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef) && (m_FencePrefabs.Contains(prefabRef.m_Prefab) || m_HedgePrefabs.Contains(prefabRef.m_Prefab)))
+                        {
+                            m_SubLanes.Add(subLane.m_SubLane);
+                        }
                     }
                 }
             }
