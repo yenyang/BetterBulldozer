@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-// #define BURST
+#define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
@@ -10,9 +10,7 @@ namespace Better_Bulldozer.Systems
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
-    using Game.Net;
     using Game.Prefabs;
-    using Game.Rendering;
     using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -196,9 +194,6 @@ namespace Better_Bulldozer.Systems
                         }
                     }
                 }
-#if DEBUG && !BURST
-                BetterBulldozerMod.Instance.Logger.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(GatherSubLanesJob)} m_SubLanes.length == {m_SubLanes.Length}.");
-#endif
             }
         }
 
@@ -215,10 +210,6 @@ namespace Better_Bulldozer.Systems
 
             public void Execute()
             {
-#if DEBUG && !BURST
-                BetterBulldozerMod.Instance.Logger.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(HandleDeleteInXFramesJob)} m_SubLanes.length == {m_SubLanes.Length}.");
-#endif
-
                 foreach (Entity entity in m_SubLanes)
                 {
                     if (!m_DeleteInXFramesLookup.HasComponent(entity))
