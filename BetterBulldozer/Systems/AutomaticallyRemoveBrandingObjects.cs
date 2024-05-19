@@ -67,7 +67,11 @@ namespace Better_Bulldozer.Systems
             base.OnGameLoadingComplete(purpose, mode);
             if (mode.IsGame())
             {
-                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
+               Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
+            }
+            else
+            {
+                Enabled = false;
             }
         }
 
