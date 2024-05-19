@@ -19,7 +19,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// A system that automatically removes fences and hedges from created buildings.
+    /// A system that automatically removes branding objects.
     /// </summary>
     public partial class AutomaticallyRemoveBrandingObjects : GameSystemBase
     {
@@ -145,7 +145,7 @@ namespace Better_Bulldozer.Systems
                             buffer.AddComponent<DeleteInXFrames>(subObject.m_SubObject);
                         }
 
-                        buffer.SetComponent(subObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 1 });
+                        buffer.SetComponent(subObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 5 });
                     }
 
                     if (!EntityManager.TryGetBuffer(subObject.m_SubObject, isReadOnly: false, out DynamicBuffer<Game.Objects.SubObject> deepDynamicBuffer))
@@ -167,7 +167,7 @@ namespace Better_Bulldozer.Systems
                                 buffer.AddComponent<DeleteInXFrames>(deepSubObject.m_SubObject);
                             }
 
-                            buffer.SetComponent(deepSubObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 1 });
+                            buffer.SetComponent(deepSubObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 5 });
                         }
                     }
                 }

@@ -152,7 +152,7 @@ namespace Better_Bulldozer.Systems
                     if (m_GrassPrefabs.Contains(prefabRef.m_Prefab))
                     {
                         buffer.AddComponent<DeleteInXFrames>(unfilteredChunkIndex, currentEntity);
-                        DeleteInXFrames delete = new DeleteInXFrames { m_FramesRemaining = 3 };
+                        DeleteInXFrames delete = new DeleteInXFrames { m_FramesRemaining = 5 };
                         buffer.SetComponent(unfilteredChunkIndex, currentEntity, delete);
                     }
                 }
