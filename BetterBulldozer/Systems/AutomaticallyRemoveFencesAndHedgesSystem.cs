@@ -99,7 +99,7 @@ namespace Better_Bulldozer.Systems
             {
                 if (m_PrefabSystem.TryGetPrefab(fenceEntity, out PrefabBase prefabBase))
                 {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} Fence Prefab {prefabBase.name}.");
+                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnGameLoadingComplete)} Fence Prefab {prefabBase.name}.");
                 }
             }
 
@@ -107,7 +107,7 @@ namespace Better_Bulldozer.Systems
             {
                 if (m_PrefabSystem.TryGetPrefab(hedgeEntity, out PrefabBase prefabBase))
                 {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} Hedge Prefab {prefabBase.name}.");
+                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnGameLoadingComplete)} Hedge Prefab {prefabBase.name}.");
                 }
             }
 
@@ -134,9 +134,9 @@ namespace Better_Bulldozer.Systems
 
             RequireForUpdate(m_UpdatedWithSubLanesQuery);
 
-            NativeArray<Entity> entities = m_UpdatedWithSubLanesQuery.ToEntityArray(Allocator.Temp);
-            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle fencePrefabJobHandle);
-            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle hedgePrefabJobHandle);
+            m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)}");
+            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
+            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
 
             NativeList<Entity> fenceAndHedgeSublanes = new NativeList<Entity>(Allocator.TempJob);
 
@@ -153,7 +153,6 @@ namespace Better_Bulldozer.Systems
 
             fencePrefabEntities.Dispose(gatherSubLanesJobHandle);
             hedgePrefabEntities.Dispose(gatherSubLanesJobHandle);
-            entities.Dispose(gatherSubLanesJobHandle);
 
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
@@ -162,7 +161,7 @@ namespace Better_Bulldozer.Systems
                 buffer = m_Barrier.CreateCommandBuffer(),
             };
 
-            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(fenceAndHedgeSublanes.Length, gatherSubLanesJobHandle);
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubLanesJobHandle);
             m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
             Dependency = handleDeleteInXFramesJobHandle;
             fenceAndHedgeSublanes.Dispose(handleDeleteInXFramesJobHandle);
@@ -197,13 +196,16 @@ namespace Better_Bulldozer.Systems
                         }
                     }
                 }
+#if DEBUG && !BURST
+                BetterBulldozerMod.Instance.Logger.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(GatherSubLanesJob)} m_SubLanes.length == {m_SubLanes.Length}.");
+#endif
             }
         }
 
 #if BURST
         [BurstCompile]
 #endif
-        private struct HandleDeleteInXFramesJob : IJobFor
+        private struct HandleDeleteInXFramesJob : IJob
         {
             [ReadOnly]
             public NativeList<Entity> m_SubLanes;
@@ -211,15 +213,21 @@ namespace Better_Bulldozer.Systems
             public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
             public EntityCommandBuffer buffer;
 
-
-            public void Execute(int index)
+            public void Execute()
             {
-                if (!m_DeleteInXFramesLookup.HasComponent(m_SubLanes.ElementAt(index)))
-                {
-                    buffer.AddComponent<DeleteInXFrames>(m_SubLanes.ElementAt(index));
-                }
+#if DEBUG && !BURST
+                BetterBulldozerMod.Instance.Logger.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(HandleDeleteInXFramesJob)} m_SubLanes.length == {m_SubLanes.Length}.");
+#endif
 
-                buffer.SetComponent(m_SubLanes.ElementAt(index), new DeleteInXFrames() { m_FramesRemaining = 5 });
+                foreach (Entity entity in m_SubLanes)
+                {
+                    if (!m_DeleteInXFramesLookup.HasComponent(entity))
+                    {
+                        buffer.AddComponent<DeleteInXFrames>(entity);
+                    }
+
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                }
             }
         }
     }
