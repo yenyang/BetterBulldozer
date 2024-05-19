@@ -2,7 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
-#define BURST
+// #define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
