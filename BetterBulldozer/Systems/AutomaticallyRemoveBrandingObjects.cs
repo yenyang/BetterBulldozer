@@ -156,7 +156,7 @@ namespace Better_Bulldozer.Systems
                         }
 
                         m_SubObjects.Add(subObject.m_SubObject);
-                        if (m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
                         {
                             continue;
                         }
@@ -204,7 +204,7 @@ namespace Better_Bulldozer.Systems
                         }
 
                         m_SubObjects.Add(subObject.m_SubObject);
-                        if (m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
                         {
                             continue;
                         }
