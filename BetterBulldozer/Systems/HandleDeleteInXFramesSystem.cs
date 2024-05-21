@@ -62,16 +62,6 @@ namespace Better_Bulldozer.Systems
                 {
                     if (counter.m_FramesRemaining == 0)
                     {
-                        /*
-                        if (EntityManager.HasComponent<Game.Objects.Transform>(entity) && !EntityManager.HasComponent<Extension>(entity) && !EntityManager.HasComponent<Extractor>(entity) && !EntityManager.HasComponent<Game.Objects.SubObject>(entity))
-                        {
-                            buffer.SetComponent(entity, new Game.Objects.Transform(default, default));
-                            buffer.AddComponent<Overridden>(entity);
-                            buffer.AddComponent<Updated>(entity);
-                            buffer.RemoveComponent<DeleteInXFrames>(entity);
-                            continue;
-                        }*/
-
                         buffer.AddComponent<Deleted>(entity);
                     }
                     else
