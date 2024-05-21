@@ -93,10 +93,10 @@ namespace Better_Bulldozer.Systems
             GatherSubObjectsJob gatherSubObjectsJob = new GatherSubObjectsJob()
             {
                 m_BrandingObjectPrefabs = brandingObjectPrefabsEntities,
-                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                 m_SubObjects = brandingSubObjects,
-                m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(),
+                m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
             };
 
             JobHandle gatherSubObjectsJobHandle = gatherSubObjectsJob.Schedule(m_UpdateQuery, JobHandle.CombineDependencies(Dependency, brandingObjectJobHandle));
@@ -104,9 +104,9 @@ namespace Better_Bulldozer.Systems
             GatherSubObjectsFromEventsJob gatherSubObjectsFromEventsJob = new GatherSubObjectsFromEventsJob()
             {
                 m_BrandingObjectPrefabs = brandingObjectPrefabsEntities,
-                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
-                m_RentersUpdatedType = SystemAPI.GetComponentTypeHandle<RentersUpdated>(),
-                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_RentersUpdatedType = SystemAPI.GetComponentTypeHandle<RentersUpdated>(isReadOnly: true),
+                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
                 m_SubObjects = brandingSubObjects,
             };
 
@@ -115,7 +115,7 @@ namespace Better_Bulldozer.Systems
 
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
-                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(),
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
                 m_Entities = brandingSubObjects,
                 buffer = m_Barrier.CreateCommandBuffer(),
             };

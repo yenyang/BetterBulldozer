@@ -142,8 +142,8 @@ namespace Better_Bulldozer.Systems
             {
                 m_FencePrefabs = fencePrefabEntities,
                 m_HedgePrefabs = hedgePrefabEntities,
-                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(),
-                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(),
+                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
                 m_SubLanes = fenceAndHedgeSublanes,
             };
 
@@ -154,7 +154,7 @@ namespace Better_Bulldozer.Systems
 
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
-                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(),
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
                 m_SubLanes = fenceAndHedgeSublanes,
                 buffer = m_Barrier.CreateCommandBuffer(),
             };

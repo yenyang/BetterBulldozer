@@ -14,8 +14,10 @@ namespace Better_Bulldozer.Systems
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
 
     /// <summary>
     /// Removes regenrated subelement prefabs that have been permananetly removed.
@@ -268,6 +270,240 @@ namespace Better_Bulldozer.Systems
 
                         buffer.SetComponent(subLane.m_SubLane, new DeleteInXFrames() { m_FramesRemaining = 5 });
                         m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnUpdate)} Will delete entity {subLane.m_SubLane.Index}.{subLane.m_SubLane.Version} from {entity.Index}.{entity.Version}");
+                    }
+                }
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubObjectsJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferTypeHandle<Game.Objects.SubObject> m_SubObjectType;
+            [ReadOnly]
+            public BufferTypeHandle<PermanentlyRemovedSubElementPrefab> m_PermanentlyRemovedSubElementPrefabType;
+            public NativeList<Entity> m_SubObjects;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                BufferAccessor<Game.Objects.SubObject> subObjectBufferAccessor = chunk.GetBufferAccessor(ref m_SubObjectType);
+                BufferAccessor<PermanentlyRemovedSubElementPrefab> removedBufferAccessor = chunk.GetBufferAccessor(ref m_PermanentlyRemovedSubElementPrefabType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    DynamicBuffer<Game.Objects.SubObject> subObjectBuffer = subObjectBufferAccessor[i];
+                    DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedBuffer = removedBufferAccessor[i];
+
+                    if (removedBuffer.Length == 0 || subObjectBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    NativeList<Entity> prefabEntities = new NativeList<Entity>(Allocator.TempJob);
+                    foreach (PermanentlyRemovedSubElementPrefab removedPrefab in removedBuffer)
+                    {
+                        prefabEntities.Add(removedPrefab.m_RecordEntity);
+                    }
+
+                    foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                    {
+                        if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) || !prefabEntities.Contains(prefabRef.m_Prefab))
+                        {
+                            continue;
+                        }
+
+                        m_SubObjects.Add(subObject.m_SubObject);
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                        {
+                            m_SubObjects.Add(subObject.m_SubObject);
+                        }
+                    }
+                }
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubObjectsFromEventsJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public BufferLookup<PermanentlyRemovedSubElementPrefab> m_PermanentlyRemovedSubElementPrefabLookup;
+            public NativeList<Entity> m_SubObjects;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public ComponentTypeHandle<RentersUpdated> m_RentersUpdatedType;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<RentersUpdated> rentersUpdatedNativeArray = chunk.GetNativeArray(ref m_RentersUpdatedType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    RentersUpdated rentersUpdated = rentersUpdatedNativeArray[i];
+                    if (!m_PermanentlyRemovedSubElementPrefabLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedBuffer) || removedBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!m_SubObjectLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<Game.Objects.SubObject> subObjectBuffer) || subObjectBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    NativeList<Entity> prefabEntities = new NativeList<Entity>(Allocator.TempJob);
+                    foreach (PermanentlyRemovedSubElementPrefab removedPrefab in removedBuffer)
+                    {
+                        prefabEntities.Add(removedPrefab.m_RecordEntity);
+                    }
+
+                    foreach (Game.Objects.SubObject subObject in subObjectBuffer)
+                    {
+                        if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) || !prefabEntities.Contains(prefabRef.m_Prefab))
+                        {
+                            continue;
+                        }
+
+                        m_SubObjects.Add(subObject.m_SubObject);
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                        {
+                            m_SubObjects.Add(subObject.m_SubObject);
+                        }
+                    }
+                }
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct HandleDeleteInXFramesJob : IJob
+        {
+            [ReadOnly]
+            public NativeList<Entity> m_Entities;
+            [ReadOnly]
+            public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
+            public EntityCommandBuffer buffer;
+
+            public void Execute()
+            {
+                foreach (Entity entity in m_Entities)
+                {
+                    if (!m_DeleteInXFramesLookup.HasComponent(entity))
+                    {
+                        buffer.AddComponent<DeleteInXFrames>(entity);
+                    }
+
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                }
+            }
+        }
+
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubLanesJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferTypeHandle<Game.Net.SubLane> m_SubLaneType;
+            [ReadOnly]
+            public BufferTypeHandle<PermanentlyRemovedSubElementPrefab> m_PermanentlyRemovedSubElementPrefabType;
+            public NativeList<Entity> m_SubLanes;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                BufferAccessor<Game.Net.SubLane> subLaneBufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
+                BufferAccessor<PermanentlyRemovedSubElementPrefab> removedBufferAccessor = chunk.GetBufferAccessor(ref m_PermanentlyRemovedSubElementPrefabType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    DynamicBuffer<Game.Net.SubLane> subLaneDynamicBuffer = subLaneBufferAccessor[i];
+                    DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedDynamicBuffer = removedBufferAccessor[i];
+
+                    if (removedDynamicBuffer.Length == 0 || subLaneDynamicBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    NativeList<Entity> prefabEntities = new NativeList<Entity>(Allocator.TempJob);
+                    foreach (PermanentlyRemovedSubElementPrefab removedPrefab in removedDynamicBuffer)
+                    {
+                        prefabEntities.Add(removedPrefab.m_RecordEntity);
+                    }
+
+                    foreach (Game.Net.SubLane subLane in subLaneDynamicBuffer)
+                    {
+                        if (m_PrefabRefLookup.HasComponent(subLane.m_SubLane) && m_PrefabRefLookup.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef) && prefabEntities.Contains(prefabRef.m_Prefab))
+                        {
+                            m_SubLanes.Add(subLane.m_SubLane);
+                        }
+                    }
+                }
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubLanesFromEventsJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferLookup<Game.Net.SubLane> m_SubLaneLookup;
+            [ReadOnly]
+            public BufferLookup<PermanentlyRemovedSubElementPrefab> m_PermanentlyRemovedSubElementPrefabLookup;
+            public NativeList<Entity> m_SubLanes;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public ComponentTypeHandle<RentersUpdated> m_RentersUpdatedType;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<RentersUpdated> rentersUpdatedNativeArray = chunk.GetNativeArray(ref m_RentersUpdatedType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    RentersUpdated rentersUpdated = rentersUpdatedNativeArray[i];
+                    if (!m_PermanentlyRemovedSubElementPrefabLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedBuffer) || removedBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!m_SubLaneLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<Game.Net.SubLane> subLaneBuffer) || subLaneBuffer.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    NativeList<Entity> prefabEntities = new NativeList<Entity>(Allocator.TempJob);
+                    foreach (PermanentlyRemovedSubElementPrefab removedPrefab in removedBuffer)
+                    {
+                        prefabEntities.Add(removedPrefab.m_RecordEntity);
+                    }
+
+                    foreach (Game.Net.SubLane subObject in subLaneBuffer)
+                    {
+                        if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubLane, out PrefabRef prefabRef) || !prefabEntities.Contains(prefabRef.m_Prefab))
+                        {
+                            continue;
+                        }
                     }
                 }
             }

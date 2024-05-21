@@ -9,6 +9,7 @@ namespace Better_Bulldozer.Systems
     using Colossal.Logging;
     using Game;
     using Game.Common;
+    using Game.Serialization;
     using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -21,27 +22,17 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class CleanUpOwnerRecordsSystem : GameSystemBase
     {
-        /// <summary>
-        /// Relates to the update interval although the GetUpdateInterval isn't even using this.
-        /// </summary>
-        public const int UPDATES_PER_DAY = 32;
 
         private EntityQuery m_OwnerRecordQuery;
         private ILog m_Log;
-        private EndFrameBarrier m_EndFrameBarrier;
-
-        /// <inheritdoc/>
-        public override int GetUpdateInterval(SystemUpdatePhase phase)
-        {
-            return 512;
-        }
+        private DeserializationBarrier m_Barrier;
 
         /// <inheritdoc/>
         protected override void OnCreate()
         {
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_Log.Info($"{nameof(CleanUpOwnerRecordsSystem)}.{nameof(OnCreate)}");
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            m_Barrier = World.GetOrCreateSystemManaged<DeserializationBarrier>();
             base.OnCreate();
         }
 
@@ -55,15 +46,21 @@ namespace Better_Bulldozer.Systems
 
             RequireForUpdate(m_OwnerRecordQuery);
 
+            if (m_OwnerRecordQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            m_Log.Debug($"{nameof(CleanUpOwnerRecordsSystem)}.{nameof(OnUpdate)}");
             CleanUpOwnerRecordsJob cleanUpOwnerRecordsJob = new CleanUpOwnerRecordsJob()
             {
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
                 m_OwnerRecordTyp = SystemAPI.GetComponentTypeHandle<OwnerRecord>(isReadOnly: true),
                 m_PermanentlyRemovedSubElementPrefabLookup = SystemAPI.GetBufferLookup<PermanentlyRemovedSubElementPrefab>(isReadOnly: true),
-                buffer = m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter(),
+                buffer = m_Barrier.CreateCommandBuffer(),
             };
-            JobHandle jobHandle = cleanUpOwnerRecordsJob.ScheduleParallel(m_OwnerRecordQuery, Dependency);
-            m_EndFrameBarrier.AddJobHandleForProducer(jobHandle);
+            JobHandle jobHandle = cleanUpOwnerRecordsJob.Schedule(m_OwnerRecordQuery, Dependency);
+            m_Barrier.AddJobHandleForProducer(jobHandle);
             Dependency = jobHandle;
         }
 
@@ -78,7 +75,7 @@ namespace Better_Bulldozer.Systems
             public EntityTypeHandle m_EntityType;
             [ReadOnly]
             public ComponentTypeHandle<OwnerRecord> m_OwnerRecordTyp;
-            public EntityCommandBuffer.ParallelWriter buffer;
+            public EntityCommandBuffer buffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -90,7 +87,7 @@ namespace Better_Bulldozer.Systems
                     OwnerRecord ownerRecord = ownerRecordNativeArray[i];
                     if (!m_PermanentlyRemovedSubElementPrefabLookup.HasBuffer(ownerRecord.m_Owner))
                     {
-                        buffer.DestroyEntity(unfilteredChunkIndex, currentEntity);
+                        buffer.DestroyEntity(currentEntity);
                     }
                 }
             }
