@@ -16,7 +16,6 @@ namespace Better_Bulldozer.Systems
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
-    using Game.UI;
     using Unity.Entities;
 
     /// <summary>

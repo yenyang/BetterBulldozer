@@ -8,8 +8,6 @@ namespace Better_Bulldozer.Systems
     using Colossal.Entities;
     using Colossal.Logging;
     using Game;
-    using Game.Areas;
-    using Game.Buildings;
     using Game.Common;
     using Game.Simulation;
     using Game.Tools;
@@ -41,18 +39,17 @@ namespace Better_Bulldozer.Systems
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_SimulationSystem = World.GetOrCreateSystemManaged<SimulationSystem>();
             base.OnCreate();
-        }
-
-        /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
             m_DeleteNextFrameQuery = SystemAPI.QueryBuilder()
                 .WithAll<DeleteInXFrames>()
                 .WithNone<Temp, Deleted>()
                 .Build();
 
             RequireForUpdate(m_DeleteNextFrameQuery);
+        }
 
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
             EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
 
             NativeArray<Entity> entities = m_DeleteNextFrameQuery.ToEntityArray(Allocator.Temp);

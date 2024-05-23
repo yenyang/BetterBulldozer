@@ -102,12 +102,6 @@ namespace Better_Bulldozer.Settings
         /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
         /// </summary>
         [SettingsUIHidden]
-        public bool Contra { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
-        /// </summary>
-        [SettingsUIHidden]
         public BetterBulldozerUISystem.SelectionMode PreviousSelectionMode { get; set; }
 
         /// <summary>
@@ -121,7 +115,6 @@ namespace Better_Bulldozer.Settings
             {
                 BetterBulldozerUISystem.SelectionMode mode = PreviousSelectionMode;
                 SetDefaults();
-                Contra = false;
                 PreviousSelectionMode = mode;
                 ApplyAndSave();
             }
@@ -145,12 +138,12 @@ namespace Better_Bulldozer.Settings
         /// <inheritdoc/>
         public override void SetDefaults()
         {
-            Contra = true;
             AllowRemovingSubElementNetworks = true;
             AllowRemovingExtensions = true;
             AutomaticRemovalManicuredGrass = false;
             PreviousSelectionMode = BetterBulldozerUISystem.SelectionMode.Matching;
             AutomaticRemovalFencesAndHedges = false;
+            AutomaticRemovalBrandingObjects = false;
         }
 
         /// <summary>

@@ -261,6 +261,7 @@ namespace Better_Bulldozer.Tools
             bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentRaycastEntity);
+            bool hasSubbuildingComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity);
             bool hasExtractorComponentFlag = EntityManager.HasComponent<Extractor>(currentRaycastEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
             bool hasCustomBufferFlag = EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
@@ -321,7 +322,7 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("ResetAsset");
             }
 
-            if (!hasExtractorComponentFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions))
+            if (!hasExtractorComponentFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions) && !hasSubbuildingComponentFlag)
             {
                 if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
@@ -449,6 +450,10 @@ namespace Better_Bulldozer.Tools
                             {
                                 m_WarningTooltipSystem.RemoveTooltip("NetworksUseSingleItem");
                             }
+                        }
+                        else
+                        {
+                            m_WarningTooltipSystem.RemoveTooltip("NetworksUseSingleItem");
                         }
                     }
 

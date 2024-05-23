@@ -95,7 +95,14 @@ namespace Better_Bulldozer.Systems
             }
 
             base.OnGameLoadingComplete(purpose, mode);
-            Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalManicuredGrass;
+            if (mode.IsGame())
+            {
+                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalManicuredGrass;
+            }
+            else
+            {
+                Enabled = false;
+            }
         }
 
         /// <inheritdoc/>
@@ -104,12 +111,6 @@ namespace Better_Bulldozer.Systems
             if (m_GrassSurfacePrefabEntities.IsEmpty)
             {
                 m_Log.Warn($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnUpdate)} m_GrassSurfacePrefabEntities.IsEmpty");
-                return;
-            }
-
-            if (!m_ToolSystem.actionMode.IsGame())
-            {
-                Enabled = false;
                 return;
             }
 

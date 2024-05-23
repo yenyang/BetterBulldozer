@@ -45,6 +45,13 @@ namespace Better_Bulldozer.Systems
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             base.OnCreate();
             Enabled = false;
+
+            m_SubLanesQuery = SystemAPI.QueryBuilder()
+                .WithAllRW<Game.Net.SubLane>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
+            RequireForUpdate(m_SubLanesQuery);
         }
 
         /// <inheritdoc/>
@@ -55,14 +62,6 @@ namespace Better_Bulldozer.Systems
                 Enabled = false;
                 return;
             }
-
-            m_SubLanesQuery = SystemAPI.QueryBuilder()
-
-                .WithAllRW<Game.Net.SubLane>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            RequireForUpdate(m_SubLanesQuery);
 
             AddUpdatedJob addUpdatedJob = new AddUpdatedJob()
             {

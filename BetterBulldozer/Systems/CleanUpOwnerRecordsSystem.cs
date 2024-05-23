@@ -18,7 +18,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// Cleans up old entities after owners were deleted periodicly.
+    /// Cleans up old entities after owners were deleted on deserialize.
     /// </summary>
     public partial class CleanUpOwnerRecordsSystem : GameSystemBase
     {
@@ -34,23 +34,17 @@ namespace Better_Bulldozer.Systems
             m_Log.Info($"{nameof(CleanUpOwnerRecordsSystem)}.{nameof(OnCreate)}");
             m_Barrier = World.GetOrCreateSystemManaged<DeserializationBarrier>();
             base.OnCreate();
-        }
-
-        /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
             m_OwnerRecordQuery = SystemAPI.QueryBuilder()
                 .WithAll<OwnerRecord>()
                 .WithNone<Temp, Deleted>()
                 .Build();
 
             RequireForUpdate(m_OwnerRecordQuery);
+        }
 
-            if (m_OwnerRecordQuery.IsEmptyIgnoreFilter)
-            {
-                return;
-            }
-
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
             m_Log.Debug($"{nameof(CleanUpOwnerRecordsSystem)}.{nameof(OnUpdate)}");
             CleanUpOwnerRecordsJob cleanUpOwnerRecordsJob = new CleanUpOwnerRecordsJob()
             {
@@ -87,7 +81,7 @@ namespace Better_Bulldozer.Systems
                     OwnerRecord ownerRecord = ownerRecordNativeArray[i];
                     if (!m_PermanentlyRemovedSubElementPrefabLookup.HasBuffer(ownerRecord.m_Owner))
                     {
-                        buffer.DestroyEntity(currentEntity);
+                        buffer.AddComponent<Deleted>(currentEntity);
                     }
                 }
             }

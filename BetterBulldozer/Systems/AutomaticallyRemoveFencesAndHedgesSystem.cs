@@ -81,6 +81,12 @@ namespace Better_Bulldozer.Systems
             });
             base.OnCreate();
             Enabled = false;
+            m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Net.SubLane, Updated>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
+            RequireForUpdate(m_UpdatedWithSubLanesQuery);
         }
 
         /// <inheritdoc/>
@@ -125,13 +131,6 @@ namespace Better_Bulldozer.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Net.SubLane, Updated>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            RequireForUpdate(m_UpdatedWithSubLanesQuery);
-
             NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
             NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
 
