@@ -48,6 +48,7 @@ namespace Better_Bulldozer.Systems
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
         private bool m_ToolModeToggledRecently;
+        private RemoveVehcilesCimsAndAnimalsTool m_RemoveVehiclesCimsAndAnimalsTool;
         private PrefabBase m_PreviousPrefab;
         private bool m_SwitchToSubElementBulldozeToolOnUpdate;
         private bool m_ActivatePrefabToolOnUpdate;
@@ -143,6 +144,7 @@ namespace Better_Bulldozer.Systems
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
+            m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehcilesCimsAndAnimalsTool>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
             m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
 
@@ -231,6 +233,10 @@ namespace Better_Bulldozer.Systems
         {
             m_GameplayManipulation.Update(!m_GameplayManipulation.value);
             m_BulldozeToolSystem.allowManipulation = m_GameplayManipulation.value;
+            if (m_BulldozeToolSystem.allowManipulation == true)
+            {
+                m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
+            }
         }
 
         /// <summary>
