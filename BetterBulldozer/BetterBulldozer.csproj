@@ -133,6 +133,7 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+		<None Include="Patches\ToolBaseSystemGetRaycastResultPatch.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -210,5 +211,10 @@
 		<Content Include="lang\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Compile Remove="Patches\ToolBaseSystemGetRaycastResultPatch.cs" />
 	</ItemGroup>
 </Project>

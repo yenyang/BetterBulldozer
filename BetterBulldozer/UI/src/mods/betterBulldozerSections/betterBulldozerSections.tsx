@@ -8,7 +8,7 @@ import locale from "../lang/en-US.json";
 import { getModule } from "cs2/modding";
 
 // These establishes the binding with C# side. Without C# side game ui will crash.
-const gameplayManipulation$ = bindValue<boolean>(mod.id, 'GameplayManipulation');
+const vechicleCimAnimalSelectionMode$ = bindValue<number>(mod.id, 'VehicleCimsAnimalsSelectionMode');
 const bypassConfirmation$ = bindValue<boolean>(mod.id, 'BypassConfirmation');
 const raycastTarget$ = bindValue<number>(mod.id, 'RaycastTarget');
 const areasFilter$ = bindValue<number>(mod.id, 'AreasFilter');
@@ -17,25 +17,32 @@ const markersFilter$ = bindValue<number>(mod.id, 'MarkersFilter');
 const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
 const subElementBulldozeToolActive$ = bindValue<boolean>(mod.id, 'SubElementBulldozeToolActive');
 const selectionMode$ = bindValue<number>(mod.id, "SelectionMode");
+const selectionRadius$ = bindValue<number>(mod.id, "SelectionRadius");
 
 // These contain the coui paths to Unified Icon Library svg assets
-const couiStandard =                         "coui://uil/Standard/";
-const gameplayManipulationSrc =         couiStandard +  "CubeSimulation.svg";
-const bypassConfirmationSrc =           couiStandard +  "BypassQuestionmark.svg";
-const lanesSrc =                         couiStandard + "Network.svg";
-const networkMarkersSrc =                couiStandard + "DottedLinesMarkers.svg";
-const subElementBulldozerSrc =           couiStandard + "Jackhammer.svg";
+const uilStandard =                         "coui://uil/Standard/";
+const gameplayManipulationSrc =         uilStandard +  "CubeSimulation.svg";
+const bypassConfirmationSrc =           uilStandard +  "BypassQuestionmark.svg";
+const lanesSrc =                         uilStandard + "Network.svg";
+const networkMarkersSrc =                uilStandard + "DottedLinesMarkers.svg";
+const subElementBulldozerSrc =           uilStandard + "Jackhammer.svg";
 
-const singleSrc =                        couiStandard + "SingleRhombus.svg";
-const matchingSrc =                     couiStandard + "SameRhombus.svg";
-const similarSrc =                      couiStandard + "SimilarRhombus.svg";
-const resetSrc =                        couiStandard + "Reset.svg";
+const singleSrc =                        uilStandard + "SingleRhombus.svg";
+const matchingSrc =                     uilStandard + "SameRhombus.svg";
+const similarSrc =                      uilStandard + "SimilarRhombus.svg";
+const resetSrc =                        uilStandard + "Reset.svg";
 
-const subElementsOfMainElementSrc =      couiStandard + "HouseMainElements.svg";
-const surfacesSrc =                     couiStandard + "ShovelSurface.svg";
-const upgradeIsMainSrc =                couiStandard + "HouseSmallSubElements.svg";
-const staticObjectMarkersSrc =          couiStandard + "MarkerSpawner.svg";
-const spacesSrc =                       couiStandard + "PeopleAreaTool.svg";
+const singleVehicleCimAnimalSrc =          uilStandard + "Dot.svg";
+const radiusSrc =                          uilStandard + "Circle.svg";
+
+const subElementsOfMainElementSrc =      uilStandard + "HouseMainElements.svg";
+const surfacesSrc =                     uilStandard + "ShovelSurface.svg";
+const upgradeIsMainSrc =                uilStandard + "HouseSmallSubElements.svg";
+const staticObjectMarkersSrc =          uilStandard + "MarkerSpawner.svg";
+const spacesSrc =                       uilStandard + "PeopleAreaTool.svg";
+
+const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
+const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
 
 // Saving strings for events and translations.
 const surfacesID =              "SurfacesFilterButton";
@@ -60,12 +67,23 @@ function changeSelection(mode: SelectionMode) {
     trigger(mod.id, "ChangeSelectionMode", mode);
 }
 
+// This functions trigger an event on C# side and C# designates the method to implement.
+function changeVCAselection(mode: VCAselectionMode) {
+    trigger(mod.id, "ChangeVCAselectionMode", mode);
+}
+
 enum SelectionMode 
 {
     Single = 0,
     Matching = 1,
     Similar = 2,
     Reset = 3,
+}
+
+enum VCAselectionMode 
+{
+    Single = 0,
+    Radius = 1,
 }
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
@@ -90,7 +108,6 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         // These get the value of the bindings.
         const subElementBulldozerToolActive = useValue(subElementBulldozeToolActive$);
         const bulldozeToolActive = useValue(tool.activeTool$).id == tool.BULLDOZE_TOOL;
-        const gameplayManipulation = useValue(gameplayManipulation$);
         const bypassConfirmation = useValue(bypassConfirmation$);
         const raycastTarget = useValue(raycastTarget$);
         const areasFilter = useValue(areasFilter$);
@@ -98,7 +115,8 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const upgradeIsMain = useValue(upgradeIsMain$);
         const isGame = useValue(isGame$);
         const selectionMode = useValue(selectionMode$) as SelectionMode;
-        
+        const vechicleCimAnimalSelectionMode = useValue(vechicleCimAnimalSelectionMode$) as VCAselectionMode;
+        const selectionRadius = useValue(selectionRadius$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -138,6 +156,12 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const similarTooltipDescription =   translate("BetterBulldozer.TOOLTIP_DESCRIPTION[Similar]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[Similar]"]);
         const resetTooltipTitle =           translate("BetterBulldozer.TOOLTIP_TITLE[Reset]" ,locale["BetterBulldozer.TOOLTIP_TITLE[Reset]"]);
         const resetTooltipDescription =     translate("BetterBulldozer.TOOLTIP_DESCRIPTION[Reset]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[Reset]"]);
+        const singleOrDragTooltipTitle =    translate("BetterBulldozer.TOOLTIP_TITLE[SingleMovingObject]" , locale["BetterBulldozer.TOOLTIP_TITLE[SingleMovingObject]"]);
+        const singleOrDragTooltipDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[SingleMovingObject]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[SingleMovingObject]"]);
+        const radiusSelectionTooltipTitle =     translate("BetterBulldozer.TOOLTIP_TITLE[RadiusSelection]" ,locale["BetterBulldozer.TOOLTIP_TITLE[RadiusSelection]"]);
+        const radiusSelectionTooltipDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[RadiusSelection]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[RadiusSelection]"]);
+        const increaseRadiusDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[IncreaseRadius]" , locale["BetterBulldozer.TOOLTIP_DESCRIPTION[IncreaseRadius]"]);
+        const decreaseRadiusDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[DecreaseRadius]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[DecreaseRadius]"]);
 
         // These convert integer casts of Enums into booleans.
         const raycastingMarkers : boolean = raycastTarget == 2;
@@ -191,9 +215,25 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                             </VanillaComponentResolver.instance.Section>
                         </>
                     )}
+                    { raycastTarget == 4 && (
+                        // This section is only showing while using Removing Vehicles Cims and Animals.
+                        <>
+                            { vechicleCimAnimalSelectionMode == VCAselectionMode.Radius && (
+                            <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Radius]",locale["BetterBulldozer.SECTION_TITLE[Radius]"])}>
+                                <VanillaComponentResolver.instance.ToolButton tooltip={decreaseRadiusDescription} onSelect={() => handleClick("DecreaseRadius")} src={arrowDownSrc} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} className={VanillaComponentResolver.instance.mouseToolOptionsTheme.startButton}></VanillaComponentResolver.instance.ToolButton>
+                                <div className={VanillaComponentResolver.instance.mouseToolOptionsTheme.numberField}>{ selectionRadius + " m"}</div>
+                                <VanillaComponentResolver.instance.ToolButton tooltip={increaseRadiusDescription} onSelect={() => handleClick("IncreaseRadius")} src={arrowUpSrc} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED} className={VanillaComponentResolver.instance.mouseToolOptionsTheme.endButton} ></VanillaComponentResolver.instance.ToolButton>
+                            </VanillaComponentResolver.instance.Section>
+                            )}
+                            <VanillaComponentResolver.instance.Section title={translate("BetterBulldozer.SECTION_TITLE[Selection]" ,locale["BetterBulldozer.SECTION_TITLE[Selection]"])}>
+                                        <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={vechicleCimAnimalSelectionMode == VCAselectionMode.Single}         tooltip={descriptionTooltip(singleOrDragTooltipTitle, singleOrDragTooltipDescription )}                          onSelect={() => changeVCAselection(VCAselectionMode.Single)}              src={singleVehicleCimAnimalSrc}         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                                        <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={vechicleCimAnimalSelectionMode == VCAselectionMode.Radius}       tooltip={descriptionTooltip(radiusSelectionTooltipTitle, radiusSelectionTooltipDescription)}                          onSelect={() => changeVCAselection(VCAselectionMode.Radius)}            src={radiusSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
+                            </VanillaComponentResolver.instance.Section>
+                        </>
+                    )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={descriptionTooltip(subElementBulldozerTitle ,subElementBulldozerDescription)}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
-                            <VanillaComponentResolver.instance.ToolButton  selected={gameplayManipulation}              tooltip={descriptionTooltip(gameplayManipulationTitle, gameplayManipulationTooltip)}       onSelect={() => handleClick(gameplayManipulationID)}            src={gameplayManipulationSrc}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={raycastTarget == 4}              tooltip={descriptionTooltip(gameplayManipulationTitle, gameplayManipulationTooltip)}       onSelect={() => handleClick(gameplayManipulationID)}            src={gameplayManipulationSrc}   focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={bypassConfirmation}                tooltip={descriptionTooltip(bypassConfirmationTitle, bypassConfirmationTooltip)}         onSelect={() => handleClick(bypassConfirmationID)}              src={bypassConfirmationSrc}     focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={raycastingLanes}                   tooltip={descriptionTooltip(lanesTitle, lanesTooltip)}                      onSelect={() => handleClick(lanesID)}                           src={lanesSrc}                  focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={raycastingMarkers}                 tooltip={descriptionTooltip(raycastMarkersTitle, raycastMarkersTooltip)}             onSelect={() => handleClick(raycastMarkersID)}                  src={networkMarkersSrc}         focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>

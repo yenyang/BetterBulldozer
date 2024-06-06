@@ -9,7 +9,7 @@ import { HTMLAttributes, ReactNode } from "react";
 type PropsToolButton = {
     focusKey?: UniqueFocusKey | null
     src: string
-    selected : boolean
+    selected? : boolean
     multiSelect? : boolean
     disabled?: boolean
     tooltip?: string | ReactNode | null

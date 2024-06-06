@@ -7,6 +7,7 @@ namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Helpers;
     using Better_Bulldozer.Tools;
+    using cohtml.Net;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
@@ -16,6 +17,7 @@ namespace Better_Bulldozer.Systems
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using System;
     using Unity.Entities;
 
     /// <summary>
@@ -41,16 +43,18 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<int> m_AreasFilter;
         private ValueBinding<int> m_MarkersFilter;
         private ValueBinding<bool> m_BypassConfirmation;
-        private ValueBinding<bool> m_GameplayManipulation;
         private ValueBinding<bool> m_UpgradeIsMain;
         private ValueBindingHelper<bool> m_IsGame;
         private ValueBindingHelper<int> m_SelectionMode;
+        private ValueBindingHelper<int> m_VehicleCimsAnimalsSelectionMode;
+        private ValueBindingHelper<int> m_SelectionRadius;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
         private bool m_ToolModeToggledRecently;
-        private RemoveVehcilesCimsAndAnimalsTool m_RemoveVehiclesCimsAndAnimalsTool;
+        private RemoveVehiclesCimsAndAnimalsTool m_RemoveVehiclesCimsAndAnimalsTool;
         private PrefabBase m_PreviousPrefab;
         private bool m_SwitchToSubElementBulldozeToolOnUpdate;
+        private bool m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate;
         private bool m_ActivatePrefabToolOnUpdate;
 
         /// <summary>
@@ -77,6 +81,11 @@ namespace Better_Bulldozer.Systems
             /// Exclusively target standalone lanes such as fences, hedges, street markings, or vehicle lanes.
             /// </summary>
             Lanes,
+
+            /// <summary>
+            /// Exclusively target vehciles, cims and animals.
+            /// </summary>
+            VehiclesCimsAndAnimals,
         }
 
         /// <summary>
@@ -106,6 +115,22 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
+        /// Selection mode for removing vehicles, cims, and animals.
+        /// </summary>
+        public enum VCAselectionMode
+        {
+            /// <summary>
+            /// One item at a time.
+            /// </summary>
+            Single,
+
+            /// <summary>
+            /// uses a radius and can delete broken ones.
+            /// </summary>
+            Radius,
+        }
+
+        /// <summary>
         /// Gets a value indicating what to raycast.
         /// </summary>
         public RaycastTarget SelectedRaycastTarget { get => (RaycastTarget)m_RaycastTarget.value; }
@@ -126,9 +151,19 @@ namespace Better_Bulldozer.Systems
         public bool UpgradeIsMain { get => m_UpgradeIsMain.value; }
 
         /// <summary>
+        /// Gets a value indicating the selection radius.
+        /// </summary>
+        public int SelectionRadius { get => m_SelectionRadius.Value; }
+
+        /// <summary>
         /// Gets a value indicating the active selection mode for subelement bulldozer.
         /// </summary>
         public SelectionMode ActiveSelectionMode { get => (SelectionMode)m_SelectionMode.Value; }
+
+        /// <summary>
+        /// Gets a value indicating the active selection mode for subelement bulldozer.
+        /// </summary>
+        public VCAselectionMode VehicleCimsAnimalsSelectionMode { get => (VCAselectionMode)m_VehicleCimsAnimalsSelectionMode.Value; }
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -144,7 +179,7 @@ namespace Better_Bulldozer.Systems
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
-            m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehcilesCimsAndAnimalsTool>();
+            m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehiclesCimsAndAnimalsTool>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
             m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
 
@@ -153,11 +188,12 @@ namespace Better_Bulldozer.Systems
             AddBinding(m_AreasFilter = new ValueBinding<int>(ModId, "AreasFilter", (int)AreaTypeMask.Surfaces));
             AddBinding(m_MarkersFilter = new ValueBinding<int>(ModId, "MarkersFilter", (int)TypeMask.Net));
             AddBinding(m_BypassConfirmation = new ValueBinding<bool>(ModId, "BypassConfirmation", false));
-            AddBinding(m_GameplayManipulation = new ValueBinding<bool>(ModId, "GameplayManipulation", false));
             AddBinding(m_UpgradeIsMain = new ValueBinding<bool>(ModId, "UpgradeIsMain", false));
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
             m_SelectionMode = CreateBinding("SelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousSelectionMode);
             m_IsGame = CreateBinding("IsGame", false);
+            m_VehicleCimsAnimalsSelectionMode = CreateBinding("VehicleCimsAnimalsSelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousVCAselectionMode);
+            m_SelectionRadius = CreateBinding("SelectionRadius", 10);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -173,6 +209,9 @@ namespace Better_Bulldozer.Systems
             AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", () => m_UpgradeIsMain.Update(true)));
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", () => m_UpgradeIsMain.Update(false)));
             CreateTrigger("ChangeSelectionMode", (int value) => ChangeSelectionMode(value));
+            CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value));
+            CreateTrigger("IncreaseRadius", () => m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 10, 100));
+            CreateTrigger("DecreaseRadius", () => m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 10, 10));
         }
 
         /// <inheritdoc/>
@@ -198,6 +237,12 @@ namespace Better_Bulldozer.Systems
                 m_SwitchToSubElementBulldozeToolOnUpdate = false;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
             }
+            else if (m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate)
+            {
+                m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = false;
+                m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
+            }
+
 
             if (m_ActivatePrefabToolOnUpdate)
             {
@@ -208,11 +253,6 @@ namespace Better_Bulldozer.Systems
             if (m_BulldozeToolSystem.debugBypassBulldozeConfirmation != m_BypassConfirmation.value)
             {
                 m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
-            }
-
-            if (m_GameplayManipulation.value != m_BulldozeToolSystem.allowManipulation)
-            {
-                m_GameplayManipulation.Update(m_BulldozeToolSystem.allowManipulation);
             }
         }
 
@@ -231,12 +271,47 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void GameplayManipulationToggled()
         {
-            m_GameplayManipulation.Update(!m_GameplayManipulation.value);
-            m_BulldozeToolSystem.allowManipulation = m_GameplayManipulation.value;
-            if (m_BulldozeToolSystem.allowManipulation == true)
+            if (m_RaycastTarget.value != (int)RaycastTarget.VehiclesCimsAndAnimals)
             {
+                m_RaycastTarget.Update((int)RaycastTarget.VehiclesCimsAndAnimals);
+            }
+            else
+            {
+                m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
+            }
+
+            if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius && m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
+            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
+                m_ToolModeToggledRecently = true;
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
+        private void ChangeVCAselectionMode(int mode)
+        {
+            m_VehicleCimsAnimalsSelectionMode.Value = mode;
+
+            if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius && m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
+                m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
+            }
+            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool && m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Single)
+            {
+                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
+                m_ToolModeToggledRecently = true;
+                m_ToolSystem.activeTool = m_BulldozeToolSystem;
+            }
+
+            HandleShowMarkers(m_ToolSystem.activePrefab);
         }
 
         /// <summary>
@@ -330,7 +405,7 @@ namespace Better_Bulldozer.Systems
                 m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
-            if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            if (m_ToolSystem.activeTool != m_BulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolModeToggledRecently = true;
@@ -354,7 +429,7 @@ namespace Better_Bulldozer.Systems
                 m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
-            if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            if (m_ToolSystem.activeTool != m_BulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolModeToggledRecently = true;
@@ -369,7 +444,7 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         private void SubElementBulldozerButtonToggled()
         {
-            if (m_ToolSystem.activeTool == m_BulldozeToolSystem)
+            if (m_ToolSystem.activeTool != m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_SubElementBulldozeToolSystem;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
@@ -450,6 +525,18 @@ namespace Better_Bulldozer.Systems
             {
                 m_PreviousToolSystem = null;
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since subelement bulldoze tool was closed without changing tool mode.");
+                m_ActivatePrefabToolOnUpdate = true;
+            }
+
+            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool && m_PreviousToolSystem != m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to m_RemoveVehiclesCimsAndAnimalsTool tool since that was previous tool mode.");
+                m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = true;
+            }
+            else if (m_PreviousToolSystem == m_RemoveVehiclesCimsAndAnimalsTool && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_ToolModeToggledRecently)
+            {
+                m_PreviousToolSystem = null;
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since m_RemoveVehiclesCimsAndAnimalsTool was closed without changing tool mode.");
                 m_ActivatePrefabToolOnUpdate = true;
             }
 

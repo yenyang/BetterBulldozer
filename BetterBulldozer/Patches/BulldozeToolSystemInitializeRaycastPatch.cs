@@ -6,14 +6,12 @@ namespace Better_Bulldozer.Patches
 {
     using Better_Bulldozer.Systems;
     using Game;
-    using Game.Areas;
     using Game.Common;
     using Game.Net;
     using Game.Rendering;
     using Game.Tools;
     using HarmonyLib;
     using Unity.Entities;
-    using UnityEngine;
 
     /// <summary>
     /// Patches Bulldoze Tool System Inititialize Raycast to add Markers as something to raycast.
@@ -59,8 +57,16 @@ namespace Better_Bulldozer.Patches
             else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Lanes)
             {
                 toolRaycastSystem.typeMask = TypeMask.Net;
-                toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
-                toolRaycastSystem.raycastFlags |= RaycastFlags.Markers | RaycastFlags.EditorContainers;
+                toolRaycastSystem.netLayerMask = Layer.Fence;
+                toolRaycastSystem.raycastFlags |= RaycastFlags.EditorContainers;
+
+                // toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
+
+                // toolRaycastSystem.raycastFlags |= RaycastFlags.Markers | RaycastFlags.EditorContainers;
+            }
+            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.VehiclesCimsAndAnimals)
+            {
+                toolRaycastSystem.typeMask = TypeMask.MovingObjects;
             }
         }
     }

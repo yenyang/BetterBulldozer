@@ -35,9 +35,9 @@ namespace Better_Bulldozer.Tools
 
 
     /// <summary>
-    /// Tool for controlling tree state or prefab.
+    /// Tool for controlling removing vehicles cims and animals.
     /// </summary>
-    public partial class RemoveVehcilesCimsAndAnimalsTool : ToolBaseSystem
+    public partial class RemoveVehiclesCimsAndAnimalsTool : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
         private ProxyAction m_SecondaryApplyAction;
@@ -49,8 +49,10 @@ namespace Better_Bulldozer.Tools
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
 
         /// <inheritdoc/>
-        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
+        public override bool allowUnderground => true;
 
+        /// <inheritdoc/>
+        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
 
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
@@ -92,7 +94,7 @@ namespace Better_Bulldozer.Tools
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
             m_SecondaryApplyAction = InputManager.instance.FindAction("Tool", "Secondary Apply");
-            m_Log.Info($"[{nameof(RemoveVehcilesCimsAndAnimalsTool)}] {nameof(OnCreate)}");
+            m_Log.Info($"[{nameof(RemoveVehiclesCimsAndAnimalsTool)}] {nameof(OnCreate)}");
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
@@ -129,7 +131,7 @@ namespace Better_Bulldozer.Tools
         {
             m_ApplyAction.shouldBeEnabled = true;
             m_SecondaryApplyAction.shouldBeEnabled = true;
-            m_Log.Debug($"{nameof(RemoveVehcilesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
+            m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
         }
 
         /// <inheritdoc/>
@@ -145,7 +147,12 @@ namespace Better_Bulldozer.Tools
             inputDeps = Dependency;
             bool raycastFlag = GetRaycastResult(out Entity e, out RaycastHit hit);
 
-            float radius = 10f;
+            if (hit.m_HitPosition.x == 0 && hit.m_HitPosition.y == 0 && hit.m_HitPosition.z == 0)
+            {
+                return inputDeps;
+            }
+
+            float radius = m_BetterBulldozerUISystem.SelectionRadius;
             ToolRadiusJob toolRadiusJob = new ()
             {
                 m_OverlayBuffer = m_OverlayRenderSystem.GetBuffer(out JobHandle outJobHandle),
@@ -232,7 +239,7 @@ namespace Better_Bulldozer.Tools
             /// <returns>True if tree position is within radius of position. False if not.</returns>
             private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
             {
-                float minRadius = 5f;
+                float minRadius = 10f;
                 radius = Mathf.Max(radius, minRadius);
                 position.y = cursorPosition.y;
                 if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)

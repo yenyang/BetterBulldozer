@@ -99,10 +99,16 @@ namespace Better_Bulldozer.Settings
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether: Used to force saving of Modsettings if settings would result in empty Json.
+        /// Gets or sets a value indicating whether: for saving previous selection mode for remove subelement tool mode.
         /// </summary>
         [SettingsUIHidden]
-        public BetterBulldozerUISystem.SelectionMode PreviousSelectionMode { get; set; }
+        public BetterBulldozerUISystem.SelectionMode PreviousSelectionMode { get; set; } = BetterBulldozerUISystem.SelectionMode.Matching;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether: for saving previous selection mode for remove vehicels, cims and animals.
+        /// </summary>
+        [SettingsUIHidden]
+        public BetterBulldozerUISystem.VCAselectionMode PreviousVCAselectionMode { get; set; } = BetterBulldozerUISystem.VCAselectionMode.Radius;
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for the Mod.
@@ -113,9 +119,7 @@ namespace Better_Bulldozer.Settings
         {
             set
             {
-                BetterBulldozerUISystem.SelectionMode mode = PreviousSelectionMode;
                 SetDefaults();
-                PreviousSelectionMode = mode;
                 ApplyAndSave();
             }
         }
@@ -141,7 +145,6 @@ namespace Better_Bulldozer.Settings
             AllowRemovingSubElementNetworks = true;
             AllowRemovingExtensions = true;
             AutomaticRemovalManicuredGrass = false;
-            PreviousSelectionMode = BetterBulldozerUISystem.SelectionMode.Matching;
             AutomaticRemovalFencesAndHedges = false;
             AutomaticRemovalBrandingObjects = false;
         }
