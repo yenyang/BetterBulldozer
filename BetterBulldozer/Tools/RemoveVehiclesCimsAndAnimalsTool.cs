@@ -49,9 +49,6 @@ namespace Better_Bulldozer.Tools
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
 
         /// <inheritdoc/>
-        public override bool allowUnderground => true;
-
-        /// <inheritdoc/>
         public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
 
         /// <inheritdoc/>
