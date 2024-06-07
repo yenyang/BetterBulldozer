@@ -62,6 +62,9 @@ namespace Better_Bulldozer.Systems
             RequireAnyForUpdate(m_UpdateQuery, m_UpdateEventQuery);
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             base.OnCreate();
+            m_BrandObjectPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<BrandObjectData>()
+                .Build();
             Enabled = false;
         }
 
@@ -76,16 +79,53 @@ namespace Better_Bulldozer.Systems
             else
             {
                 Enabled = false;
+                return;
             }
+
+            if (!BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects)
+            {
+                return;
+            }
+
+            EntityQuery subObjectQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Objects.SubObject>()
+                .WithNone<Temp, Deleted>()
+                .Build();
+
+            NativeList<Entity> brandingObjectPrefabsEntities = m_BrandObjectPrefabQuery.ToEntityListAsync(Allocator.TempJob, out JobHandle brandingObjectJobHandle);
+
+            NativeList<Entity> brandingSubObjects = new NativeList<Entity>(Allocator.TempJob);
+
+            GatherSubObjectsJob gatherSubObjectsJob = new GatherSubObjectsJob()
+            {
+                m_BrandingObjectPrefabs = brandingObjectPrefabsEntities,
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
+                m_SubObjects = brandingSubObjects,
+                m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
+            };
+
+            JobHandle gatherSubObjectsJobHandle = gatherSubObjectsJob.Schedule(subObjectQuery, JobHandle.CombineDependencies(Dependency, brandingObjectJobHandle));
+
+            brandingObjectPrefabsEntities.Dispose(gatherSubObjectsJobHandle);
+
+            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
+            {
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
+                m_Entities = brandingSubObjects,
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
+
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubObjectsJobHandle);
+            m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
+            Dependency = handleDeleteInXFramesJobHandle;
+
+            brandingSubObjects.Dispose(handleDeleteInXFramesJobHandle);
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            m_BrandObjectPrefabQuery = SystemAPI.QueryBuilder()
-                .WithAll<BrandObjectData>()
-                .Build();
-
             NativeList<Entity> brandingObjectPrefabsEntities = m_BrandObjectPrefabQuery.ToEntityListAsync(Allocator.TempJob, out JobHandle brandingObjectJobHandle);
 
             NativeList<Entity> brandingSubObjects = new NativeList<Entity>(Allocator.TempJob);

@@ -1,4 +1,6 @@
-﻿# Patch V1.2.2
-* Fixed setting toolmode in game and switching to editor prevents use of editor bulldozer.
-* Removed most systems from editor.
-* Updated localization.
+﻿# Update V1.3.0
+* Overhauled "Remove Moving Objects and Cims" tool mode. Now has two selection modes: Single and Radius. 
+	* Single exclusively targets moving objects. 
+	* Radius removes ALL vehicles, cims, and animals in the radius and vertically above or below including broken, stuck, vehicles placed by player, and animals spawned by player placed spawners.
+* Optimized multiple systems
+* Compatible with V1.1.3 of the base game.
