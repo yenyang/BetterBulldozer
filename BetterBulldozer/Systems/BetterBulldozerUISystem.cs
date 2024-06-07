@@ -5,9 +5,10 @@
 // #define VERBOSE
 namespace Better_Bulldozer.Systems
 {
-    using Better_Bulldozer.Helpers;
+    using System;
+    using System.Security.Cryptography;
+    using Better_Bulldozer.Extensions;
     using Better_Bulldozer.Tools;
-    using cohtml.Net;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
@@ -17,7 +18,6 @@ namespace Better_Bulldozer.Systems
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
-    using System;
     using Unity.Entities;
 
     /// <summary>
@@ -48,6 +48,7 @@ namespace Better_Bulldozer.Systems
         private ValueBindingHelper<int> m_SelectionMode;
         private ValueBindingHelper<int> m_VehicleCimsAnimalsSelectionMode;
         private ValueBindingHelper<int> m_SelectionRadius;
+        private ValueBindingHelper<VanillaFilters> m_SelectedVanillaFilters;
         private ToolBaseSystem m_PreviousBulldozeToolSystem;
         private ToolBaseSystem m_PreviousToolSystem;
         private bool m_ToolModeToggledRecently;
@@ -131,6 +132,52 @@ namespace Better_Bulldozer.Systems
         }
 
         /// <summary>
+        /// An enum used to communicate filters for vanilla bulldozer.
+        /// </summary>
+        public enum VanillaFilters
+        {
+            /// <summary>
+            /// Nothing selected.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Roads, tracks, etc.
+            /// </summary>
+            Networks = 1,
+
+            /// <summary>
+            /// Things with building data.
+            /// </summary>
+            Buildings = 2,
+
+            /// <summary>
+            /// Trees and wild bushes.
+            /// </summary>
+            Trees = 4,
+
+            /// <summary>
+            /// Cultivated plants and potted plants.
+            /// </summary>
+            Plants = 8,
+
+            /// <summary>
+            /// Decals.
+            /// </summary>
+            Decals = 16,
+
+            /// <summary>
+            /// Static objects that are not anything else.
+            /// </summary>
+            Props = 32,
+
+            /// <summary>
+            /// Vanilla bulldozer, no filters.
+            /// </summary>
+            All = 64,
+        }
+
+        /// <summary>
         /// Gets a value indicating what to raycast.
         /// </summary>
         public RaycastTarget SelectedRaycastTarget { get => (RaycastTarget)m_RaycastTarget.value; }
@@ -154,6 +201,11 @@ namespace Better_Bulldozer.Systems
         /// Gets a value indicating the selection radius.
         /// </summary>
         public int SelectionRadius { get => m_SelectionRadius.Value; }
+
+        /// <summary>
+        /// Gets a value indicating the selected vanilla bulldoze tool filters.
+        /// </summary>
+        public VanillaFilters SelectedVanillaFilters { get => m_SelectedVanillaFilters.Value; }
 
         /// <summary>
         /// Gets a value indicating the active selection mode for subelement bulldozer.
@@ -194,6 +246,7 @@ namespace Better_Bulldozer.Systems
             m_IsGame = CreateBinding("IsGame", false);
             m_VehicleCimsAnimalsSelectionMode = CreateBinding("VehicleCimsAnimalsSelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousVCAselectionMode);
             m_SelectionRadius = CreateBinding("SelectionRadius", 10);
+            m_SelectedVanillaFilters = CreateBinding("SelectedVanillaFilters", VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.All);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -212,6 +265,7 @@ namespace Better_Bulldozer.Systems
             CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value));
             CreateTrigger("IncreaseRadius", () => m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 10, 100));
             CreateTrigger("DecreaseRadius", () => m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 10, 10));
+            CreateTrigger("ChangeVanillaFilter", (int value) => ChangeVanillaFilters((VanillaFilters)value));
         }
 
         /// <inheritdoc/>
@@ -242,7 +296,6 @@ namespace Better_Bulldozer.Systems
                 m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = false;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
-
 
             if (m_ActivatePrefabToolOnUpdate)
             {
@@ -312,6 +365,38 @@ namespace Better_Bulldozer.Systems
             }
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
+        }
+
+        private void ChangeVanillaFilters(VanillaFilters toggledFilter)
+        {
+            if (toggledFilter != VanillaFilters.All && (m_SelectedVanillaFilters.Value & VanillaFilters.All) == VanillaFilters.All)
+            {
+                m_SelectedVanillaFilters.Value &= ~VanillaFilters.All;
+            }
+            else if (toggledFilter == VanillaFilters.All && m_SelectedVanillaFilters.Value != VanillaFilters.None)
+            {
+                m_SelectedVanillaFilters.Value = VanillaFilters.None;
+                return;
+            }
+            else if (toggledFilter == VanillaFilters.All && m_SelectedVanillaFilters.Value == VanillaFilters.None)
+            {
+                m_SelectedVanillaFilters.Value |= VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.All;
+                return;
+            }
+
+            if ((m_SelectedVanillaFilters.Value & toggledFilter) == toggledFilter)
+            {
+                m_SelectedVanillaFilters.Value &= ~toggledFilter;
+            }
+            else
+            {
+                m_SelectedVanillaFilters.Value |= toggledFilter;
+            }
+
+            if ((int)m_SelectedVanillaFilters.Value == 63)
+            {
+                m_SelectedVanillaFilters.Value |= VanillaFilters.All;
+            }
         }
 
         /// <summary>

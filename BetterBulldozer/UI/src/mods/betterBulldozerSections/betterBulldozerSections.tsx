@@ -18,12 +18,13 @@ const upgradeIsMain$ = bindValue<boolean>(mod.id, 'UpgradeIsMain');
 const subElementBulldozeToolActive$ = bindValue<boolean>(mod.id, 'SubElementBulldozeToolActive');
 const selectionMode$ = bindValue<number>(mod.id, "SelectionMode");
 const selectionRadius$ = bindValue<number>(mod.id, "SelectionRadius");
+const selectedVanillaFilters$ = bindValue<VanillaFilters>(mod.id, "SelectedVanillaFilters");
 
 // These contain the coui paths to Unified Icon Library svg assets
 const uilStandard =                         "coui://uil/Standard/";
 const gameplayManipulationSrc =         uilStandard +  "CubeSimulation.svg";
 const bypassConfirmationSrc =           uilStandard +  "BypassQuestionmark.svg";
-const lanesSrc =                         uilStandard + "Network.svg";
+const lanesSrc =                         uilStandard + "Lanes.svg";
 const networkMarkersSrc =                uilStandard + "DottedLinesMarkers.svg";
 const subElementBulldozerSrc =           uilStandard + "Jackhammer.svg";
 
@@ -43,6 +44,14 @@ const spacesSrc =                       uilStandard + "PeopleAreaTool.svg";
 
 const arrowDownSrc =         uilStandard +  "ArrowDownThickStroke.svg";
 const arrowUpSrc =           uilStandard +  "ArrowUpThickStroke.svg";
+
+const allSrc =              uilStandard + "StarAll.svg";
+const networkSrc =         uilStandard +  "Network.svg";
+const decalsSrc =           uilStandard +  "Decals.svg";
+const treeSrc =           uilStandard +  "TreeAdult.svg";
+const plantSrc =           uilStandard +  "FlowerPot.svg";
+const buildingSrc =         uilStandard + "House.svg";
+const propsSrc =            uilStandard + "BenchAndLampProps.svg"; 
 
 // Saving strings for events and translations.
 const surfacesID =              "SurfacesFilterButton";
@@ -72,6 +81,11 @@ function changeVCAselection(mode: VCAselectionMode) {
     trigger(mod.id, "ChangeVCAselectionMode", mode);
 }
 
+// This functions trigger an event on C# side and C# designates the method to implement.
+function changeSelectedVanillaFilter(filter: VanillaFilters) {
+    trigger(mod.id, "ChangeVanillaFilter", filter);
+}
+
 enum SelectionMode 
 {
     Single = 0,
@@ -84,6 +98,18 @@ enum VCAselectionMode
 {
     Single = 0,
     Radius = 1,
+}
+
+enum VanillaFilters 
+{
+    None = 0,
+    Networks = 1,
+    Buildings = 2,
+    Trees = 4,
+    Plants = 8,
+    Decals = 16,
+    Props = 32,
+    All = 64,
 }
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
@@ -117,6 +143,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const selectionMode = useValue(selectionMode$) as SelectionMode;
         const vechicleCimAnimalSelectionMode = useValue(vechicleCimAnimalSelectionMode$) as VCAselectionMode;
         const selectionRadius = useValue(selectionRadius$);
+        const selectedVanillaFilters = useValue(selectedVanillaFilters$);
         
         // translation handling. Translates using locale keys that are defined in C# or fallback string here.
         const { translate } = useLocalization();
@@ -230,6 +257,18 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                                         <VanillaComponentResolver.instance.ToolButton className={VanillaComponentResolver.instance.toolButtonTheme.button} selected={vechicleCimAnimalSelectionMode == VCAselectionMode.Radius}       tooltip={descriptionTooltip(radiusSelectionTooltipTitle, radiusSelectionTooltipDescription)}                          onSelect={() => changeVCAselection(VCAselectionMode.Radius)}            src={radiusSrc}                 focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}  ></VanillaComponentResolver.instance.ToolButton>
                             </VanillaComponentResolver.instance.Section>
                         </>
+                    )}
+                    { raycastTarget == 0 && !subElementBulldozerToolActive && (
+                        // This section is only showing while using vanilla bulldozer.
+                        <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.All) == VanillaFilters.All} tooltip={descriptionTooltip(staticObjectsFilterTitle ,staticObjectMarkersTooltip)} src={allSrc}                               onSelect={() => changeSelectedVanillaFilter(VanillaFilters.All)}  className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Networks) == VanillaFilters.Networks} tooltip={descriptionTooltip(staticObjectsFilterTitle ,staticObjectMarkersTooltip)} src={networkSrc}                 onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Networks)}  className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Buildings) == VanillaFilters.Buildings}       tooltip={descriptionTooltip(markerNetworkFilterTitle ,markerNetworkTooltip)}       src={buildingSrc}        onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Buildings)} className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Trees) == VanillaFilters.Trees}       tooltip={descriptionTooltip(markerNetworkFilterTitle ,markerNetworkTooltip)}       src={treeSrc}                    onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Trees)} className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Plants) == VanillaFilters.Plants}       tooltip={descriptionTooltip(markerNetworkFilterTitle ,markerNetworkTooltip)}       src={plantSrc}                 onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Plants)} className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Decals) == VanillaFilters.Decals}       tooltip={descriptionTooltip(markerNetworkFilterTitle ,markerNetworkTooltip)}       src={decalsSrc}                onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Decals)} className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Props) == VanillaFilters.Props}       tooltip={descriptionTooltip(markerNetworkFilterTitle ,markerNetworkTooltip)}       src={propsSrc}                   onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Props)} className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                        </VanillaComponentResolver.instance.Section>
                     )}
                     <VanillaComponentResolver.instance.Section title={toolModeTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={subElementBulldozerToolActive}     tooltip={descriptionTooltip(subElementBulldozerTitle ,subElementBulldozerDescription)}    onSelect={() => handleClick("SubElementBulldozerButton")}       src={subElementBulldozerSrc}    focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     className={VanillaComponentResolver.instance.toolButtonTheme.button}></VanillaComponentResolver.instance.ToolButton>
