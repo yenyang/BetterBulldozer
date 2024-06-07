@@ -10,6 +10,7 @@ namespace Better_Bulldozer.Systems
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
+    using Game.Net;
     using Game.Prefabs;
     using Game.Tools;
     using Unity.Burst;
@@ -125,7 +126,51 @@ namespace Better_Bulldozer.Systems
             else
             {
                 Enabled = false;
+                return;
             }
+
+            if (!BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges)
+            {
+                return;
+            }
+
+            EntityQuery subLanesQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Net.SubLane>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
+            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
+            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
+
+            NativeList<Entity> fenceAndHedgeSublanes = new NativeList<Entity>(Allocator.TempJob);
+
+            GatherSubLanesJob gatherSubLanesJob = new GatherSubLanesJob()
+            {
+                m_FencePrefabs = fencePrefabEntities,
+                m_HedgePrefabs = hedgePrefabEntities,
+                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_SubLanes = fenceAndHedgeSublanes,
+                m_EditorContainerDataLookup = SystemAPI.GetComponentLookup<EditorContainerData>(isReadOnly: true),
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+            };
+
+            JobHandle gatherSubLanesJobHandle = gatherSubLanesJob.Schedule(subLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
+
+            fencePrefabEntities.Dispose(gatherSubLanesJobHandle);
+            hedgePrefabEntities.Dispose(gatherSubLanesJobHandle);
+
+            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
+            {
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
+                m_SubLanes = fenceAndHedgeSublanes,
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
+
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubLanesJobHandle);
+            m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
+            Dependency = handleDeleteInXFramesJobHandle;
+            fenceAndHedgeSublanes.Dispose(handleDeleteInXFramesJobHandle);
         }
 
         /// <inheritdoc/>
@@ -143,6 +188,8 @@ namespace Better_Bulldozer.Systems
                 m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
                 m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
                 m_SubLanes = fenceAndHedgeSublanes,
+                m_EditorContainerDataLookup = SystemAPI.GetComponentLookup<EditorContainerData>(isReadOnly: true),
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
             };
 
             JobHandle gatherSubLanesJobHandle = gatherSubLanesJob.Schedule(m_UpdatedWithSubLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
@@ -177,13 +224,24 @@ namespace Better_Bulldozer.Systems
             public NativeList<Entity> m_SubLanes;
             [ReadOnly]
             public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public ComponentLookup<EditorContainerData> m_EditorContainerDataLookup;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 BufferAccessor<Game.Net.SubLane> subLaneBufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
+                    Entity currentEntity = entityNativeArray[i];
                     DynamicBuffer<Game.Net.SubLane> dynamicBuffer = subLaneBufferAccessor[i];
+                    if (m_PrefabRefLookup.HasComponent(currentEntity) && m_PrefabRefLookup.TryGetComponent(currentEntity, out PrefabRef ownerPrefabRef) && m_EditorContainerDataLookup.HasComponent(ownerPrefabRef.m_Prefab))
+                    {
+                        continue;
+                    }
+
                     foreach (Game.Net.SubLane subLane in dynamicBuffer)
                     {
                         if (m_PrefabRefLookup.HasComponent(subLane.m_SubLane) && m_PrefabRefLookup.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef) && (m_FencePrefabs.Contains(prefabRef.m_Prefab) || m_HedgePrefabs.Contains(prefabRef.m_Prefab)))
