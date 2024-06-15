@@ -31,6 +31,7 @@ namespace Better_Bulldozer.Systems
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
         private ToolSystem m_ToolSystem;
+        private bool m_JustLoaded = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveFencesAndHedges"/> class.
@@ -86,8 +87,6 @@ namespace Better_Bulldozer.Systems
                 .WithAll<Game.Net.SubLane, Updated>()
                 .WithNone<Temp, Deleted, DeleteInXFrames>()
                 .Build();
-
-            RequireForUpdate(m_UpdatedWithSubLanesQuery);
         }
 
         /// <inheritdoc/>
@@ -134,48 +133,29 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
-            EntityQuery subLanesQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Net.SubLane>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
-            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
-
-            NativeList<Entity> fenceAndHedgeSublanes = new NativeList<Entity>(Allocator.TempJob);
-
-            GatherSubLanesJob gatherSubLanesJob = new GatherSubLanesJob()
-            {
-                m_FencePrefabs = fencePrefabEntities,
-                m_HedgePrefabs = hedgePrefabEntities,
-                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
-                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
-                m_SubLanes = fenceAndHedgeSublanes,
-                m_EditorContainerDataLookup = SystemAPI.GetComponentLookup<EditorContainerData>(isReadOnly: true),
-                m_EntityType = SystemAPI.GetEntityTypeHandle(),
-            };
-
-            JobHandle gatherSubLanesJobHandle = gatherSubLanesJob.Schedule(subLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
-
-            fencePrefabEntities.Dispose(gatherSubLanesJobHandle);
-            hedgePrefabEntities.Dispose(gatherSubLanesJobHandle);
-
-            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
-            {
-                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
-                m_SubLanes = fenceAndHedgeSublanes,
-                buffer = m_Barrier.CreateCommandBuffer(),
-            };
-
-            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubLanesJobHandle);
-            m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
-            Dependency = handleDeleteInXFramesJobHandle;
-            fenceAndHedgeSublanes.Dispose(handleDeleteInXFramesJobHandle);
+            m_JustLoaded = true;
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            EntityQuery subLanesQuery = m_UpdatedWithSubLanesQuery;
+
+            if (m_JustLoaded)
+            {
+                subLanesQuery = SystemAPI.QueryBuilder()
+                    .WithAll<Game.Net.SubLane>()
+                    .WithNone<Temp, Deleted, DeleteInXFrames>()
+                    .Build();
+
+                m_JustLoaded = false;
+            }
+
+            if (subLanesQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
             NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
             NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
 
@@ -192,10 +172,10 @@ namespace Better_Bulldozer.Systems
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
             };
 
-            JobHandle gatherSubLanesJobHandle = gatherSubLanesJob.Schedule(m_UpdatedWithSubLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
+            Dependency = gatherSubLanesJob.Schedule(subLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
 
-            fencePrefabEntities.Dispose(gatherSubLanesJobHandle);
-            hedgePrefabEntities.Dispose(gatherSubLanesJobHandle);
+            fencePrefabEntities.Dispose(Dependency);
+            hedgePrefabEntities.Dispose(Dependency);
 
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
@@ -204,7 +184,7 @@ namespace Better_Bulldozer.Systems
                 buffer = m_Barrier.CreateCommandBuffer(),
             };
 
-            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubLanesJobHandle);
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(Dependency);
             m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
             Dependency = handleDeleteInXFramesJobHandle;
             fenceAndHedgeSublanes.Dispose(handleDeleteInXFramesJobHandle);

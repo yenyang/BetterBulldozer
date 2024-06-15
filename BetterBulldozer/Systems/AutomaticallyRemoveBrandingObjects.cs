@@ -136,7 +136,7 @@ namespace Better_Bulldozer.Systems
                     m_SubObjects = brandingSubObjects,
                 };
 
-                Dependency = gatherSubObjectsFromEventsJob.Schedule(m_UpdateEventQuery, Dependency);
+                Dependency = gatherSubObjectsFromEventsJob.Schedule(m_UpdateEventQuery, JobHandle.CombineDependencies(Dependency, brandingObjectJobHandle));
             }
 
             brandingObjectPrefabsEntities.Dispose(Dependency);
