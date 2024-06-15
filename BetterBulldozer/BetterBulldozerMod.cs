@@ -13,7 +13,6 @@ namespace Better_Bulldozer
     using Colossal.Logging;
     using Game;
     using Game.Modding;
-    using Game.Objects;
     using Game.SceneFlow;
     using HarmonyLib;
 
@@ -26,7 +25,6 @@ namespace Better_Bulldozer
         /// A static ID for use with bindings.
         /// </summary>
         public static readonly string Id = "BetterBulldozer";
-
 
         /// <summary>
         /// Gets the install folder for the mod.
