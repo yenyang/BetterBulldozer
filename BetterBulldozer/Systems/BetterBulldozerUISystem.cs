@@ -222,6 +222,7 @@ namespace Better_Bulldozer.Systems
         {
             base.OnCreate();
             m_Log = BetterBulldozerMod.Instance.Logger;
+            m_Log.Info($"{nameof(BetterBulldozerUISystem)}.{nameof(OnCreate)}");
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
             m_RenderingSystem = World.GetOrCreateSystemManaged<RenderingSystem>();

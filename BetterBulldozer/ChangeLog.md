@@ -5,4 +5,4 @@
 * Filters for vanilla bulldoze tool with no tool modes selected including: Networks, Buildings, Trees, Plants, Decals, and Props. Toggling these filters off makes it so the bulldoze tool cannot remove those items.
 	This helps deal with overlapping items from Anarchy but doesn't fix all issues related to that.
 * Optimized multiple systems
-* Compatible with V1.1.3 of the base game.
+* Compatible with V1.1.5 of the base game.

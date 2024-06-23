@@ -15,8 +15,6 @@
 		<Version>1.3.0</Version>
 		<RootNamespace>Better_Bulldozer</RootNamespace>
 	</PropertyGroup>
-
-	<Import Project="Keys.props" />
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
@@ -137,7 +135,6 @@
 
 	<ItemGroup>
 	  <Folder Include="lang\" />
-	  <Folder Include="Settings\" />
 	  <Folder Include="UI\src\mods\lang\" />
 	  <Folder Include="Utils\" />
 	</ItemGroup>
