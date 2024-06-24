@@ -13,7 +13,6 @@ namespace Better_Bulldozer
     using Colossal.Logging;
     using Game;
     using Game.Modding;
-    using Game.Objects;
     using Game.SceneFlow;
     using HarmonyLib;
 
@@ -26,7 +25,6 @@ namespace Better_Bulldozer
         /// A static ID for use with bindings.
         /// </summary>
         public static readonly string Id = "BetterBulldozer";
-
 
         /// <summary>
         /// Gets the install folder for the mod.
@@ -94,7 +92,6 @@ namespace Better_Bulldozer
             Settings = new (this);
             Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(BetterBulldozerMod), Settings, new BetterBulldozerModSettings(this));
-            Settings.Contra = false;
             Logger.Info($"[{nameof(BetterBulldozerMod)}] {nameof(OnLoad)} finished loading settings.");
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting Harmony Patches.");
             m_Harmony = new Harmony("Mods_Yenyang_Better_Bulldozer");
@@ -111,9 +108,10 @@ namespace Better_Bulldozer
             updateSystem.UpdateAt<AutomaticallyRemoveBrandingObjects>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<RemoveRegeneratedSubelementPrefabsSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateBefore<AutomaticallyRemoveManicuredGrassSurfaceSystem>(SystemUpdatePhase.Modification1);
-            updateSystem.UpdateAt<CleanUpOwnerRecordsSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<CleanUpOwnerRecordsSystem>(SystemUpdatePhase.Deserialize);
             updateSystem.UpdateAt<RestoreFencesAndHedgesSystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<RestoreBrandingObjects>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<RemoveVehiclesCimsAndAnimalsTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<RemoveExistingOwnedGrassSurfaces>(SystemUpdatePhase.ToolUpdate);
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Complete.");
         }

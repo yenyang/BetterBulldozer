@@ -6,14 +6,12 @@ namespace Better_Bulldozer.Patches
 {
     using Better_Bulldozer.Systems;
     using Game;
-    using Game.Areas;
     using Game.Common;
     using Game.Net;
     using Game.Rendering;
     using Game.Tools;
     using HarmonyLib;
     using Unity.Entities;
-    using UnityEngine;
 
     /// <summary>
     /// Patches Bulldoze Tool System Inititialize Raycast to add Markers as something to raycast.
@@ -62,6 +60,32 @@ namespace Better_Bulldozer.Patches
                 toolRaycastSystem.netLayerMask = Layer.Fence | Layer.LaneEditor;
                 toolRaycastSystem.raycastFlags |= RaycastFlags.Markers | RaycastFlags.EditorContainers;
             }
+            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.VehiclesCimsAndAnimals)
+            {
+                toolRaycastSystem.typeMask = TypeMask.MovingObjects;
+            }
+            else if (betterBulldozerUISystem.SelectedRaycastTarget == BetterBulldozerUISystem.RaycastTarget.Vanilla)
+            {
+                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Networks) != BetterBulldozerUISystem.VanillaFilters.Networks)
+                {
+                    toolRaycastSystem.typeMask &= ~TypeMask.Net;
+                }
+
+                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Decals) != BetterBulldozerUISystem.VanillaFilters.Decals)
+                {
+                    toolRaycastSystem.raycastFlags &= ~RaycastFlags.Decals;
+                }
+
+                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Buildings) != BetterBulldozerUISystem.VanillaFilters.Buildings
+                    && (betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Trees) != BetterBulldozerUISystem.VanillaFilters.Trees
+                    && (betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Plants) != BetterBulldozerUISystem.VanillaFilters.Plants
+                    && (betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Props) != BetterBulldozerUISystem.VanillaFilters.Props
+                    && (betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Decals) != BetterBulldozerUISystem.VanillaFilters.Decals)
+                {
+                    toolRaycastSystem.typeMask &= ~TypeMask.StaticObjects;
+                }
+            }
+
         }
     }
 }

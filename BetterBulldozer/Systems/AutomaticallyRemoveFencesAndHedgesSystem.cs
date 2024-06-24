@@ -1,17 +1,20 @@
-﻿// <copyright file="AutomaticallyRemoveFencesAndHedges.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="AutomaticallyRemoveFencesAndHedgesSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
-    using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
+    using Game.Net;
     using Game.Prefabs;
     using Game.Tools;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
@@ -28,6 +31,7 @@ namespace Better_Bulldozer.Systems
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
         private ToolSystem m_ToolSystem;
+        private bool m_JustLoaded = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveFencesAndHedges"/> class.
@@ -79,6 +83,10 @@ namespace Better_Bulldozer.Systems
             });
             base.OnCreate();
             Enabled = false;
+            m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Net.SubLane, Updated>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
         }
 
         /// <inheritdoc/>
@@ -95,7 +103,7 @@ namespace Better_Bulldozer.Systems
             {
                 if (m_PrefabSystem.TryGetPrefab(fenceEntity, out PrefabBase prefabBase))
                 {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} Fence Prefab {prefabBase.name}.");
+                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnGameLoadingComplete)} Fence Prefab {prefabBase.name}.");
                 }
             }
 
@@ -103,7 +111,7 @@ namespace Better_Bulldozer.Systems
             {
                 if (m_PrefabSystem.TryGetPrefab(hedgeEntity, out PrefabBase prefabBase))
                 {
-                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnUpdate)} Hedge Prefab {prefabBase.name}.");
+                    m_Log.Debug($"{nameof(AutomaticallyRemoveFencesAndHedges)}.{nameof(OnGameLoadingComplete)} Hedge Prefab {prefabBase.name}.");
                 }
             }
 
@@ -114,73 +122,140 @@ namespace Better_Bulldozer.Systems
             {
                 Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges;
             }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
-            if (!m_ToolSystem.actionMode.IsGame())
+            else
             {
                 Enabled = false;
                 return;
             }
 
-            m_UpdatedWithSubLanesQuery = SystemAPI.QueryBuilder()
-                .WithAllRW<Game.Net.SubLane>()
-                .WithAll<Updated>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            RequireForUpdate(m_UpdatedWithSubLanesQuery);
-
-            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-            NativeArray<Entity> entities = m_UpdatedWithSubLanesQuery.ToEntityArray(Allocator.Temp);
-            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle fencePrefabJobHandle);
-            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.Temp, out JobHandle hedgePrefabJobHandle);
-            fencePrefabJobHandle.Complete();
-            hedgePrefabJobHandle.Complete();
-
-
-
-            foreach (Entity entity in entities)
+            if (!BetterBulldozerMod.Instance.Settings.AutomaticRemovalFencesAndHedges)
             {
-                if (!EntityManager.TryGetComponent(entity, out PrefabRef ownerPrefabRef))
-                {
-                    continue;
-                }
+                return;
+            }
 
-                if (EntityManager.HasComponent<EditorContainerData>(ownerPrefabRef.m_Prefab))
-                {
-                    continue;
-                }
+            m_JustLoaded = true;
+        }
 
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Net.SubLane> dynamicBuffer))
-                {
-                    continue;
-                }
+        /// <inheritdoc/>
+        protected override void OnUpdate()
+        {
+            EntityQuery subLanesQuery = m_UpdatedWithSubLanesQuery;
 
-                foreach (Game.Net.SubLane subLane in dynamicBuffer)
+            if (m_JustLoaded)
+            {
+                subLanesQuery = SystemAPI.QueryBuilder()
+                    .WithAll<Game.Net.SubLane>()
+                    .WithNone<Temp, Deleted, DeleteInXFrames>()
+                    .Build();
+
+                m_JustLoaded = false;
+            }
+
+            if (subLanesQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
+            NativeList<Entity> fencePrefabEntities = m_FencePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle fencePrefabJobHandle);
+            NativeList<Entity> hedgePrefabEntities = m_HedgePrefabEntities.ToEntityListAsync(Allocator.TempJob, out JobHandle hedgePrefabJobHandle);
+
+            NativeList<Entity> fenceAndHedgeSublanes = new NativeList<Entity>(Allocator.TempJob);
+
+            GatherSubLanesJob gatherSubLanesJob = new GatherSubLanesJob()
+            {
+                m_FencePrefabs = fencePrefabEntities,
+                m_HedgePrefabs = hedgePrefabEntities,
+                m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
+                m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                m_SubLanes = fenceAndHedgeSublanes,
+                m_EditorContainerDataLookup = SystemAPI.GetComponentLookup<EditorContainerData>(isReadOnly: true),
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+            };
+
+            Dependency = gatherSubLanesJob.Schedule(subLanesQuery, JobHandle.CombineDependencies(Dependency, fencePrefabJobHandle, hedgePrefabJobHandle));
+
+            fencePrefabEntities.Dispose(Dependency);
+            hedgePrefabEntities.Dispose(Dependency);
+
+            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
+            {
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
+                m_SubLanes = fenceAndHedgeSublanes,
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
+
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(Dependency);
+            m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
+            Dependency = handleDeleteInXFramesJobHandle;
+            fenceAndHedgeSublanes.Dispose(handleDeleteInXFramesJobHandle);
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubLanesJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferTypeHandle<Game.Net.SubLane> m_SubLaneType;
+            [ReadOnly]
+            public NativeList<Entity> m_FencePrefabs;
+            [ReadOnly]
+            public NativeList<Entity> m_HedgePrefabs;
+            public NativeList<Entity> m_SubLanes;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public ComponentLookup<EditorContainerData> m_EditorContainerDataLookup;
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                BufferAccessor<Game.Net.SubLane> subLaneBufferAccessor = chunk.GetBufferAccessor(ref m_SubLaneType);
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (!EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef))
+                    Entity currentEntity = entityNativeArray[i];
+                    DynamicBuffer<Game.Net.SubLane> dynamicBuffer = subLaneBufferAccessor[i];
+                    if (m_PrefabRefLookup.HasComponent(currentEntity) && m_PrefabRefLookup.TryGetComponent(currentEntity, out PrefabRef ownerPrefabRef) && m_EditorContainerDataLookup.HasComponent(ownerPrefabRef.m_Prefab))
                     {
                         continue;
                     }
 
-                    if (fencePrefabEntities.Contains(prefabRef.m_Prefab) || hedgePrefabEntities.Contains(prefabRef.m_Prefab))
+                    foreach (Game.Net.SubLane subLane in dynamicBuffer)
                     {
-                        if (!EntityManager.HasComponent<DeleteInXFrames>(subLane.m_SubLane))
+                        if (m_PrefabRefLookup.HasComponent(subLane.m_SubLane) && m_PrefabRefLookup.TryGetComponent(subLane.m_SubLane, out PrefabRef prefabRef) && (m_FencePrefabs.Contains(prefabRef.m_Prefab) || m_HedgePrefabs.Contains(prefabRef.m_Prefab)))
                         {
-                            buffer.AddComponent<DeleteInXFrames>(subLane.m_SubLane);
+                            m_SubLanes.Add(subLane.m_SubLane);
                         }
-
-                        buffer.SetComponent(subLane.m_SubLane, new DeleteInXFrames() { m_FramesRemaining = 5 });
                     }
                 }
             }
+        }
 
-            fencePrefabEntities.Dispose();
-            hedgePrefabEntities.Dispose();
-            entities.Dispose();
+#if BURST
+        [BurstCompile]
+#endif
+        private struct HandleDeleteInXFramesJob : IJob
+        {
+            [ReadOnly]
+            public NativeList<Entity> m_SubLanes;
+            [ReadOnly]
+            public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
+            public EntityCommandBuffer buffer;
+
+            public void Execute()
+            {
+                foreach (Entity entity in m_SubLanes)
+                {
+                    if (!m_DeleteInXFramesLookup.HasComponent(entity))
+                    {
+                        buffer.AddComponent<DeleteInXFrames>(entity);
+                    }
+
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                }
+            }
         }
     }
 }

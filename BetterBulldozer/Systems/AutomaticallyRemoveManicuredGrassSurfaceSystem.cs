@@ -73,6 +73,16 @@ namespace Better_Bulldozer.Systems
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
+            base.OnGameLoadingComplete(purpose, mode);
+            if (mode.IsGame())
+            {
+                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalManicuredGrass;
+            }
+            else
+            {
+                Enabled = false;
+            }
+
             if (!m_GrassSurfacePrefabEntities.IsEmpty)
             {
                 return;
@@ -93,9 +103,6 @@ namespace Better_Bulldozer.Systems
                     }
                 }
             }
-
-            base.OnGameLoadingComplete(purpose, mode);
-            Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalManicuredGrass;
         }
 
         /// <inheritdoc/>
@@ -104,12 +111,6 @@ namespace Better_Bulldozer.Systems
             if (m_GrassSurfacePrefabEntities.IsEmpty)
             {
                 m_Log.Warn($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnUpdate)} m_GrassSurfacePrefabEntities.IsEmpty");
-                return;
-            }
-
-            if (!m_ToolSystem.actionMode.IsGame())
-            {
-                Enabled = false;
                 return;
             }
 
@@ -133,7 +134,7 @@ namespace Better_Bulldozer.Systems
                     return;
                 }
 
-                if (m_GrassSurfacePrefabEntities.Contains(currentCreationDefinition.m_Prefab) && m_ToolSystem.activeTool != m_AreaToolSystem)
+                if (m_GrassSurfacePrefabEntities.Contains(currentCreationDefinition.m_Prefab))
                 {
                     // m_Log.Debug($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnUpdate)} found creation data.");
                     EntityManager.DestroyEntity(entity);

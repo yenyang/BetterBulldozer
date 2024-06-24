@@ -2,24 +2,25 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
-    using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Buildings;
     using Game.Common;
-    using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
+    using Unity.Burst;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
 
     /// <summary>
-    /// A system that automatically removes fences and hedges from created buildings.
+    /// A system that automatically removes branding objects.
     /// </summary>
     public partial class AutomaticallyRemoveBrandingObjects : GameSystemBase
     {
@@ -30,6 +31,7 @@ namespace Better_Bulldozer.Systems
         private PrefabSystem m_PrefabSystem;
         private ModificationEndBarrier m_Barrier;
         private ToolSystem m_ToolSystem;
+        private bool m_JustLoaded = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticallyRemoveBrandingObjects"/> class.
@@ -50,14 +52,20 @@ namespace Better_Bulldozer.Systems
                 {
                     All = new ComponentType[] { ComponentType.ReadOnly<Game.Objects.SubObject>(), ComponentType.ReadOnly<Updated>() },
                     None = new ComponentType[] { ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
-                }, new EntityQueryDesc
+                });
+
+            m_UpdateEventQuery = GetEntityQuery (
+                new EntityQueryDesc
                 {
                     All = new ComponentType[] { ComponentType.ReadOnly<Event>(), ComponentType.ReadOnly<RentersUpdated>() },
                     None = new ComponentType[] { ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<Deleted>() },
                 });
-            RequireForUpdate(m_UpdateQuery);
+
             m_Barrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             base.OnCreate();
+            m_BrandObjectPrefabQuery = SystemAPI.QueryBuilder()
+                .WithAll<BrandObjectData>()
+                .Build();
             Enabled = false;
         }
 
@@ -67,109 +75,197 @@ namespace Better_Bulldozer.Systems
             base.OnGameLoadingComplete(purpose, mode);
             if (mode.IsGame())
             {
-                Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
+               Enabled = BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects;
             }
-        }
-
-        /// <inheritdoc/>
-        protected override void OnUpdate()
-        {
-            m_BrandObjectPrefabQuery = SystemAPI.QueryBuilder()
-                .WithAll<BrandObjectData>()
-                .Build();
-
-            if (!m_ToolSystem.actionMode.IsGame())
+            else
             {
                 Enabled = false;
                 return;
             }
 
-            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-            NativeList<Entity> brandingObjectPrefabsEntities = m_BrandObjectPrefabQuery.ToEntityListAsync(Allocator.Temp, out JobHandle brandingObjectJobHandle);
-            brandingObjectJobHandle.Complete();
-
-            if (!m_UpdateQuery.IsEmptyIgnoreFilter)
+            if (!BetterBulldozerMod.Instance.Settings.AutomaticRemovalBrandingObjects)
             {
-                NativeArray<Entity> entities = m_UpdateQuery.ToEntityArray(Allocator.Temp);
-                ProcessEntities(entities, brandingObjectPrefabsEntities, ref buffer);
-                entities.Dispose();
+                return;
             }
 
-            if (!m_UpdateQuery.IsEmptyIgnoreFilter)
-            {
-                NativeArray<Entity> eventEntities = m_UpdateQuery.ToEntityArray(Allocator.Temp);
-                NativeList<Entity> actualEntitiesList = new NativeList<Entity>(Allocator.Temp);
-                foreach (Entity entity in eventEntities)
-                {
-                    if (EntityManager.TryGetComponent(entity, out RentersUpdated rentersUpdated))
-                    {
-                        m_Log.Debug($"rentersUpdated includes {rentersUpdated.m_Property.Index}:{rentersUpdated.m_Property.Version}");
-                        actualEntitiesList.Add(rentersUpdated.m_Property);
-                        continue;
-                    }
-
-                    if (EntityManager.TryGetComponent(entity, out SubObjectsUpdated subObjectsUpdated))
-                    {
-                        actualEntitiesList.Add(subObjectsUpdated.m_Owner);
-                    }
-                }
-
-                ProcessEntities(actualEntitiesList.AsArray(), brandingObjectPrefabsEntities, ref buffer);
-                eventEntities.Dispose();
-                actualEntitiesList.Dispose();
-            }
-
-            brandingObjectPrefabsEntities.Dispose();
+            m_JustLoaded = true;
         }
 
-        private void ProcessEntities(NativeArray<Entity> entities, NativeList<Entity> prefabEntities, ref EntityCommandBuffer buffer)
+        /// <inheritdoc/>
+        protected override void OnUpdate()
         {
-            foreach (Entity entity in entities)
+            EntityQuery subObjectQuery = m_UpdateQuery;
+
+            if (m_JustLoaded)
             {
-                if (!EntityManager.TryGetBuffer(entity, isReadOnly: false, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                subObjectQuery = SystemAPI.QueryBuilder()
+                    .WithAll<Game.Objects.SubObject>()
+                    .WithNone<Temp, Deleted>()
+                    .Build();
+
+                m_JustLoaded = false;
+            }
+
+
+            NativeList<Entity> brandingObjectPrefabsEntities = m_BrandObjectPrefabQuery.ToEntityListAsync(Allocator.TempJob, out JobHandle brandingObjectJobHandle);
+
+            NativeList<Entity> brandingSubObjects = new NativeList<Entity>(Allocator.TempJob);
+
+            if (!subObjectQuery.IsEmptyIgnoreFilter)
+            {
+                GatherSubObjectsJob gatherSubObjectsJob = new GatherSubObjectsJob()
                 {
-                    continue;
-                }
+                    m_BrandingObjectPrefabs = brandingObjectPrefabsEntities,
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
+                    m_SubObjects = brandingSubObjects,
+                    m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
+                };
 
-                foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                Dependency = gatherSubObjectsJob.Schedule(subObjectQuery, JobHandle.CombineDependencies(Dependency, brandingObjectJobHandle));
+            }
+
+            if (!m_UpdateEventQuery.IsEmptyIgnoreFilter)
+            {
+                GatherSubObjectsFromEventsJob gatherSubObjectsFromEventsJob = new GatherSubObjectsFromEventsJob()
                 {
-                    if (!EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef))
-                    {
-                        continue;
-                    }
+                    m_BrandingObjectPrefabs = brandingObjectPrefabsEntities,
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<PrefabRef>(isReadOnly: true),
+                    m_RentersUpdatedType = SystemAPI.GetComponentTypeHandle<RentersUpdated>(isReadOnly: true),
+                    m_SubObjectLookup = SystemAPI.GetBufferLookup<Game.Objects.SubObject>(isReadOnly: true),
+                    m_SubObjects = brandingSubObjects,
+                };
 
-                    if (prefabEntities.Contains(prefabRef.m_Prefab))
-                    {
-                        if (!EntityManager.HasComponent<DeleteInXFrames>(subObject.m_SubObject))
-                        {
-                            buffer.AddComponent<DeleteInXFrames>(subObject.m_SubObject);
-                        }
+                Dependency = gatherSubObjectsFromEventsJob.Schedule(m_UpdateEventQuery, JobHandle.CombineDependencies(Dependency, brandingObjectJobHandle));
+            }
 
-                        buffer.SetComponent(subObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 1 });
-                    }
+            brandingObjectPrefabsEntities.Dispose(Dependency);
+            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
+            {
+                m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
+                m_Entities = brandingSubObjects,
+                buffer = m_Barrier.CreateCommandBuffer(),
+            };
 
-                    if (!EntityManager.TryGetBuffer(subObject.m_SubObject, isReadOnly: false, out DynamicBuffer<Game.Objects.SubObject> deepDynamicBuffer))
-                    {
-                        continue;
-                    }
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(Dependency);
+            m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
+            Dependency = handleDeleteInXFramesJobHandle;
+            brandingSubObjects.Dispose(handleDeleteInXFramesJobHandle);
+        }
 
-                    foreach (Game.Objects.SubObject deepSubObject in dynamicBuffer)
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubObjectsJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferTypeHandle<Game.Objects.SubObject> m_SubObjectType;
+            [ReadOnly]
+            public NativeList<Entity> m_BrandingObjectPrefabs;
+            public NativeList<Entity> m_SubObjects;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                BufferAccessor<Game.Objects.SubObject> subObjectBufferAccessor = chunk.GetBufferAccessor(ref m_SubObjectType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    DynamicBuffer<Game.Objects.SubObject> dynamicBuffer = subObjectBufferAccessor[i];
+                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                     {
-                        if (!EntityManager.TryGetComponent(deepSubObject.m_SubObject, out PrefabRef deepPrefabRef))
+                        if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) || !m_BrandingObjectPrefabs.Contains(prefabRef.m_Prefab))
                         {
                             continue;
                         }
 
-                        if (prefabEntities.Contains(deepPrefabRef.m_Prefab))
+                        m_SubObjects.Add(subObject.m_SubObject);
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
                         {
-                            if (!EntityManager.HasComponent<DeleteInXFrames>(deepSubObject.m_SubObject))
-                            {
-                                buffer.AddComponent<DeleteInXFrames>(deepSubObject.m_SubObject);
-                            }
+                            continue;
+                        }
 
-                            buffer.SetComponent(deepSubObject.m_SubObject, new DeleteInXFrames() { m_FramesRemaining = 1 });
+                        foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                        {
+                            m_SubObjects.Add(subObject.m_SubObject);
                         }
                     }
+                }
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct GatherSubObjectsFromEventsJob : IJobChunk
+        {
+            [ReadOnly]
+            public BufferLookup<Game.Objects.SubObject> m_SubObjectLookup;
+            [ReadOnly]
+            public NativeList<Entity> m_BrandingObjectPrefabs;
+            public NativeList<Entity> m_SubObjects;
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+            [ReadOnly]
+            public ComponentTypeHandle<RentersUpdated> m_RentersUpdatedType;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<RentersUpdated> rentersUpdatedNativeArray = chunk.GetNativeArray(ref m_RentersUpdatedType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    RentersUpdated rentersUpdated = rentersUpdatedNativeArray[i];
+                    if (!m_SubObjectLookup.TryGetBuffer(rentersUpdated.m_Property, out DynamicBuffer<Game.Objects.SubObject> dynamicBuffer))
+                    {
+                        continue;
+                    }
+
+                    foreach (Game.Objects.SubObject subObject in dynamicBuffer)
+                    {
+                        if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) || !m_BrandingObjectPrefabs.Contains(prefabRef.m_Prefab))
+                        {
+                            continue;
+                        }
+
+                        m_SubObjects.Add(subObject.m_SubObject);
+                        if (!m_SubObjectLookup.TryGetBuffer(subObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
+                        {
+                            m_SubObjects.Add(subObject.m_SubObject);
+                        }
+                    }
+                }
+            }
+        }
+
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct HandleDeleteInXFramesJob : IJob
+        {
+            [ReadOnly]
+            public NativeList<Entity> m_Entities;
+            [ReadOnly]
+            public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
+            public EntityCommandBuffer buffer;
+
+            public void Execute()
+            {
+                foreach (Entity entity in m_Entities)
+                {
+                    if (!m_DeleteInXFramesLookup.HasComponent(entity))
+                    {
+                        buffer.AddComponent<DeleteInXFrames>(entity);
+                    }
+
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
                 }
             }
         }

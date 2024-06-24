@@ -84,6 +84,11 @@ namespace Better_Bulldozer.Systems
             m_GrassSurfacePrefabEntities = new NativeList<Entity>(m_GrassSurfacePrefabIDs.Count, Allocator.Persistent);
             base.OnCreate();
             Enabled = false;
+            m_OwnedAreaQuery = SystemAPI.QueryBuilder()
+                .WithAll<Owner, Area, Surface, PrefabRef>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+            RequireForUpdate(m_OwnedAreaQuery);
         }
 
         /// <inheritdoc/>
@@ -94,13 +99,6 @@ namespace Better_Bulldozer.Systems
                 Enabled = false;
                 return;
             }
-
-            m_OwnedAreaQuery = SystemAPI.QueryBuilder()
-                .WithAll<Owner, Area, Surface, PrefabRef>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            RequireForUpdate(m_OwnedAreaQuery);
 
             if (m_GrassSurfacePrefabEntities.IsEmpty)
             {
@@ -152,7 +150,7 @@ namespace Better_Bulldozer.Systems
                     if (m_GrassPrefabs.Contains(prefabRef.m_Prefab))
                     {
                         buffer.AddComponent<DeleteInXFrames>(unfilteredChunkIndex, currentEntity);
-                        DeleteInXFrames delete = new DeleteInXFrames { m_FramesRemaining = 3 };
+                        DeleteInXFrames delete = new DeleteInXFrames { m_FramesRemaining = 5 };
                         buffer.SetComponent(unfilteredChunkIndex, currentEntity, delete);
                     }
                 }

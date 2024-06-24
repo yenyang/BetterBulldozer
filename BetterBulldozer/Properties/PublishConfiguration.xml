@@ -22,7 +22,7 @@ I am looking for volunteers to help translate the mod into the official language
 The mod is fully or partially translated into: Chinese Simplified, German, Korean, Polish, Spanish, Chinese Traditional, French, Italian, Brazilian Portuguese and Russian.
 
 # Detailed Descrption
-* Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims.
+* Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims including broken, stuck, and vehicles placed by the player. 
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.
 * Icon and filters to EXCLUSIVELY target surfaces or spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
@@ -35,6 +35,7 @@ The mod is fully or partially translated into: Chinese Simplified, German, Korea
 * Options menu button to restore fences and hedges that were automatically removed. This restoration takes time.
 * Options menu button to restore branding objects and adverstisements that were automatically removed. This restoration takes time.
 * Options menu button to remove all manicured grass surfaces from buildings.
+* Filters for the vanilla bulldoze tool with no tool modes selected including: Networks, Buildings, Trees, Plants, Decals, and Props. Toggling these filters off makes it so the bulldoze tool cannot remove those items.
 
 ## Remove Sub-Elements Tool Mode
 Removes props, trees, decals, fences, hedges, sub-buildings, extensions, and networks from assets. This tool can break connectivity within assets. Some elements are more safe to remove such as: props, trees, decals, fences, hedges, and sub-buildings. Some elements are less safe to remove such as: networks and extensions. You can prohibit removing those in the settings.
@@ -68,8 +69,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * Chameleon TBN - Testing, Feedback, Icons, and Logo
 * Sully - Testing, Feedback, and Promotional Material.
-* Klyte45, Algernon - Help with UI, Cooperative Development and Code Sharing
-* T.D.W., krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
+* Klyte45, T.D.W., Algernon - Help with UI, Cooperative Development and Code Sharing
+* krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
 * City Rat - Icons
 * Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg and Morgan (French), yui hei lai (Chinese Traditional)
 * Testing, Feedback - Dante, starrysum, HarbourMaster Jay, Dome, Tigon Ologdring, BruceyBoy, RaftermanNZ, Elektrotek, SpaceChad 
@@ -82,22 +83,27 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <Screenshot Value="Properties/Previews/neighborhood.png" />
   <Screenshot Value="Properties/Previews/turboRoundabout.png" />
   <Screenshot Value="Properties/Previews/fenceRemoval.png" />
+  <Screenshot Value="Properties/Previews/removeTrain.jpg" />
   <!--Tag, can be set multiple-->
   <Tag Value="Code Mod" />
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.2" />
+  <ModVersion Value="1.3.0" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple-->
-  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.7" />
-  <Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.2" />
+  <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.9" />
+  <Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.3" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.2.2
-* Fixed setting toolmode in game and switching to editor prevents use of editor bulldozer.
-* Removed most systems from editor.
-* Updated localization.</ChangeLog>
+  <ChangeLog># Update V1.3.0
+* Overhauled "Remove Moving Objects and Cims" tool mode. Now has two selection modes: Single and Radius. 
+	* Single exclusively targets moving objects. 
+	* Radius removes ALL vehicles, cims, and animals in the radius and vertically above or below including broken, stuck, vehicles placed by player, and animals spawned by player placed spawners.
+* Filters for vanilla bulldoze tool with no tool modes selected including: Networks, Buildings, Trees, Plants, Decals, and Props. Toggling these filters off makes it so the bulldoze tool cannot remove those items.
+	This helps deal with overlapping items from Anarchy but doesn't fix all issues related to that.
+* Optimized multiple systems
+* Compatible with V1.1.5 of the base game.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

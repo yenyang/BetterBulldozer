@@ -45,6 +45,12 @@ namespace Better_Bulldozer.Systems
             m_ToolSystem = World.GetExistingSystemManaged<ToolSystem>();
             base.OnCreate();
             Enabled = false;
+            m_SubObjectQuery = SystemAPI.QueryBuilder()
+                .WithAll<Game.Objects.SubObject>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
+            RequireForUpdate(m_SubObjectQuery);
         }
 
         /// <inheritdoc/>
@@ -56,12 +62,6 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
-            m_SubObjectQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Objects.SubObject>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
-                .Build();
-
-            RequireForUpdate(m_SubObjectQuery);
 
             AddUpdatedJob addUpdatedJob = new AddUpdatedJob()
             {

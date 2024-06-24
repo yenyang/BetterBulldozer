@@ -14,7 +14,7 @@ I am looking for volunteers to help translate the mod into the official language
 The mod is fully or partially translated into: Chinese Simplified, German, Korean, Polish, Spanish, Chinese Traditional, French, Italian, Brazilian Portuguese and Russian.
 
 # Detailed Descrption
-* Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims.
+* Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims including broken, stuck, and vehicles placed by the player. 
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.
 * Icon and filters to EXCLUSIVELY target surfaces or spaces with the bulldozer and remove with one click. Works both inside and outside of assets.
@@ -27,6 +27,7 @@ The mod is fully or partially translated into: Chinese Simplified, German, Korea
 * Options menu button to restore fences and hedges that were automatically removed. This restoration takes time.
 * Options menu button to restore branding objects and adverstisements that were automatically removed. This restoration takes time.
 * Options menu button to remove all manicured grass surfaces from buildings.
+* Filters for the vanilla bulldoze tool with no tool modes selected including: Networks, Buildings, Trees, Plants, Decals, and Props. Toggling these filters off makes it so the bulldoze tool cannot remove those items.
 
 ## Remove Sub-Elements Tool Mode
 Removes props, trees, decals, fences, hedges, sub-buildings, extensions, and networks from assets. This tool can break connectivity within assets. Some elements are more safe to remove such as: props, trees, decals, fences, hedges, and sub-buildings. Some elements are less safe to remove such as: networks and extensions. You can prohibit removing those in the settings.
@@ -60,8 +61,8 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * Chameleon TBN - Testing, Feedback, Icons, and Logo
 * Sully - Testing, Feedback, and Promotional Material.
-* Klyte45, Algernon - Help with UI, Cooperative Development and Code Sharing
-* T.D.W., krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
+* Klyte45, T.D.W., Algernon - Help with UI, Cooperative Development and Code Sharing
+* krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
 * City Rat - Icons
 * Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg and Morgan (French), yui hei lai (Chinese Traditional)
 * Testing, Feedback - Dante, starrysum, HarbourMaster Jay, Dome, Tigon Ologdring, BruceyBoy, RaftermanNZ, Elektrotek, SpaceChad 
