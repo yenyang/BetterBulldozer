@@ -9,12 +9,14 @@ namespace Better_Bulldozer.Systems
     using System.Security.Cryptography;
     using Better_Bulldozer.Extensions;
     using Better_Bulldozer.Tools;
+    using Better_Bulldozer.Utils;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
     using Game;
     using Game.Areas;
     using Game.Common;
+    using Game.Debug;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
@@ -307,6 +309,21 @@ namespace Better_Bulldozer.Systems
             if (m_BulldozeToolSystem.debugBypassBulldozeConfirmation != m_BypassConfirmation.value)
             {
                 m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
+            }
+
+            if (SelectedRaycastTarget == RaycastTarget.Areas && AreasFilter == AreaTypeMask.Spaces )
+            {
+                AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
+                areaTypeMask |= AreaTypeMask.Spaces;
+                areaTypeMask &= ~AreaTypeMask.Surfaces;
+                m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
+            }
+            else if (SelectedRaycastTarget == RaycastTarget.Areas)
+            {
+                AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
+                areaTypeMask |= AreaTypeMask.Surfaces;
+                areaTypeMask &= ~AreaTypeMask.Spaces;
+                m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
             }
         }
 
