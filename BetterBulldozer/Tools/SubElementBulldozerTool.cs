@@ -188,7 +188,7 @@ namespace Better_Bulldozer.Tools
             });
             RequireForUpdate(m_OwnedQuery);
 
-            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.ApplyMimicAction);
+            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.RSEApplyMimicAction);
             var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
             var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
             var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));

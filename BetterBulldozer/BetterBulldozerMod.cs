@@ -24,7 +24,12 @@ namespace Better_Bulldozer
         /// <summary>
         /// Fake keybind action for apply.
         /// </summary>
-        public const string ApplyMimicAction = "ApplyMimic";
+        public const string RSEApplyMimicAction = "SEBTApplyMimic";
+
+        /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string VCAApplyMimicAction = "VCAApplyMimic";
 
         /// <summary>
         /// A static ID for use with bindings.

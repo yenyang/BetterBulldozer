@@ -17,7 +17,8 @@ namespace Better_Bulldozer.Settings
     /// The mod settings for the Anarchy Mod.
     /// </summary>
     [FileLocation("Mods_Yenyang_Better_Bulldozer")]
-    [SettingsUIMouseAction(BetterBulldozerMod.ApplyMimicAction, "BetterBulldozerCustomTools")]
+    [SettingsUIMouseAction(BetterBulldozerMod.RSEApplyMimicAction, "RemoveSubElementsApplyAction")]
+    [SettingsUIMouseAction(BetterBulldozerMod.VCAApplyMimicAction, "RemoveVCAApplyAction")]
     public class BetterBulldozerModSettings : ModSetting
     {
         /// <summary>
@@ -100,11 +101,18 @@ namespace Better_Bulldozer.Settings
         }
 
         /// <summary>
-        /// Gets or sets hidden keybinding for apply action.
+        /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
         /// </summary>
-        [SettingsUIMouseBinding(BetterBulldozerMod.ApplyMimicAction)]
+        [SettingsUIMouseBinding(BetterBulldozerMod.RSEApplyMimicAction)]
         [SettingsUIHidden]
-        public ProxyBinding ApplyMimic { get; set; }
+        public ProxyBinding RSEApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
+        /// </summary>
+        [SettingsUIMouseBinding(BetterBulldozerMod.VCAApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding VCAApplyMimic { get; set; }
 
 
         /// <summary>
