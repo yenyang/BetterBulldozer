@@ -22,6 +22,11 @@ namespace Better_Bulldozer
     public class BetterBulldozerMod : IMod
     {
         /// <summary>
+        /// Fake keybind action for apply.
+        /// </summary>
+        public const string ApplyMimicAction = "ApplyMimic";
+
+        /// <summary>
         /// A static ID for use with bindings.
         /// </summary>
         public static readonly string Id = "BetterBulldozer";
@@ -90,6 +95,10 @@ namespace Better_Bulldozer
 
             Logger.Info("ModInstallFolder = " + ModInstallFolder);
             Settings = new (this);
+
+
+
+            Settings.RegisterKeyBindings();
             Settings.RegisterInOptionsUI();
             AssetDatabase.global.LoadSettings(nameof(BetterBulldozerMod), Settings, new BetterBulldozerModSettings(this));
             Logger.Info($"[{nameof(BetterBulldozerMod)}] {nameof(OnLoad)} finished loading settings.");

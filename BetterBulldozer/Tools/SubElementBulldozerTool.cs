@@ -5,6 +5,7 @@
 namespace Better_Bulldozer.Tools
 {
     using System;
+    using System.Linq;
     using System.Reflection;
     using Better_Bulldozer.Components;
     using Better_Bulldozer.Settings;
@@ -25,6 +26,7 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine.InputSystem;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -142,7 +144,6 @@ namespace Better_Bulldozer.Tools
         {
             Enabled = false;
             m_Log = BetterBulldozerMod.Instance.Logger;
-            m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
             m_RenderingSystem = World.GetOrCreateSystemManaged<RenderingSystem>();
             m_Log.Info($"[{nameof(SubElementBulldozerTool)}] {nameof(OnCreate)}");
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
@@ -186,6 +187,13 @@ namespace Better_Bulldozer.Tools
                 },
             });
             RequireForUpdate(m_OwnedQuery);
+
+            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.ApplyMimicAction);
+            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
+            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
+            SetMimic(mimicApplyBinding, applyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -666,6 +674,15 @@ namespace Better_Bulldozer.Tools
             }
 
             return inputDeps;
+        }
+
+
+        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
+        {
+            var newMimicBinding = mimic.Copy();
+            newMimicBinding.path = buildIn.path;
+            newMimicBinding.modifiers = buildIn.modifiers;
+            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
         private void CheckForSimilarSubObjects(ComponentType necessaryComponent, ComponentType excludeComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
