@@ -8,6 +8,7 @@ namespace Better_Bulldozer.Tools
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Better_Bulldozer.Systems;
     using Colossal.Annotations;
     using Colossal.Entities;
@@ -40,11 +41,11 @@ namespace Better_Bulldozer.Tools
     public partial class RemoveVehiclesCimsAndAnimalsTool : ToolBaseSystem
     {
         private ProxyAction m_ApplyAction;
-        private ProxyAction m_SecondaryApplyAction;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private BulldozeToolSystem m_BulldozeToolSystem;
         private EntityQuery m_MovingObjectsQuery;
+        private EntityQuery m_ParkedObjectsQuery;
         private ILog m_Log;
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
 
@@ -89,8 +90,6 @@ namespace Better_Bulldozer.Tools
         {
             Enabled = false;
             m_Log = BetterBulldozerMod.Instance.Logger;
-            m_ApplyAction = InputManager.instance.FindAction("Tool", "Apply");
-            m_SecondaryApplyAction = InputManager.instance.FindAction("Tool", "Secondary Apply");
             m_Log.Info($"[{nameof(RemoveVehiclesCimsAndAnimalsTool)}] {nameof(OnCreate)}");
             m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
@@ -110,7 +109,7 @@ namespace Better_Bulldozer.Tools
                     {
                         ComponentType.ReadOnly<Vehicle>(),
                         ComponentType.ReadOnly<Animal>(),
-                        ComponentType.ReadOnly<Citizen>(),
+                        ComponentType.ReadOnly<Human>(),
                     },
                     None = new ComponentType[]
                     {
@@ -120,14 +119,43 @@ namespace Better_Bulldozer.Tools
                 },
             });
 
+            m_ParkedObjectsQuery = GetEntityQuery(new EntityQueryDesc[]
+            {
+                new EntityQueryDesc
+                {
+                    All = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Game.Objects.Transform>(),
+                    },
+                    Any = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Vehicle>(),
+                        ComponentType.ReadOnly<Animal>(),
+                        ComponentType.ReadOnly<Human>(),
+                    },
+                    None = new ComponentType[]
+                    {
+                        ComponentType.ReadOnly<Deleted>(),
+                        ComponentType.ReadOnly<Temp>(),
+                        ComponentType.ReadOnly<InterpolatedTransform>(),
+                    },
+                },
+            });
+
             RequireForUpdate(m_MovingObjectsQuery);
+
+            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.VCAApplyMimicAction);
+            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
+            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
+            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
+            SetMimic(mimicApplyBinding, applyWatcher.binding);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
             m_ApplyAction.shouldBeEnabled = true;
-            m_SecondaryApplyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
         }
 
@@ -135,7 +163,6 @@ namespace Better_Bulldozer.Tools
         protected override void OnStopRunning()
         {
             m_ApplyAction.shouldBeEnabled = false;
-            m_SecondaryApplyAction.shouldBeEnabled = false;
         }
 
         /// <inheritdoc/>
@@ -161,7 +188,7 @@ namespace Better_Bulldozer.Tools
 
             if (m_ApplyAction.IsPressed())
             {
-                    RemoveVehiclesCimsAndAnimalsWithRadius changeTreeAgeWithinRadiusJob = new ()
+                    RemoveVehiclesCimsAndAnimalsWithRadius removeVCAWithinRadiusJob = new ()
                     {
                         m_EntityType = SystemAPI.GetEntityTypeHandle(),
                         m_Position = hit.m_HitPosition,
@@ -169,7 +196,18 @@ namespace Better_Bulldozer.Tools
                         m_InterpolatedTransformType = SystemAPI.GetComponentTypeHandle<InterpolatedTransform>(isReadOnly: true),
                         buffer = m_ToolOutputBarrier.CreateCommandBuffer(),
                     };
-                    inputDeps = JobChunkExtensions.Schedule(changeTreeAgeWithinRadiusJob, m_MovingObjectsQuery, inputDeps);
+                    inputDeps = JobChunkExtensions.Schedule(removeVCAWithinRadiusJob, m_MovingObjectsQuery, inputDeps);
+                    m_ToolOutputBarrier.AddJobHandleForProducer(inputDeps);
+
+                    RemoveStationaryVehiclesCimsAndAnimalsWithRadius removeStationaryVCAwithinRadiusJob = new()
+                    {
+                        m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                        m_Position = hit.m_HitPosition,
+                        m_Radius = radius,
+                        m_TransformType = SystemAPI.GetComponentTypeHandle<Game.Objects.Transform>(isReadOnly: true),
+                        buffer = m_ToolOutputBarrier.CreateCommandBuffer(),
+                    };
+                    inputDeps = JobChunkExtensions.Schedule(removeStationaryVCAwithinRadiusJob, m_ParkedObjectsQuery, inputDeps);
                     m_ToolOutputBarrier.AddJobHandleForProducer(inputDeps);
             }
 
@@ -192,6 +230,14 @@ namespace Better_Bulldozer.Tools
         protected override void OnDestroy()
         {
             base.OnDestroy();
+        }
+
+        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
+        {
+            var newMimicBinding = mimic.Copy();
+            newMimicBinding.path = buildIn.path;
+            newMimicBinding.modifiers = buildIn.modifiers;
+            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
 #if BURST
@@ -220,6 +266,60 @@ namespace Better_Bulldozer.Tools
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     if (CheckForWithinRadius(m_Position, interpolatedTransformNativeArray[i].m_Position, m_Radius))
+                    {
+                        Entity currentEntity = entityNativeArray[i];
+                        buffer.AddComponent<Deleted>(currentEntity);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Checks the radius and position and returns true if tree is there.
+            /// </summary>
+            /// <param name="cursorPosition">Float3 from Raycast.</param>
+            /// <param name="position">Float3 position from InterploatedTransform.</param>
+            /// <param name="radius">Radius usually passed from settings.</param>
+            /// <returns>True if tree position is within radius of position. False if not.</returns>
+            private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
+            {
+                float minRadius = 10f;
+                radius = Mathf.Max(radius, minRadius);
+                position.y = cursorPosition.y;
+                if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct RemoveStationaryVehiclesCimsAndAnimalsWithRadius : IJobChunk
+        {
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<Game.Objects.Transform> m_TransformType;
+            public EntityCommandBuffer buffer;
+            public float m_Radius;
+            public float3 m_Position;
+
+            /// <summary>
+            /// Executes job which will change state or prefab for trees within a radius.
+            /// </summary>
+            /// <param name="chunk">ArchteypeChunk of IJobChunk.</param>
+            /// <param name="unfilteredChunkIndex">Use for EntityCommandBuffer.ParralelWriter.</param>
+            /// <param name="useEnabledMask">Part of IJobChunk. Unsure what it does.</param>
+            /// <param name="chunkEnabledMask">Part of IJobChunk. Not sure what it does.</param>
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                NativeArray<Game.Objects.Transform> transformNativeArray = chunk.GetNativeArray(ref m_TransformType);
+                for (int i = 0; i < chunk.Count; i++)
+                {
+                    if (CheckForWithinRadius(m_Position, transformNativeArray[i].m_Position, m_Radius))
                     {
                         Entity currentEntity = entityNativeArray[i];
                         buffer.AddComponent<Deleted>(currentEntity);

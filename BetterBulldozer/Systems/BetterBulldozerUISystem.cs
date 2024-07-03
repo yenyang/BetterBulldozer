@@ -9,12 +9,14 @@ namespace Better_Bulldozer.Systems
     using System.Security.Cryptography;
     using Better_Bulldozer.Extensions;
     using Better_Bulldozer.Tools;
+    using Better_Bulldozer.Utils;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Colossal.UI.Binding;
     using Game;
     using Game.Areas;
     using Game.Common;
+    using Game.Debug;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
@@ -245,7 +247,7 @@ namespace Better_Bulldozer.Systems
             AddBinding(m_SubElementBulldozeToolActive = new ValueBinding<bool>(ModId, "SubElementBulldozeToolActive", false));
             m_SelectionMode = CreateBinding("SelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousSelectionMode);
             m_IsGame = CreateBinding("IsGame", false);
-            m_VehicleCimsAnimalsSelectionMode = CreateBinding("VehicleCimsAnimalsSelectionMode", (int)BetterBulldozerMod.Instance.Settings.PreviousVCAselectionMode);
+            m_VehicleCimsAnimalsSelectionMode = CreateBinding("VehicleCimsAnimalsSelectionMode", (int)VCAselectionMode.Single);
             m_SelectionRadius = CreateBinding("SelectionRadius", 10);
             m_SelectedVanillaFilters = CreateBinding("SelectedVanillaFilters", VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.All);
 
@@ -263,7 +265,7 @@ namespace Better_Bulldozer.Systems
             AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", () => m_UpgradeIsMain.Update(true)));
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", () => m_UpgradeIsMain.Update(false)));
             CreateTrigger("ChangeSelectionMode", (int value) => ChangeSelectionMode(value));
-            CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value));
+            CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value) );
             CreateTrigger("IncreaseRadius", () => m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 10, 100));
             CreateTrigger("DecreaseRadius", () => m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 10, 10));
             CreateTrigger("ChangeVanillaFilter", (int value) => ChangeVanillaFilters((VanillaFilters)value));
@@ -307,6 +309,21 @@ namespace Better_Bulldozer.Systems
             if (m_BulldozeToolSystem.debugBypassBulldozeConfirmation != m_BypassConfirmation.value)
             {
                 m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
+            }
+
+            if (SelectedRaycastTarget == RaycastTarget.Areas && AreasFilter == AreaTypeMask.Spaces )
+            {
+                AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
+                areaTypeMask |= AreaTypeMask.Spaces;
+                areaTypeMask &= ~AreaTypeMask.Surfaces;
+                m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
+            }
+            else if (SelectedRaycastTarget == RaycastTarget.Areas)
+            {
+                AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
+                areaTypeMask |= AreaTypeMask.Surfaces;
+                areaTypeMask &= ~AreaTypeMask.Spaces;
+                m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
             }
         }
 

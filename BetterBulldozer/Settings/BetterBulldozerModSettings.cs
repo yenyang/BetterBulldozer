@@ -7,6 +7,7 @@ namespace Better_Bulldozer.Settings
     using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
     using Game;
+    using Game.Input;
     using Game.Modding;
     using Game.Settings;
     using Game.Tools;
@@ -16,7 +17,8 @@ namespace Better_Bulldozer.Settings
     /// The mod settings for the Anarchy Mod.
     /// </summary>
     [FileLocation("Mods_Yenyang_Better_Bulldozer")]
-
+    [SettingsUIMouseAction(BetterBulldozerMod.RSEApplyMimicAction, "RemoveSubElementsApplyAction")]
+    [SettingsUIMouseAction(BetterBulldozerMod.VCAApplyMimicAction, "RemoveVCAApplyAction")]
     public class BetterBulldozerModSettings : ModSetting
     {
         /// <summary>
@@ -99,16 +101,25 @@ namespace Better_Bulldozer.Settings
         }
 
         /// <summary>
+        /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
+        /// </summary>
+        [SettingsUIMouseBinding(BetterBulldozerMod.RSEApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding RSEApplyMimic { get; set; }
+
+        /// <summary>
+        /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
+        /// </summary>
+        [SettingsUIMouseBinding(BetterBulldozerMod.VCAApplyMimicAction)]
+        [SettingsUIHidden]
+        public ProxyBinding VCAApplyMimic { get; set; }
+
+
+        /// <summary>
         /// Gets or sets a value indicating whether: for saving previous selection mode for remove subelement tool mode.
         /// </summary>
         [SettingsUIHidden]
         public BetterBulldozerUISystem.SelectionMode PreviousSelectionMode { get; set; } = BetterBulldozerUISystem.SelectionMode.Matching;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether: for saving previous selection mode for remove vehicels, cims and animals.
-        /// </summary>
-        [SettingsUIHidden]
-        public BetterBulldozerUISystem.VCAselectionMode PreviousVCAselectionMode { get; set; } = BetterBulldozerUISystem.VCAselectionMode.Radius;
 
         /// <summary>
         /// Sets a value indicating whether: a button for Resetting the settings for the Mod.
