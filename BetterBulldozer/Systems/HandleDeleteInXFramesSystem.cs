@@ -9,8 +9,10 @@ namespace Better_Bulldozer.Systems
     using Colossal.Logging;
     using Game;
     using Game.Common;
+    using Game.Rendering;
     using Game.Simulation;
     using Game.Tools;
+    using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
 
