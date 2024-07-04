@@ -311,7 +311,7 @@ namespace Better_Bulldozer.Systems
                 m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
             }
 
-            if (SelectedRaycastTarget == RaycastTarget.Areas && AreasFilter == AreaTypeMask.Spaces )
+            if (SelectedRaycastTarget == RaycastTarget.Areas && AreasFilter == AreaTypeMask.Spaces)
             {
                 AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
                 areaTypeMask |= AreaTypeMask.Spaces;

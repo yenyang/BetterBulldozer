@@ -269,7 +269,7 @@ namespace Better_Bulldozer.Tools
             bool raycastFlag = GetRaycastResult(out Entity currentRaycastEntity, out RaycastHit hit);
             bool hasOwnerComponentFlag = EntityManager.TryGetComponent(currentRaycastEntity, out Owner owner);
             bool hasExtensionComponentFlag = EntityManager.HasComponent<Extension>(currentRaycastEntity);
-            bool hasSubbuildingComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity);
+            bool hasServiceUpgradeComponentFlag = EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity);
             bool hasExtractorComponentFlag = EntityManager.HasComponent<Extractor>(currentRaycastEntity);
             bool hasNodeComponentFlag = EntityManager.HasComponent<Game.Net.Node>(currentRaycastEntity);
             bool hasCustomBufferFlag = EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
@@ -330,7 +330,7 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("ResetAsset");
             }
 
-            if (!hasExtractorComponentFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions) && !hasSubbuildingComponentFlag)
+            if (!hasExtractorComponentFlag && (!hasExtensionComponentFlag || BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions) && !hasServiceUpgradeComponentFlag)
             {
                 if (m_HighlightedQuery.IsEmptyIgnoreFilter && raycastFlag && hasOwnerComponentFlag && !hasNodeComponentFlag)
                 {
@@ -498,13 +498,13 @@ namespace Better_Bulldozer.Tools
             else
             {
                 m_WarningTooltipSystem.RemoveTooltip("BulldozeSubelement");
-                if (hasExtensionComponentFlag)
+                if (hasExtensionComponentFlag && !BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasServiceUpgradeComponentFlag)
                 {
                     m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalProhibited", Game.UI.Tooltip.TooltipColor.Error, LocaleEN.WarningTooltipKey("ExtensionRemovalProhibited"), "Removing extensions has been disabled in the settings.");
                 }
             }
 
-            if (raycastFlag && !hasNodeComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions)
+            if (raycastFlag && !hasNodeComponentFlag && hasExtensionComponentFlag && BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !hasServiceUpgradeComponentFlag)
             {
                 m_WarningTooltipSystem.RegisterTooltip("ExtensionRemovalWarning", Game.UI.Tooltip.TooltipColor.Warning, LocaleEN.WarningTooltipKey("ExtensionRemovalWarning"), "Removing some extensions will break assets.");
             }

@@ -253,7 +253,7 @@ namespace Better_Bulldozer.Systems
                         buffer.AddComponent<DeleteInXFrames>(entity);
                     }
 
-                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 10 });
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
                 }
             }
         }
