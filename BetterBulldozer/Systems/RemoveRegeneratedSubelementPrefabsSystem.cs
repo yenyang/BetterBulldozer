@@ -165,6 +165,7 @@ namespace Better_Bulldozer.Systems
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
                 m_DeleteInXFramesLookup = SystemAPI.GetComponentLookup<DeleteInXFrames>(isReadOnly: true),
+                m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                 m_Entities = subElements,
                 buffer = m_Barrier.CreateCommandBuffer(),
             };
@@ -312,6 +313,8 @@ namespace Better_Bulldozer.Systems
             public NativeList<Entity> m_Entities;
             [ReadOnly]
             public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
+            [ReadOnly]
+            public ComponentLookup<Game.Objects.Transform> m_TransformLookup;
             public EntityCommandBuffer buffer;
 
             public void Execute()
@@ -323,7 +326,14 @@ namespace Better_Bulldozer.Systems
                         buffer.AddComponent<DeleteInXFrames>(entity);
                     }
 
-                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 5 });
+                    buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 30 });
+
+                    if (m_TransformLookup.HasComponent(entity) && m_TransformLookup.TryGetComponent(entity, out Game.Objects.Transform transform) && transform.m_Position.y > 0)
+                    {
+                        transform.m_Position.y = 0;
+                        buffer.SetComponent(entity, transform);
+                        buffer.AddComponent<Updated>(entity);
+                    }
                 }
             }
         }
