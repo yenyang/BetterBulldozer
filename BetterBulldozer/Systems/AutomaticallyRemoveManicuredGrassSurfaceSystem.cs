@@ -137,7 +137,7 @@ namespace Better_Bulldozer.Systems
                 if (m_GrassSurfacePrefabEntities.Contains(currentCreationDefinition.m_Prefab))
                 {
                     // m_Log.Debug($"{nameof(AutomaticallyRemoveManicuredGrassSurfaceSystem)}.{nameof(OnUpdate)} found creation data.");
-                    EntityManager.AddComponent<Deleted>(entity);
+                    EntityManager.DestroyEntity(entity);
                 }
             }
 
