@@ -17,7 +17,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Jobs;
 
     /// <summary>
-    /// A system that deletes or buries and overrides something in a certain amount of frames.
+    /// A system that deletes something in a certain amount of frames.
     /// </summary>
     public partial class HandleDeleteInXFramesSystem : GameSystemBase
     {
