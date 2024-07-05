@@ -235,6 +235,8 @@ namespace Better_Bulldozer.Systems
                             m_SubObjects.Add(subObject.m_SubObject);
                         }
                     }
+
+                    prefabEntities.Dispose();
                 }
             }
         }
@@ -300,6 +302,8 @@ namespace Better_Bulldozer.Systems
                             m_SubObjects.Add(subObject.m_SubObject);
                         }
                     }
+
+                    prefabEntities.Dispose();
                 }
             }
         }
@@ -384,6 +388,8 @@ namespace Better_Bulldozer.Systems
                             m_SubLanes.Add(subLane.m_SubLane);
                         }
                     }
+
+                    prefabEntities.Dispose();
                 }
             }
         }
@@ -437,6 +443,8 @@ namespace Better_Bulldozer.Systems
                             continue;
                         }
                     }
+
+                    prefabEntities.Dispose();
                 }
             }
         }
