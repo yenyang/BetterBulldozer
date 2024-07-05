@@ -2,19 +2,19 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+#define BURST
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
-    using Colossal.Entities;
     using Colossal.Logging;
     using Game;
     using Game.Common;
-    using Game.Rendering;
-    using Game.Simulation;
     using Game.Tools;
+    using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
+    using Unity.Jobs;
 
     /// <summary>
     /// A system that deletes or buries and overrides something in a certain amount of frames.
@@ -23,8 +23,7 @@ namespace Better_Bulldozer.Systems
     {
         private ILog m_Log;
         private EntityQuery m_DeleteNextFrameQuery;
-        private ToolOutputBarrier m_ToolOutputBarrier;
-        private SimulationSystem m_SimulationSystem;
+        private ToolOutputBarrier m_Barrier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HandleDeleteInXFramesSystem"/> class.
@@ -38,11 +37,10 @@ namespace Better_Bulldozer.Systems
         {
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_Log.Info($"{nameof(HandleDeleteInXFramesSystem)} Created.");
-            m_ToolOutputBarrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
-            m_SimulationSystem = World.GetOrCreateSystemManaged<SimulationSystem>();
+            m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             base.OnCreate();
             m_DeleteNextFrameQuery = SystemAPI.QueryBuilder()
-                .WithAll<DeleteInXFrames>()
+                .WithAll<DeleteInXFrames, Owner>()
                 .WithNone<Temp, Deleted>()
                 .Build();
 
@@ -52,21 +50,60 @@ namespace Better_Bulldozer.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            EntityCommandBuffer buffer = m_ToolOutputBarrier.CreateCommandBuffer();
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
 
-            NativeArray<Entity> entities = m_DeleteNextFrameQuery.ToEntityArray(Allocator.Temp);
-            foreach (Entity entity in entities)
+            HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
-                if (EntityManager.TryGetComponent(entity, out DeleteInXFrames counter))
+                buffer = buffer,
+                m_DeleteInXFramesType = SystemAPI.GetComponentTypeHandle<DeleteInXFrames>(isReadOnly: true),
+                m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>(isReadOnly: true),
+                m_UpdatedLookup = SystemAPI.GetComponentLookup<Updated>(isReadOnly: true),
+            };
+
+            JobHandle jobHandle = handleDeleteInXFramesJob.Schedule(m_DeleteNextFrameQuery, Dependency);
+            m_Barrier.AddJobHandleForProducer(jobHandle);
+            Dependency = jobHandle;
+        }
+
+#if BURST
+        [BurstCompile]
+#endif
+        private struct HandleDeleteInXFramesJob : IJobChunk
+        {
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+            [ReadOnly]
+            public ComponentTypeHandle<DeleteInXFrames> m_DeleteInXFramesType;
+            [ReadOnly]
+            public ComponentTypeHandle<Owner> m_OwnerType;
+            [ReadOnly]
+            public ComponentLookup<Updated> m_UpdatedLookup;
+            public EntityCommandBuffer buffer;
+
+            public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
+            {
+                NativeArray<Owner> ownerNativeArray = chunk.GetNativeArray(ref m_OwnerType);
+                NativeArray<DeleteInXFrames> deleteInXFramesNativeArray = chunk.GetNativeArray(ref m_DeleteInXFramesType);
+                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
+                for (int i = 0; i < chunk.Count; i++)
                 {
-                    if (counter.m_FramesRemaining == 0)
+                    if (m_UpdatedLookup.HasComponent(ownerNativeArray[i].m_Owner))
                     {
-                        buffer.AddComponent<Deleted>(entity);
+                        buffer.SetComponent(entityNativeArray[i], new DeleteInXFrames { m_FramesRemaining = 30 });
                     }
                     else
                     {
-                        counter.m_FramesRemaining--;
-                        buffer.SetComponent(entity, counter);
+                        DeleteInXFrames deleteInXFrames = deleteInXFramesNativeArray[i];
+                        if (deleteInXFrames.m_FramesRemaining <= 0)
+                        {
+                            buffer.AddComponent<Deleted>(entityNativeArray[i]);
+                        }
+                        else
+                        {
+                            deleteInXFrames.m_FramesRemaining--;
+                            buffer.SetComponent(entityNativeArray[i], deleteInXFrames);
+                        }
                     }
                 }
             }
