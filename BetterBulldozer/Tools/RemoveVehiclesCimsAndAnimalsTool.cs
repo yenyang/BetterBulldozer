@@ -6,21 +6,14 @@
 #define BURST
 namespace Better_Bulldozer.Tools
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using Better_Bulldozer.Systems;
-    using Colossal.Annotations;
-    using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
-    using Game.Citizens;
     using Game.Common;
     using Game.Creatures;
     using Game.Input;
-    using Game.Net;
-    using Game.Objects;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
