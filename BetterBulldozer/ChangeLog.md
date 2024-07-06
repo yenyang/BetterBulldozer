@@ -1,3 +1,3 @@
-﻿# Patch V1.3.4
-* Fix JobTempAllocation issue from native lists created with TempJob allocation not being disposed of.
-* Added Version to options page.
+﻿# Patch V1.3.5
+* Burying things temporarily now checks for Pillars, and doesn't apply to pillars.
+* Overhauled Delayed removal of Regenerated Subelements to use a job and check for updated owners.

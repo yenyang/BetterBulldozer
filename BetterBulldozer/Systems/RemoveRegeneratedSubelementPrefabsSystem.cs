@@ -11,6 +11,7 @@ namespace Better_Bulldozer.Systems
     using Game;
     using Game.Buildings;
     using Game.Common;
+    using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
     using Unity.Burst;
@@ -18,6 +19,7 @@ namespace Better_Bulldozer.Systems
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
+    using UnityEngine;
 
     /// <summary>
     /// Removes regenrated subelement prefabs that have been permananetly removed.
@@ -85,7 +87,7 @@ namespace Better_Bulldozer.Systems
                 {
                     All = new ComponentType[]
                     {
-                        ComponentType.ReadOnly<Event>(),
+                        ComponentType.ReadOnly<Game.Common.Event>(),
                         ComponentType.ReadOnly<RentersUpdated>(),
                     },
                     None = new ComponentType[]
@@ -128,7 +130,7 @@ namespace Better_Bulldozer.Systems
                 m_SubObjectType = SystemAPI.GetBufferTypeHandle<Game.Objects.SubObject>(isReadOnly: true),
             };
 
-            JobHandle gatherSubObjectsJobHandle = gatherSubObjectsJob.Schedule(m_PermanentlyRemovedSubObjectQuery, Dependency);
+            Dependency = gatherSubObjectsJob.Schedule(m_PermanentlyRemovedSubObjectQuery, Dependency);
 
             GatherSubObjectsFromEventsJob gatherSubObjectsFromEventsJob = new GatherSubObjectsFromEventsJob()
             {
@@ -139,7 +141,7 @@ namespace Better_Bulldozer.Systems
                 m_SubObjects = subElements,
             };
 
-            JobHandle gatherSubObjectsFromEventsJobHandle = gatherSubObjectsFromEventsJob.Schedule(m_RentersUpdatedQuery, gatherSubObjectsJobHandle);
+            Dependency = gatherSubObjectsFromEventsJob.Schedule(m_RentersUpdatedQuery, Dependency);
 
             GatherSubLanesJob gatherSubLanesJob = new GatherSubLanesJob()
             {
@@ -149,7 +151,7 @@ namespace Better_Bulldozer.Systems
                 m_SubLaneType = SystemAPI.GetBufferTypeHandle<Game.Net.SubLane>(isReadOnly: true),
             };
 
-            JobHandle gatherSubLanesJobHandle = gatherSubLanesJob.Schedule(m_PermanentlyRemovedSubLaneQuery, gatherSubObjectsFromEventsJobHandle);
+            Dependency = gatherSubLanesJob.Schedule(m_PermanentlyRemovedSubLaneQuery, Dependency);
 
             GatherSubLanesFromEventsJob gatherSubLanesFromEventsJob = new GatherSubLanesFromEventsJob()
             {
@@ -160,7 +162,7 @@ namespace Better_Bulldozer.Systems
                 m_SubLanes = subElements,
             };
 
-            JobHandle gatherSubLanesFromEventsJobHandle = gatherSubLanesFromEventsJob.Schedule(m_RentersUpdatedQuery, gatherSubLanesJobHandle);
+            Dependency = gatherSubLanesFromEventsJob.Schedule(m_RentersUpdatedQuery, Dependency);
 
             HandleDeleteInXFramesJob handleDeleteInXFramesJob = new HandleDeleteInXFramesJob()
             {
@@ -168,13 +170,14 @@ namespace Better_Bulldozer.Systems
                 m_TransformLookup = SystemAPI.GetComponentLookup<Game.Objects.Transform>(isReadOnly: true),
                 m_Entities = subElements,
                 buffer = m_Barrier.CreateCommandBuffer(),
+                m_PillarLookup = SystemAPI.GetComponentLookup<Game.Objects.Pillar>(isReadOnly: true),
             };
 
-            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(gatherSubLanesFromEventsJobHandle);
+            JobHandle handleDeleteInXFramesJobHandle = handleDeleteInXFramesJob.Schedule(Dependency);
             m_Barrier.AddJobHandleForProducer(handleDeleteInXFramesJobHandle);
             Dependency = handleDeleteInXFramesJobHandle;
 
-            subElements.Dispose(handleDeleteInXFramesJobHandle);
+            subElements.Dispose(Dependency);
         }
 
 #if BURST
@@ -319,6 +322,8 @@ namespace Better_Bulldozer.Systems
             public ComponentLookup<DeleteInXFrames> m_DeleteInXFramesLookup;
             [ReadOnly]
             public ComponentLookup<Game.Objects.Transform> m_TransformLookup;
+            [ReadOnly]
+            public ComponentLookup<Pillar> m_PillarLookup;
             public EntityCommandBuffer buffer;
 
             public void Execute()
@@ -332,7 +337,7 @@ namespace Better_Bulldozer.Systems
 
                     buffer.SetComponent(entity, new DeleteInXFrames() { m_FramesRemaining = 30 });
 
-                    if (m_TransformLookup.HasComponent(entity) && m_TransformLookup.TryGetComponent(entity, out Game.Objects.Transform transform) && transform.m_Position.y > 0)
+                    if (!m_PillarLookup.HasComponent(entity) && m_TransformLookup.HasComponent(entity) && m_TransformLookup.TryGetComponent(entity, out Game.Objects.Transform transform) && transform.m_Position.y > 0)
                     {
                         transform.m_Position.y = 0;
                         buffer.SetComponent(entity, transform);

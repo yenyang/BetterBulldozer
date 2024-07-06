@@ -78,7 +78,7 @@ namespace Better_Bulldozer.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.RemovedOwnedGrassSurfaces)), "Removes all Grass Surface 01 and Grass Surface 02 from buildings that already exist. This cannot be undone." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.RemovedOwnedGrassSurfaces)), "Remove Grass Surfaces from all buildings? This cannot be undone." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.Version)), "Version" },
-                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.Version)), $"Version number for the {BetterBulldozerMod.Id} mod installed." },
+                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.Version)), $"Version number for the Better Bulldozer mod installed." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.RaycastMarkersButton", "Shows and EXCLUSIVELY targets static object markers or invisible networks. With this enabled you can demolish invisible networks, invisible parking decals, various spots, points, and spawners, but SAVE FIRST! Also use Remove Sub-Elements to remove from buildings." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.GameplayManipulationButton", "Allows you to use the bulldozer on moving objects such as vehicles or cims." },
                 { "YY_BETTER_BULLDOZER_DESCRIPTION.BypassConfirmationButton", "Disables the prompt for whether you are sure you want to demolish a building." },

@@ -5,21 +5,23 @@
 namespace Better_Bulldozer
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using Better_Bulldozer.Settings;
     using Better_Bulldozer.Systems;
     using Better_Bulldozer.Tools;
-    using Colossal;
     using Colossal.IO.AssetDatabase;
     using Colossal.Logging;
     using Game;
     using Game.Modding;
     using Game.SceneFlow;
     using HarmonyLib;
+#if DEBUG
     using Newtonsoft.Json;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Colossal;
+#endif
 
     /// <summary>
     /// Mod entry point.
