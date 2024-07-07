@@ -6,14 +6,17 @@
 namespace Better_Bulldozer.Systems
 {
     using Better_Bulldozer.Components;
+    using Colossal.Entities;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
     using Game;
+    using Game.Areas;
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
+    using Game.Vehicles;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -112,6 +115,89 @@ namespace Better_Bulldozer.Systems
             else
             {
                 Enabled = false;
+            }
+
+            // This is to remove orphaned subelements from previous builds.
+            EntityQuery m_OwnedQuery = SystemAPI.QueryBuilder()
+                .WithAll<Owner>()
+                .WithNone<Temp, Deleted, DeleteInXFrames, Vehicle, Game.Net.Node, Game.Net.Edge>()
+                .Build();
+
+            NativeArray<Entity> entities = m_OwnedQuery.ToEntityArray(Allocator.Temp);
+
+            foreach (Entity entity in entities)
+            {
+                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner == Entity.Null)
+                {
+                    EntityManager.AddComponent<Deleted>(entity);
+                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {entity.Index}:{entity.Version}.");
+                    if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
+                    {
+                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase.name}");
+                    }
+
+                    if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects1))
+                    {
+                        continue;
+                    }
+
+                    foreach (Game.Objects.SubObject subobject1 in subobjects1)
+                    {
+                        EntityManager.AddComponent<Deleted>(subobject1.m_SubObject);
+                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject1.m_SubObject.Index}:{subobject1.m_SubObject.Version}.");
+                        if (EntityManager.TryGetComponent(subobject1.m_SubObject, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
+                        {
+                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase1.name}");
+                        }
+
+                        if (!EntityManager.TryGetBuffer(subobject1.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects2))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject subobject2 in subobjects2)
+                        {
+                            EntityManager.AddComponent<Deleted>(subobject2.m_SubObject);
+                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject2.m_SubObject.Index}:{subobject2.m_SubObject.Version}.");
+                            if (EntityManager.TryGetComponent(subobject2.m_SubObject, out PrefabRef prefabRef2) && m_PrefabSystem.TryGetPrefab(prefabRef2.m_Prefab, out PrefabBase prefabBase2))
+                            {
+                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase2.name}");
+                            }
+
+                            if (!EntityManager.TryGetBuffer(subobject2.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects3))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject subobject3 in subobjects3)
+                            {
+                                EntityManager.AddComponent<Deleted>(subobject3.m_SubObject);
+                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject3.m_SubObject.Index}:{subobject3.m_SubObject.Version}.");
+
+                                if (EntityManager.TryGetComponent(subobject3.m_SubObject, out PrefabRef prefabRef3) && m_PrefabSystem.TryGetPrefab(prefabRef3.m_Prefab, out PrefabBase prefabBase3))
+                                {
+                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase3.name}");
+                                }
+
+                                if (!EntityManager.TryGetBuffer(subobject3.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects4))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject subobject4 in subobjects4)
+                                {
+                                    EntityManager.AddComponent<Deleted>(subobject4.m_SubObject);
+                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject4.m_SubObject.Index}:{subobject4.m_SubObject.Version}.");
+
+                                    if (EntityManager.TryGetComponent(subobject4.m_SubObject, out PrefabRef prefabRef4) && m_PrefabSystem.TryGetPrefab(prefabRef4.m_Prefab, out PrefabBase prefabBase4))
+                                    {
+                                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase4.name}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -235,7 +321,37 @@ namespace Better_Bulldozer.Systems
 
                         foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
                         {
-                            m_SubObjects.Add(subObject.m_SubObject);
+                            m_SubObjects.Add(deepSubObject.m_SubObject);
+
+                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                            {
+                                m_SubObjects.Add(deepSubObject2.m_SubObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                {
+                                    m_SubObjects.Add(deepSubObject3.m_SubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                    {
+                                        m_SubObjects.Add(deepSubObject4.m_SubObject);
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -302,7 +418,37 @@ namespace Better_Bulldozer.Systems
 
                         foreach (Game.Objects.SubObject deepSubObject in deepSubObjectBuffer)
                         {
-                            m_SubObjects.Add(subObject.m_SubObject);
+                            m_SubObjects.Add(deepSubObject.m_SubObject);
+
+                            if (!m_SubObjectLookup.TryGetBuffer(deepSubObject.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer2))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject deepSubObject2 in deepSubObjectBuffer2)
+                            {
+                                m_SubObjects.Add(deepSubObject2.m_SubObject);
+
+                                if (!m_SubObjectLookup.TryGetBuffer(deepSubObject2.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer3))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject deepSubObject3 in deepSubObjectBuffer3)
+                                {
+                                    m_SubObjects.Add(deepSubObject3.m_SubObject);
+
+                                    if (!m_SubObjectLookup.TryGetBuffer(deepSubObject3.m_SubObject, out DynamicBuffer<Game.Objects.SubObject> deepSubObjectBuffer4))
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (Game.Objects.SubObject deepSubObject4 in deepSubObjectBuffer4)
+                                    {
+                                        m_SubObjects.Add(deepSubObject4.m_SubObject);
+                                    }
+                                }
+                            }
                         }
                     }
 

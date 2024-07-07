@@ -315,13 +315,11 @@ namespace Better_Bulldozer.Systems
             {
                 AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
                 areaTypeMask |= AreaTypeMask.Spaces;
-                areaTypeMask &= ~AreaTypeMask.Surfaces;
                 m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
             }
             else if (SelectedRaycastTarget == RaycastTarget.Areas)
             {
                 AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
-                areaTypeMask |= AreaTypeMask.Surfaces;
                 areaTypeMask &= ~AreaTypeMask.Spaces;
                 m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
             }
