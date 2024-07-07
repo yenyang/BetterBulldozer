@@ -1,3 +1,4 @@
-﻿# Patch V1.3.5
-* Burying things temporarily now checks for Pillars, and doesn't apply to pillars.
-* Overhauled Delayed removal of Regenerated Subelements to use a job and check for updated owners.
+﻿# Patch V1.3.6
+* Remove Surface area overlay from Remove Areas Tool Mode with Surfaces filter.
+* Fixed Remove Regenerated Sub-elements system to properly remove deep sub-elements.
+* Remove Regenerated Sub-elements system will now remove orphaned subobjects on game load complete.

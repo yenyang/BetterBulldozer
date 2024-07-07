@@ -321,7 +321,6 @@ namespace Better_Bulldozer.Systems
             else if (SelectedRaycastTarget == RaycastTarget.Areas)
             {
                 AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
-                areaTypeMask |= AreaTypeMask.Surfaces;
                 areaTypeMask &= ~AreaTypeMask.Spaces;
                 m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
             }
