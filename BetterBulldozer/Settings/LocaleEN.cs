@@ -132,6 +132,7 @@ namespace Better_Bulldozer.Settings
                 { TooltipDescriptionKey("DecalFilter"), "Toggling this off will prevent the Bulldoze Tool from removing decals." },
                 { TooltipTitleKey("PropFilter"), "Any other Prop Filter" },
                 { TooltipDescriptionKey("PropFilter"), "Toggling this off will prevent the Bulldoze Tool from removing any props that are not trees, plants, or decals." },
+                { TooltipDescriptionKey("VanillaSurfaceFilter"), "Toggling this off will prevent the Bulldoze Tool from removing surfaces." },
                 { SectionLabel("Tier"), "Tier" },
                 { SectionLabel("Selection"), "Selection" },
                 { SectionLabel("Radius"), "Radius" },

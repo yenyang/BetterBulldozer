@@ -21,7 +21,7 @@ If you want to say thank you with a donation you can do so on Paypal.
 I am looking for volunteers to help translate the mod into the official languages. For those interested please discuss the translation project in the discord link. CSL2:CODEMODS -&gt; mods-wip -&gt; Better Bulldozer: Translations. CrowdIn Link available there or here.
 The mod is fully or partially translated into: Chinese Simplified, German, Korean, Polish, Spanish, Chinese Traditional, French, Italian, Brazilian Portuguese and Russian.
 
-# Detailed Descrption
+# Detailed Description
 * Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims including broken, stuck, and vehicles placed by the player. 
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.
@@ -89,17 +89,17 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.6" />
+  <ModVersion Value="1.3.7" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.9" />
   <Dependency Id="75426" DisplayName="I18n EveryWhere" Version="1.1.3" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.6
-* Remove Surface area overlay from Remove Areas Tool Mode with Surfaces filter.
-* Fixed Remove Regenerated Sub-elements system to properly remove deep sub-elements.
-* Remove Regenerated Sub-elements system will now remove orphaned subobjects on game load complete.</ChangeLog>
+  <ChangeLog># Patch V1.3.7
+* Fix issue with switching from game to editor while using custom tools breaks the vanilla bulldozer.
+* Add surface filter to vanilla bulldoze tool. Defaults to off.
+* Fix issue where you can have both Remove Cims and Vehicles and Remove Subelements tool modes active simultaneously.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=IDzKag5WhI0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

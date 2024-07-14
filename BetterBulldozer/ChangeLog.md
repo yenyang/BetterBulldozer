@@ -1,4 +1,4 @@
-﻿# Patch V1.3.6
-* Remove Surface area overlay from Remove Areas Tool Mode with Surfaces filter.
-* Fixed Remove Regenerated Sub-elements system to properly remove deep sub-elements.
-* Remove Regenerated Sub-elements system will now remove orphaned subobjects on game load complete.
+﻿# Patch V1.3.7
+* Fix issue with switching from game to editor while using custom tools breaks the vanilla bulldozer.
+* Add surface filter to vanilla bulldoze tool. Defaults to off.
+* Fix issue where you can have both Remove Cims and Vehicles and Remove Subelements tool modes active simultaneously.
