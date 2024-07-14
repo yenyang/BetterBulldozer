@@ -109,7 +109,8 @@ enum VanillaFilters
     Plants = 8,
     Decals = 16,
     Props = 32,
-    All = 64,
+    Surfaces = 64,
+    All = 128,
 }
 
 const descriptionToolTipStyle = getModule("game-ui/common/tooltip/description-tooltip/description-tooltip.module.scss", "classes");
@@ -203,6 +204,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
         const decalFilterDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[DecalFilter]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[DecalFilter]"]);
         const propFilterTitle = translate("BetterBulldozer.TOOLTIP_TITLE[PropFilter]" ,locale["BetterBulldozer.TOOLTIP_TITLE[PropFilter]"]);
         const propFilterDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[PropFilter]" ,locale["BetterBulldozer.TOOLTIP_DESCRIPTION[PropFilter]"]);
+        const vanillaSurfaceFilterDescription = translate("BetterBulldozer.TOOLTIP_DESCRIPTION[VanillaSurfaceFilter]", locale["BetterBulldozer.TOOLTIP_DESCRIPTION[VanillaSurfaceFilter]"]);
 
         // These convert integer casts of Enums into booleans.
         const raycastingMarkers : boolean = raycastTarget == 2;
@@ -276,6 +278,7 @@ export const BetterBulldozerComponent: ModuleRegistryExtend = (Component : any) 
                         // This section is only showing while using vanilla bulldozer.
                         <VanillaComponentResolver.instance.Section title={filterSectionTitle}>
                             <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.All) == VanillaFilters.All}               tooltip={descriptionTooltip(allFiltersTitle ,allFiltersDescription)}                        src={allSrc}            onSelect={() => changeSelectedVanillaFilter(VanillaFilters.All)}        className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
+                            <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Surfaces) == VanillaFilters.Surfaces}     tooltip={descriptionTooltip(surfacesFilterTitle, vanillaSurfaceFilterDescription)}                                                               src={surfacesSrc}       onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Surfaces)}   className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Networks) == VanillaFilters.Networks}     tooltip={descriptionTooltip(vanillaNetworksFilterTitle ,vanillaNetworksFilterDescription)}  src={networkSrc}        onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Networks)}   className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Buildings) == VanillaFilters.Buildings}   tooltip={descriptionTooltip(buildingFilterTitle ,buildingFilterDescription)}                src={buildingSrc}       onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Buildings)}  className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>
                             <VanillaComponentResolver.instance.ToolButton  selected={(selectedVanillaFilters & VanillaFilters.Trees) == VanillaFilters.Trees}           tooltip={descriptionTooltip(treeFilterTitle ,treeFilterDescription)}                        src={treeSrc}           onSelect={() => changeSelectedVanillaFilter(VanillaFilters.Trees)}      className={VanillaComponentResolver.instance.toolButtonTheme.button} focusKey={VanillaComponentResolver.instance.FOCUS_DISABLED}     ></VanillaComponentResolver.instance.ToolButton>

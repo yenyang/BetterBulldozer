@@ -6,7 +6,6 @@
 namespace Better_Bulldozer.Systems
 {
     using System;
-    using System.Security.Cryptography;
     using Better_Bulldozer.Extensions;
     using Better_Bulldozer.Tools;
     using Better_Bulldozer.Utils;
@@ -16,7 +15,6 @@ namespace Better_Bulldozer.Systems
     using Game;
     using Game.Areas;
     using Game.Common;
-    using Game.Debug;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
@@ -174,9 +172,14 @@ namespace Better_Bulldozer.Systems
             Props = 32,
 
             /// <summary>
+            /// Surfaces.
+            /// </summary>
+            Surfaces = 64,
+
+            /// <summary>
             /// Vanilla bulldozer, no filters.
             /// </summary>
-            All = 64,
+            All = 128,
         }
 
         /// <summary>
@@ -249,7 +252,7 @@ namespace Better_Bulldozer.Systems
             m_IsGame = CreateBinding("IsGame", false);
             m_VehicleCimsAnimalsSelectionMode = CreateBinding("VehicleCimsAnimalsSelectionMode", (int)VCAselectionMode.Single);
             m_SelectionRadius = CreateBinding("SelectionRadius", 10);
-            m_SelectedVanillaFilters = CreateBinding("SelectedVanillaFilters", VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.All);
+            m_SelectedVanillaFilters = CreateBinding("SelectedVanillaFilters", VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props);
 
             // These handle events activating actions triggered by clicking buttons in the UI.
             AddBinding(new TriggerBinding(ModId, "BypassConfirmationButton", BypassConfirmationToggled));
@@ -355,7 +358,7 @@ namespace Better_Bulldozer.Systems
                 m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
-            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool)
+            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool || m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolModeToggledRecently = true;
@@ -397,7 +400,7 @@ namespace Better_Bulldozer.Systems
             }
             else if (toggledFilter == VanillaFilters.All && m_SelectedVanillaFilters.Value == VanillaFilters.None)
             {
-                m_SelectedVanillaFilters.Value |= VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.All;
+                m_SelectedVanillaFilters.Value |= VanillaFilters.Networks | VanillaFilters.Buildings | VanillaFilters.Trees | VanillaFilters.Plants | VanillaFilters.Decals | VanillaFilters.Props | VanillaFilters.Surfaces | VanillaFilters.All;
                 return;
             }
 
@@ -410,7 +413,7 @@ namespace Better_Bulldozer.Systems
                 m_SelectedVanillaFilters.Value |= toggledFilter;
             }
 
-            if ((int)m_SelectedVanillaFilters.Value == 63)
+            if ((int)m_SelectedVanillaFilters.Value == 127)
             {
                 m_SelectedVanillaFilters.Value |= VanillaFilters.All;
             }
@@ -615,6 +618,11 @@ namespace Better_Bulldozer.Systems
             if (tool == null)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} something is null.");
+                return;
+            }
+
+            if (m_ToolSystem.actionMode.IsEditor())
+            {
                 return;
             }
 

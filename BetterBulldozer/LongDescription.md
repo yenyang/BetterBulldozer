@@ -13,7 +13,7 @@ If you want to say thank you with a donation you can do so on Paypal.
 I am looking for volunteers to help translate the mod into the official languages. For those interested please discuss the translation project in the discord link. CSL2:CODEMODS -> mods-wip -> Better Bulldozer: Translations. CrowdIn Link available there or here.
 The mod is fully or partially translated into: Chinese Simplified, German, Korean, Polish, Spanish, Chinese Traditional, French, Italian, Brazilian Portuguese and Russian.
 
-# Detailed Descrption
+# Detailed Description
 * Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims including broken, stuck, and vehicles placed by the player. 
 * Icon for bypass confirmation that disables the prompt for whether you are sure you want to demolish a building.
 * Icon and filters to show and EXCLUSIVELY target invisible paths, roads, etc or static object markers with the bulldozer and remove paths, roads, etc or static object markers. See below.

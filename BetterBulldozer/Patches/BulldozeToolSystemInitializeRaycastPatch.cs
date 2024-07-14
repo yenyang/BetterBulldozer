@@ -6,6 +6,7 @@ namespace Better_Bulldozer.Patches
 {
     using Better_Bulldozer.Systems;
     using Game;
+    using Game.Areas;
     using Game.Common;
     using Game.Net;
     using Game.Rendering;
@@ -69,6 +70,11 @@ namespace Better_Bulldozer.Patches
                 if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Networks) != BetterBulldozerUISystem.VanillaFilters.Networks)
                 {
                     toolRaycastSystem.typeMask &= ~TypeMask.Net;
+                }
+
+                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Surfaces) != BetterBulldozerUISystem.VanillaFilters.Surfaces)
+                {
+                    toolRaycastSystem.areaTypeMask &= ~AreaTypeMask.Surfaces;
                 }
 
                 if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Decals) != BetterBulldozerUISystem.VanillaFilters.Decals)
