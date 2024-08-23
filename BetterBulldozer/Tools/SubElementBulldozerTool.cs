@@ -343,7 +343,7 @@ namespace Better_Bulldozer.Tools
                     {
                         if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching)
                         {
-                            if (!hasExtensionComponentFlag && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
+                            if (!EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
                             {
                                 m_PrefabEntities.Add(prefabRef.m_Prefab);
                             }
@@ -417,7 +417,7 @@ namespace Better_Bulldozer.Tools
                                 }
                                 else
                                 {
-                                    if (!hasExtensionComponentFlag && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
+                                    if (!EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(currentRaycastEntity))
                                     {
                                         m_PrefabEntities.Add(prefabRef.m_Prefab);
                                     }

@@ -1,4 +1,4 @@
-﻿# Patch V1.3.7
-* Fix issue with switching from game to editor while using custom tools breaks the vanilla bulldozer in the editor.
-* Add surface filter to vanilla bulldoze tool. Defaults to off.
-* Fix issue where you can have both Remove Cims and Vehicles and other tool modes active simultaneously.
+﻿# Patch V1.3.8
+* Extensions that are not Service Upgrades will be saved and automatically removed while using Matching or Similar selection.
+* Updated Localization
+* MIT License (LICENSE.txt) now ships with mod.
