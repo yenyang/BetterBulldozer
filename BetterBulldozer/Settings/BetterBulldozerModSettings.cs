@@ -106,6 +106,7 @@ namespace Better_Bulldozer.Settings
         /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
         /// </summary>
         [SettingsUIMouseBinding(BetterBulldozerMod.RSEApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
         [SettingsUIHidden]
         public ProxyBinding RSEApplyMimic { get; set; }
 
@@ -113,6 +114,7 @@ namespace Better_Bulldozer.Settings
         /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
         /// </summary>
         [SettingsUIMouseBinding(BetterBulldozerMod.VCAApplyMimicAction)]
+        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
         [SettingsUIHidden]
         public ProxyBinding VCAApplyMimic { get; set; }
 

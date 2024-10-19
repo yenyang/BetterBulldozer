@@ -1,5 +1,6 @@
 ﻿Easily delete things that you otherwise could not delete or easily delete.
 
+CloverPie made a instructional video about most of the features of Better Bulldozer. You can find it on Youtube.
 Sully made a Youtube video about custom car parks (aka Parking Lots) and this functionality helped make that safe.
 
 ## Dependencies
@@ -64,6 +65,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * yenyang - Mod Author
 * Chameleon TBN - Testing, Feedback, Icons, and Logo
 * Sully - Testing, Feedback, and Promotional Material.
+* CloverPie - Promotional Material.
 * Klyte45, T.D.W., Algernon - Help with UI, Cooperative Development and Code Sharing
 * krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
 * City Rat - Icons

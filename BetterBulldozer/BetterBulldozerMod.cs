@@ -48,11 +48,6 @@ namespace Better_Bulldozer
         /// </summary>
         internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
-        /// <summary>
-        /// Gets the install folder for the mod.
-        /// </summary>
-        private static string m_modInstallFolder;
-
         private Harmony m_Harmony;
 
         /// <summary>
@@ -62,24 +57,6 @@ namespace Better_Bulldozer
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Gets the Install Folder for the mod as a string.
-        /// </summary>
-        public static string ModInstallFolder
-        {
-            get
-            {
-                if (m_modInstallFolder is null)
-                {
-                    var thisFullName = Instance.GetType().Assembly.FullName;
-                    ExecutableAsset thisInfo = AssetDatabase.global.GetAsset(SearchFilter<ExecutableAsset>.ByCondition(x => x.definition?.FullName == thisFullName)) ?? throw new Exception("This mod info was not found!!!!");
-                    m_modInstallFolder = Path.GetDirectoryName(thisInfo.GetMeta().path);
-                }
-
-                return m_modInstallFolder;
-            }
         }
 
         /// <summary>
@@ -110,7 +87,11 @@ namespace Better_Bulldozer
             Logger.effectivenessLevel = Level.Info;
 #endif
 
-            Logger.Info("ModInstallFolder = " + ModInstallFolder);
+            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            {
+                Logger.Info($"Current mod asset at {asset.path}");
+            }
+
             Settings = new (this);
             Settings.RegisterKeyBindings();
             Settings.RegisterInOptionsUI();
