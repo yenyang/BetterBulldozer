@@ -6,7 +6,6 @@
 #define BURST
 namespace Better_Bulldozer.Tools
 {
-    using System.Linq;
     using Better_Bulldozer.Systems;
     using Colossal.Logging;
     using Colossal.Serialization.Entities;
@@ -25,7 +24,6 @@ namespace Better_Bulldozer.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
-    using UnityEngine.InputSystem;
 
 
     /// <summary>
@@ -138,11 +136,6 @@ namespace Better_Bulldozer.Tools
             RequireForUpdate(m_MovingObjectsQuery);
 
             m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.VCAApplyMimicAction);
-            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
-            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
-            SetMimic(mimicApplyBinding, applyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -223,14 +216,6 @@ namespace Better_Bulldozer.Tools
         protected override void OnDestroy()
         {
             base.OnDestroy();
-        }
-
-        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
-        {
-            var newMimicBinding = mimic.Copy();
-            newMimicBinding.path = buildIn.path;
-            newMimicBinding.modifiers = buildIn.modifiers;
-            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
 #if BURST

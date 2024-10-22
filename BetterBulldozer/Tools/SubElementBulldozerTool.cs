@@ -189,11 +189,6 @@ namespace Better_Bulldozer.Tools
             RequireForUpdate(m_OwnedQuery);
 
             m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.RSEApplyMimicAction);
-            var builtInApplyAction = InputManager.instance.FindAction(InputManager.kToolMap, "Apply");
-            var mimicApplyBinding = m_ApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var builtInApplyBinding = builtInApplyAction.bindings.FirstOrDefault(b => b.group == nameof(Mouse));
-            var applyWatcher = new ProxyBinding.Watcher(builtInApplyBinding, binding => SetMimic(mimicApplyBinding, binding));
-            SetMimic(mimicApplyBinding, applyWatcher.binding);
         }
 
         /// <inheritdoc/>
@@ -674,15 +669,6 @@ namespace Better_Bulldozer.Tools
             }
 
             return inputDeps;
-        }
-
-
-        private void SetMimic(ProxyBinding mimic, ProxyBinding buildIn)
-        {
-            var newMimicBinding = mimic.Copy();
-            newMimicBinding.path = buildIn.path;
-            newMimicBinding.modifiers = buildIn.modifiers;
-            InputManager.instance.SetBinding(newMimicBinding, out _);
         }
 
         private void CheckForSimilarSubObjects(ComponentType necessaryComponent, ComponentType excludeComponent, DynamicBuffer<Game.Objects.SubObject> subObjects, ref EntityCommandBuffer buffer)
