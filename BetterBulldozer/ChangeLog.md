@@ -1,2 +1,2 @@
-﻿# Patch V1.3.9
-* Updated Localization
+﻿# Patch V1.3.10
+* Code Cleanup
