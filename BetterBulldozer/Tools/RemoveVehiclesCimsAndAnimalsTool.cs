@@ -31,7 +31,6 @@ namespace Better_Bulldozer.Tools
     /// </summary>
     public partial class RemoveVehiclesCimsAndAnimalsTool : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private BulldozeToolSystem m_BulldozeToolSystem;
@@ -134,21 +133,21 @@ namespace Better_Bulldozer.Tools
             });
 
             RequireForUpdate(m_MovingObjectsQuery);
-
-            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.VCAApplyMimicAction);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
-            m_ApplyAction.shouldBeEnabled = true;
+            base.OnStartRunning();
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
         }
 
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            m_ApplyAction.shouldBeEnabled = false;
+            base.OnStopRunning();
+            applyAction.enabled = false;
         }
 
         /// <inheritdoc/>
@@ -172,7 +171,7 @@ namespace Better_Bulldozer.Tools
             inputDeps = IJobExtensions.Schedule(toolRadiusJob, JobHandle.CombineDependencies(inputDeps, outJobHandle));
             m_OverlayRenderSystem.AddBufferWriter(inputDeps);
 
-            if (m_ApplyAction.IsPressed())
+            if (applyAction.IsPressed())
             {
                     RemoveVehiclesCimsAndAnimalsWithRadius removeVCAWithinRadiusJob = new ()
                     {

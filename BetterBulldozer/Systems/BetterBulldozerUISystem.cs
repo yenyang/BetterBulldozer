@@ -353,12 +353,14 @@ namespace Better_Bulldozer.Systems
                 m_RaycastTarget.Update((int)RaycastTarget.Vanilla);
             }
 
-            if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius && m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
+            if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius &&
+                m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
             {
                 m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
-            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool || m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
+            else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool ||
+                     m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
                 m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolModeToggledRecently = true;
@@ -626,24 +628,32 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
-            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem && m_PreviousToolSystem != m_SubElementBulldozeToolSystem)
+            if (tool == m_BulldozeToolSystem &&
+                m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem &&
+                m_PreviousToolSystem != m_SubElementBulldozeToolSystem)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to SubElementBulldoze tool since that was previous tool mode.");
                 m_SwitchToSubElementBulldozeToolOnUpdate = true;
             }
-            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_ToolModeToggledRecently)
+            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem &&
+                    (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) &&
+                     !m_ToolModeToggledRecently)
             {
                 m_PreviousToolSystem = null;
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since subelement bulldoze tool was closed without changing tool mode.");
                 m_ActivatePrefabToolOnUpdate = true;
             }
 
-            if (tool == m_BulldozeToolSystem && m_PreviousBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool && m_PreviousToolSystem != m_RemoveVehiclesCimsAndAnimalsTool)
+            if (tool == m_BulldozeToolSystem &&
+                m_PreviousBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool &&
+                m_PreviousToolSystem != m_RemoveVehiclesCimsAndAnimalsTool)
             {
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to m_RemoveVehiclesCimsAndAnimalsTool tool since that was previous tool mode.");
                 m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = true;
             }
-            else if (m_PreviousToolSystem == m_RemoveVehiclesCimsAndAnimalsTool && (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) && !m_ToolModeToggledRecently)
+            else if (m_PreviousToolSystem == m_RemoveVehiclesCimsAndAnimalsTool &&
+                    (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) &&
+                    !m_ToolModeToggledRecently)
             {
                 m_PreviousToolSystem = null;
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since m_RemoveVehiclesCimsAndAnimalsTool was closed without changing tool mode.");

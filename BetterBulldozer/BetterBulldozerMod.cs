@@ -29,16 +29,6 @@ namespace Better_Bulldozer
     public class BetterBulldozerMod : IMod
     {
         /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string RSEApplyMimicAction = "SEBTApplyMimic";
-
-        /// <summary>
-        /// Fake keybind action for apply.
-        /// </summary>
-        public const string VCAApplyMimicAction = "VCAApplyMimic";
-
-        /// <summary>
         /// A static ID for use with bindings.
         /// </summary>
         public static readonly string Id = "BetterBulldozer";

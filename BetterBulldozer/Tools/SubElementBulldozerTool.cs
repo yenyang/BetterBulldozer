@@ -33,7 +33,6 @@ namespace Better_Bulldozer.Tools
     /// </summary>
     public partial class SubElementBulldozerTool : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
         private BulldozeToolSystem m_BulldozeToolSystem;
@@ -187,26 +186,25 @@ namespace Better_Bulldozer.Tools
                 },
             });
             RequireForUpdate(m_OwnedQuery);
-
-            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.RSEApplyMimicAction);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
-            m_ApplyAction.shouldBeEnabled = true;
+            base.OnStartRunning();
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnStartRunning)}");
         }
 
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            m_ApplyAction.shouldBeEnabled = false;
+            base.OnStopRunning();
+            applyAction.enabled = false;
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
             m_WarningTooltipSystem.ClearTooltips();
-            base.OnStopRunning();
         }
 
         /// <inheritdoc/>
@@ -308,7 +306,7 @@ namespace Better_Bulldozer.Tools
 
                 m_WarningTooltipSystem.RegisterTooltip("ResetAsset", Game.UI.Tooltip.TooltipColor.Info, LocaleEN.TooltipTitleKey("Reset"), "Reset Asset");
 
-                if (m_ApplyAction.WasPressedThisFrame())
+                if (applyAction.WasPressedThisFrame())
                 {
                     buffer.RemoveComponent<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
                     buffer.AddComponent<Updated>(currentRaycastEntity);
@@ -563,7 +561,7 @@ namespace Better_Bulldozer.Tools
             }
 
 
-            if (m_ApplyAction.WasPressedThisFrame())
+            if (applyAction.WasPressedThisFrame())
             {
                 foreach (Entity entity in m_MainEntities)
                 {
