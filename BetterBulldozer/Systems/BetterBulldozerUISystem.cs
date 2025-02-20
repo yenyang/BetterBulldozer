@@ -6,6 +6,7 @@
 namespace Better_Bulldozer.Systems
 {
     using System;
+    using System.Collections.Generic;
     using Better_Bulldozer.Extensions;
     using Better_Bulldozer.Tools;
     using Better_Bulldozer.Utils;
@@ -15,10 +16,14 @@ namespace Better_Bulldozer.Systems
     using Game;
     using Game.Areas;
     using Game.Common;
+    using Game.Input;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
+    using Game.UI.InGame;
+    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
+    using UnityEngine.InputSystem;
 
     /// <summary>
     /// UI system for Better Bulldozer extensions to the bulldoze tool.
@@ -38,7 +43,6 @@ namespace Better_Bulldozer.Systems
         private NetToolSystem m_NetToolSystem;
         private ObjectToolSystem m_ObjectToolSystem;
         private DefaultToolSystem m_DefaultToolSystem;
-        private ValueBinding<bool> m_SubElementBulldozeToolActive;
         private ValueBinding<int> m_RaycastTarget;
         private ValueBinding<int> m_AreasFilter;
         private ValueBinding<int> m_MarkersFilter;
@@ -49,14 +53,10 @@ namespace Better_Bulldozer.Systems
         private ValueBindingHelper<int> m_VehicleCimsAnimalsSelectionMode;
         private ValueBindingHelper<int> m_SelectionRadius;
         private ValueBindingHelper<VanillaFilters> m_SelectedVanillaFilters;
-        private ToolBaseSystem m_PreviousBulldozeToolSystem;
-        private ToolBaseSystem m_PreviousToolSystem;
-        private bool m_ToolModeToggledRecently;
         private RemoveVehiclesCimsAndAnimalsTool m_RemoveVehiclesCimsAndAnimalsTool;
-        private PrefabBase m_PreviousPrefab;
-        private bool m_SwitchToSubElementBulldozeToolOnUpdate;
-        private bool m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate;
-        private bool m_ActivatePrefabToolOnUpdate;
+        private ValueBinding<bool> m_SubElementBulldozeToolActive;
+        private ToolBaseSystem m_ActiveBulldozeToolSystem;
+        private ToolUISystem m_ToolUISystem;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -222,6 +222,28 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public VCAselectionMode VehicleCimsAnimalsSelectionMode { get => (VCAselectionMode)m_VehicleCimsAnimalsSelectionMode.Value; }
 
+        /// <summary>
+        /// Gets a value indicating whether VCATool should be active.
+        /// </summary>
+        public bool VCAToolActive
+        {
+            get
+            {
+                return m_ActiveBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool ||
+                      (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius &&
+                       m_RaycastTarget.value == (int)RaycastTarget.VehiclesCimsAndAnimals);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether subelement tool should be avtive.
+        /// </summary>
+        public bool SubElementBulldozeToolActive
+        {
+            get { return m_SubElementBulldozeToolActive.value || m_ActiveBulldozeToolSystem == m_SubElementBulldozeToolSystem; }
+            set { m_SubElementBulldozeToolActive.Update(value); }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -235,11 +257,12 @@ namespace Better_Bulldozer.Systems
             m_ObjectToolSystem = World.GetOrCreateSystemManaged<ObjectToolSystem>();
             m_SubElementBulldozeToolSystem = World.GetOrCreateSystemManaged<SubElementBulldozerTool>();
             m_NetToolSystem = World.GetOrCreateSystemManaged<NetToolSystem>();
+            m_ToolUISystem = World.GetOrCreateSystemManaged<ToolUISystem>();
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehiclesCimsAndAnimalsTool>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
-            m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
+            m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
 
             // These establish binding with UI.
             AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
@@ -278,6 +301,45 @@ namespace Better_Bulldozer.Systems
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
+            m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnGameLoadingComplete)} Old Tool Order:");
+            foreach (ToolBaseSystem toolBaseSystem in m_ToolSystem.tools)
+            {
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnGameLoadingComplete)} {toolBaseSystem.toolID}");
+            }
+
+            m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnGameLoadingComplete)} New Order:");
+            m_ToolSystem.tools.Remove(m_SubElementBulldozeToolSystem);
+            m_ToolSystem.tools.Remove(m_RemoveVehiclesCimsAndAnimalsTool);
+            m_ToolSystem.tools.Insert(0, m_SubElementBulldozeToolSystem);
+            m_ToolSystem.tools.Insert(0, m_RemoveVehiclesCimsAndAnimalsTool);
+
+            foreach (ToolBaseSystem toolBaseSystem in m_ToolSystem.tools)
+            {
+                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnGameLoadingComplete)} {toolBaseSystem.toolID}");
+            }
+
+            /*
+            m_Log.Debug("Shortcuts Action Map:");
+            ProxyActionMap shortcutsMap = InputManager.instance.FindActionMap(InputManager.kShortcutsMap);
+            foreach (KeyValuePair<string, ProxyAction> keyValue in shortcutsMap.actions)
+            {
+                m_Log.Debug(keyValue.Key);
+            }
+
+            m_Log.Debug("Tool Action Map:");
+            ProxyActionMap toolMap = InputManager.instance.FindActionMap(InputManager.kToolMap);
+            foreach (KeyValuePair<string, ProxyAction> keyValue in toolMap.actions)
+            {
+                m_Log.Debug(keyValue.Key);
+            }
+
+            m_Log.Debug("kEngagementMap Action Map:");
+            ProxyActionMap kEngagementMap = InputManager.instance.FindActionMap(InputManager.kEngagementMap);
+            foreach (KeyValuePair<string, ProxyAction> keyValue in kEngagementMap.actions)
+            {
+                m_Log.Debug(keyValue.Key);
+            }*/
+
             if (mode == GameMode.Game)
             {
                 m_IsGame.Value = true;
@@ -285,30 +347,12 @@ namespace Better_Bulldozer.Systems
             }
 
             m_IsGame.Value = false;
-            return;
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            if (m_SwitchToSubElementBulldozeToolOnUpdate)
-            {
-                m_SwitchToSubElementBulldozeToolOnUpdate = false;
-                m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
-            }
-            else if (m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate)
-            {
-                m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = false;
-                m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
-            }
-
-            if (m_ActivatePrefabToolOnUpdate)
-            {
-                m_ActivatePrefabToolOnUpdate = false;
-                m_ToolSystem.ActivatePrefabTool(m_PreviousPrefab);
-            }
-
             if (m_BulldozeToolSystem.debugBypassBulldozeConfirmation != m_BypassConfirmation.value)
             {
                 m_BypassConfirmation.Update(m_BulldozeToolSystem.debugBypassBulldozeConfirmation);
@@ -326,6 +370,34 @@ namespace Better_Bulldozer.Systems
                 AreaTypeMask areaTypeMask = m_BulldozeToolSystem.requireAreas;
                 areaTypeMask &= ~AreaTypeMask.Spaces;
                 m_BulldozeToolSystem.SetMemberValue("requireAreas", areaTypeMask);
+            }
+
+            if (m_SubElementBulldozeToolSystem.MustStartRunning &&
+                m_ToolSystem.activeTool != m_SubElementBulldozeToolSystem)
+            {
+                m_ActiveBulldozeToolSystem = m_SubElementBulldozeToolSystem;
+                m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
+            }
+            else if (m_RemoveVehiclesCimsAndAnimalsTool.MustStartRunning &&
+                m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                m_ActiveBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
+                m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
+            }
+
+            if (m_ToolSystem.activeTool == m_BulldozeToolSystem &&
+                m_ActiveBulldozeToolSystem != m_BulldozeToolSystem)
+            {
+                if (m_ActiveBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool)
+                {
+                    m_RemoveVehiclesCimsAndAnimalsTool.MustStartRunning = true;
+                }
+                else if (m_ActiveBulldozeToolSystem == m_SubElementBulldozeToolSystem)
+                {
+                    m_SubElementBulldozeToolSystem.MustStartRunning = true;
+                }
+
+                m_ToolSystem.activeTool = m_ActiveBulldozeToolSystem;
             }
         }
 
@@ -356,14 +428,14 @@ namespace Better_Bulldozer.Systems
             if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius &&
                 m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
             {
-                m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
+                m_RemoveVehiclesCimsAndAnimalsTool.MustStartRunning = true;
+                m_ActiveBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
             else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool ||
                      m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
-                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolModeToggledRecently = true;
+                m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -376,13 +448,13 @@ namespace Better_Bulldozer.Systems
 
             if (m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Radius && m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
             {
-                m_PreviousBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
+                m_RemoveVehiclesCimsAndAnimalsTool.MustStartRunning = true;
+                m_ActiveBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
             }
             else if (m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool && m_VehicleCimsAnimalsSelectionMode.Value == (int)VCAselectionMode.Single)
             {
-                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolModeToggledRecently = true;
+                m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -514,8 +586,7 @@ namespace Better_Bulldozer.Systems
 
             if (m_ToolSystem.activeTool != m_BulldozeToolSystem)
             {
-                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolModeToggledRecently = true;
+                m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -538,8 +609,7 @@ namespace Better_Bulldozer.Systems
 
             if (m_ToolSystem.activeTool != m_BulldozeToolSystem)
             {
-                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolModeToggledRecently = true;
+                m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -553,7 +623,8 @@ namespace Better_Bulldozer.Systems
         {
             if (m_ToolSystem.activeTool != m_SubElementBulldozeToolSystem)
             {
-                m_PreviousBulldozeToolSystem = m_SubElementBulldozeToolSystem;
+                m_SubElementBulldozeToolSystem.MustStartRunning = true;
+                m_ActiveBulldozeToolSystem = m_SubElementBulldozeToolSystem;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
                 if (m_RaycastTarget.value != (int)RaycastTarget.Vanilla && m_RaycastTarget.value != (int)RaycastTarget.Markers)
                 {
@@ -562,8 +633,7 @@ namespace Better_Bulldozer.Systems
             }
             else if (m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem)
             {
-                m_PreviousBulldozeToolSystem = m_BulldozeToolSystem;
-                m_ToolModeToggledRecently = true;
+                m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
                 m_ToolSystem.activeTool = m_BulldozeToolSystem;
             }
 
@@ -628,57 +698,9 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
-            if (tool == m_BulldozeToolSystem &&
-                m_PreviousBulldozeToolSystem == m_SubElementBulldozeToolSystem &&
-                m_PreviousToolSystem != m_SubElementBulldozeToolSystem)
-            {
-                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to SubElementBulldoze tool since that was previous tool mode.");
-                m_SwitchToSubElementBulldozeToolOnUpdate = true;
-            }
-            else if (m_PreviousToolSystem == m_SubElementBulldozeToolSystem &&
-                    (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) &&
-                     !m_ToolModeToggledRecently)
-            {
-                m_PreviousToolSystem = null;
-                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since subelement bulldoze tool was closed without changing tool mode.");
-                m_ActivatePrefabToolOnUpdate = true;
-            }
-
-            if (tool == m_BulldozeToolSystem &&
-                m_PreviousBulldozeToolSystem == m_RemoveVehiclesCimsAndAnimalsTool &&
-                m_PreviousToolSystem != m_RemoveVehiclesCimsAndAnimalsTool)
-            {
-                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Setting tool to m_RemoveVehiclesCimsAndAnimalsTool tool since that was previous tool mode.");
-                m_SwitchToRemoveVehilcesCimsAndAnimalsToolOnUpdate = true;
-            }
-            else if (m_PreviousToolSystem == m_RemoveVehiclesCimsAndAnimalsTool &&
-                    (tool == m_BulldozeToolSystem || tool == m_DefaultToolSystem) &&
-                    !m_ToolModeToggledRecently)
-            {
-                m_PreviousToolSystem = null;
-                m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} Activating prefab tool since m_RemoveVehiclesCimsAndAnimalsTool was closed without changing tool mode.");
-                m_ActivatePrefabToolOnUpdate = true;
-            }
-
-            m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} {tool.toolID} {m_ToolSystem.activePrefab?.GetPrefabID()} {tool.GetPrefab()?.GetPrefabID()}");
-
             HandleShowMarkers(m_ToolSystem.activePrefab);
-            if (m_ToolSystem.activePrefab is not BulldozePrefab)
-            {
-                m_PreviousPrefab = m_ToolSystem.activePrefab;
-            }
+            m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} tool.toolID:{tool.toolID} m_ToolSystem.activePrefab?.GetPrefabID():{m_ToolSystem.activePrefab?.GetPrefabID()} tool.GetPrefab()?.GetPrefabID():{tool.GetPrefab()?.GetPrefabID()}");
 
-            m_PreviousToolSystem = tool;
-            m_ToolModeToggledRecently = false;
-
-            if (tool == m_SubElementBulldozeToolSystem)
-            {
-                m_SubElementBulldozeToolActive.Update(true);
-            }
-            else if (m_SubElementBulldozeToolActive.value)
-            {
-                m_SubElementBulldozeToolActive.Update(false);
-            }
         }
 
         /// <summary>
@@ -694,10 +716,6 @@ namespace Better_Bulldozer.Systems
 
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnPrefabChanged)} {prefab.GetPrefabID()}");
             HandleShowMarkers(prefab);
-            if (prefab is not BulldozePrefab)
-            {
-                m_PreviousPrefab = prefab;
-            }
         }
 
         private void ChangeSelectionMode(int value)

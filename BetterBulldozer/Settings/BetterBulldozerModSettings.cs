@@ -6,14 +6,12 @@ namespace Better_Bulldozer.Settings
 {
     using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
-    using Colossal.PSI.Common;
     using Game;
     using Game.Input;
     using Game.Modding;
     using Game.Settings;
     using Game.Tools;
     using Unity.Entities;
-    using static Game.Prefabs.CompositionFlags;
 
     /// <summary>
     /// The mod settings for the Anarchy Mod.

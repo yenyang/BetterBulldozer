@@ -54,9 +54,19 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_BrandObjectPrefabQuery;
         private EntityQuery m_ActivityLocationPrefabQuery;
         private EntityQuery m_QuantityPrefabQuery;
+        private bool m_MustStartRunning = false;
 
         /// <inheritdoc/>
-        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
+        public override string toolID => m_BulldozeToolSystem.toolID;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the tool must start running.
+        /// </summary>
+        public bool MustStartRunning
+        {
+            get { return m_MustStartRunning; }
+            set { m_MustStartRunning = value; }
+        }
 
         /// <summary>
         /// Gets or sets the TreeAgeChanger Radius.
@@ -72,6 +82,13 @@ namespace Better_Bulldozer.Tools
         /// <inheritdoc/>
         public override bool TrySetPrefab(PrefabBase prefab)
         {
+            if (m_BetterBulldozerUISystem.SubElementBulldozeToolActive &&
+                prefab is BulldozePrefab bulldozePrefab)
+            {
+                m_BulldozeToolSystem.prefab = bulldozePrefab;
+                return true;
+            }
+
             return false;
         }
 
@@ -194,6 +211,8 @@ namespace Better_Bulldozer.Tools
             base.OnStartRunning();
             applyAction.enabled = true;
             m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnStartRunning)}");
+            m_MustStartRunning = false;
+            m_BetterBulldozerUISystem.SubElementBulldozeToolActive = true;
         }
 
         /// <inheritdoc/>
@@ -205,6 +224,7 @@ namespace Better_Bulldozer.Tools
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;
             m_WarningTooltipSystem.ClearTooltips();
+            m_BetterBulldozerUISystem.SubElementBulldozeToolActive = false;
         }
 
         /// <inheritdoc/>

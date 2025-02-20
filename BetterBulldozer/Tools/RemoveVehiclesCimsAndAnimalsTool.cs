@@ -38,19 +38,36 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_ParkedObjectsQuery;
         private ILog m_Log;
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
+        private bool m_MustStartRunning = false;
 
         /// <inheritdoc/>
-        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
+        public override string toolID => m_BulldozeToolSystem.toolID;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the tool must start running.
+        /// </summary>
+        public bool MustStartRunning
+        {
+            get { return m_MustStartRunning; }
+            set { m_MustStartRunning = value; }
+        }
 
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
         {
-            return null;
+            return m_BulldozeToolSystem.GetPrefab();
         }
 
         /// <inheritdoc/>
         public override bool TrySetPrefab(PrefabBase prefab)
         {
+            if (m_BetterBulldozerUISystem.VCAToolActive &&
+                prefab is BulldozePrefab bulldozePrefab)
+            {
+                m_BulldozeToolSystem.prefab = bulldozePrefab;
+                return true;
+            }
+
             return false;
         }
 
@@ -141,6 +158,7 @@ namespace Better_Bulldozer.Tools
             base.OnStartRunning();
             applyAction.enabled = true;
             m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
+            m_MustStartRunning = false;
         }
 
         /// <inheritdoc/>
