@@ -19,11 +19,13 @@ namespace Better_Bulldozer.Systems
     using Game.Input;
     using Game.Prefabs;
     using Game.Rendering;
+    using Game.SceneFlow;
     using Game.Tools;
     using Game.UI.InGame;
     using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
     using UnityEngine.InputSystem;
+    using static Colossal.AssetPipeline.Diagnostic.Report;
 
     /// <summary>
     /// UI system for Better Bulldozer extensions to the bulldoze tool.
@@ -57,6 +59,7 @@ namespace Better_Bulldozer.Systems
         private ValueBinding<bool> m_SubElementBulldozeToolActive;
         private ToolBaseSystem m_ActiveBulldozeToolSystem;
         private ToolUISystem m_ToolUISystem;
+        private cohtml.Net.View m_UiView;
 
         /// <summary>
         /// An enum to handle different raycast target options.
@@ -244,6 +247,34 @@ namespace Better_Bulldozer.Systems
             set { m_SubElementBulldozeToolActive.Update(value); }
         }
 
+        /// <summary>
+        /// Hacks UI to ensure button for bulldozer in main toolbar is appropriately selected or not.
+        /// </summary>
+        public void EnsureToolbarBulldozerClassList()
+        {
+            if (m_UiView == null)
+            {
+                m_UiView = GameManager.instance.userInterface.view.View;
+            }
+
+
+            // This script creates the BetterBulldozer object if it doesn't exist.
+            m_UiView.ExecuteScript("if (yyBetterBulldozer == null) var yyBetterBulldozer = {};");
+
+            if (m_ToolSystem.activeTool == m_BulldozeToolSystem ||
+                m_ToolSystem.activeTool == m_SubElementBulldozeToolSystem ||
+                m_ToolSystem.activeTool == m_RemoveVehiclesCimsAndAnimalsTool)
+            {
+                // This script searches through all img and adds removes selected if the src of that image contains the bulldozer.svg.
+                m_UiView.ExecuteScript($"yyBetterBulldozer.tagElements = document.getElementsByTagName(\"img\"); for (yyBetterBulldozer.i = 0; yyBetterBulldozer.i < yyBetterBulldozer.tagElements.length; yyBetterBulldozer.i++) {{ if (yyBetterBulldozer.tagElements[yyBetterBulldozer.i].src.includes(\"Bulldozer.svg\")) {{ yyBetterBulldozer.tagElements[yyBetterBulldozer.i].parentNode.classList.add(\"selected\");  }} }} ");
+            }
+            else
+            {
+                // This script searches through all img and adds removes selected if the src of that image contains the bulldozer.svg.
+                m_UiView.ExecuteScript($"yyBetterBulldozer.tagElements = document.getElementsByTagName(\"img\"); for (yyBetterBulldozer.i = 0; yyBetterBulldozer.i < yyBetterBulldozer.tagElements.length; yyBetterBulldozer.i++) {{ if (yyBetterBulldozer.tagElements[yyBetterBulldozer.i].src.includes(\"Bulldozer.svg\")) {{ yyBetterBulldozer.tagElements[yyBetterBulldozer.i].parentNode.classList.remove(\"selected\");  }} }} ");
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnCreate()
         {
@@ -263,6 +294,7 @@ namespace Better_Bulldozer.Systems
             m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehiclesCimsAndAnimalsTool>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
             m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
+            m_UiView = GameManager.instance.userInterface.view.View;
 
             // These establish binding with UI.
             AddBinding(m_RaycastTarget = new ValueBinding<int>(ModId, "RaycastTarget", (int)RaycastTarget.Vanilla));
@@ -377,14 +409,17 @@ namespace Better_Bulldozer.Systems
             {
                 m_ActiveBulldozeToolSystem = m_SubElementBulldozeToolSystem;
                 m_ToolSystem.activeTool = m_SubElementBulldozeToolSystem;
+                EnsureToolbarBulldozerClassList();
             }
             else if (m_RemoveVehiclesCimsAndAnimalsTool.MustStartRunning &&
                 m_ToolSystem.activeTool != m_RemoveVehiclesCimsAndAnimalsTool)
             {
                 m_ActiveBulldozeToolSystem = m_RemoveVehiclesCimsAndAnimalsTool;
                 m_ToolSystem.activeTool = m_RemoveVehiclesCimsAndAnimalsTool;
+                EnsureToolbarBulldozerClassList();
             }
 
+            /*
             if (m_ToolSystem.activeTool == m_BulldozeToolSystem &&
                 m_ActiveBulldozeToolSystem != m_BulldozeToolSystem)
             {
@@ -398,7 +433,7 @@ namespace Better_Bulldozer.Systems
                 }
 
                 m_ToolSystem.activeTool = m_ActiveBulldozeToolSystem;
-            }
+            }*/
         }
 
         /// <summary>
@@ -701,6 +736,7 @@ namespace Better_Bulldozer.Systems
             HandleShowMarkers(m_ToolSystem.activePrefab);
             m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(OnToolChanged)} tool.toolID:{tool.toolID} m_ToolSystem.activePrefab?.GetPrefabID():{m_ToolSystem.activePrefab?.GetPrefabID()} tool.GetPrefab()?.GetPrefabID():{tool.GetPrefab()?.GetPrefabID()}");
 
+            EnsureToolbarBulldozerClassList();
         }
 
         /// <summary>

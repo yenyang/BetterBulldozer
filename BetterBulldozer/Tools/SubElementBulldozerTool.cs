@@ -54,6 +54,8 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_BrandObjectPrefabQuery;
         private EntityQuery m_ActivityLocationPrefabQuery;
         private EntityQuery m_QuantityPrefabQuery;
+        private EntityQuery m_OverrideQuery;
+        private ToolClearSystem m_ToolClearSystem;
         private bool m_MustStartRunning = false;
 
         /// <inheritdoc/>
@@ -153,6 +155,7 @@ namespace Better_Bulldozer.Tools
         public void RequestDisable()
         {
             m_ToolSystem.activeTool = m_DefaultToolSystem;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
         }
 
         /// <inheritdoc/>
@@ -168,6 +171,7 @@ namespace Better_Bulldozer.Tools
             m_BetterBulldozerUISystem = World.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
             m_WarningTooltipSystem = World.GetOrCreateSystemManaged<SubelementBulldozerWarningTooltipSystem>();
             m_MainEntities = new NativeList<Entity>(Allocator.Persistent);
+            m_ToolClearSystem = World.GetOrCreateSystemManaged<ToolClearSystem>();
             m_PrefabEntities = new NativeList<Entity>(Allocator.Persistent);
             base.OnCreate();
             m_OwnedQuery = GetEntityQuery(new EntityQueryDesc[]
@@ -202,6 +206,12 @@ namespace Better_Bulldozer.Tools
                     },
                 },
             });
+
+            m_OverrideQuery = SystemAPI.QueryBuilder()
+                .WithAll<Override>()
+                .WithNone<Deleted>()
+                .Build();
+
             RequireForUpdate(m_OwnedQuery);
         }
 
@@ -213,6 +223,12 @@ namespace Better_Bulldozer.Tools
             m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnStartRunning)}");
             m_MustStartRunning = false;
             m_BetterBulldozerUISystem.SubElementBulldozeToolActive = true;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
+            EntityManager.AddComponent<BatchesUpdated>(m_ErrorQuery);
+            EntityManager.RemoveComponent<Error>(m_ErrorQuery);
+            EntityManager.AddComponent<BatchesUpdated>(m_OverrideQuery);
+            EntityManager.RemoveComponent<Override>(m_OverrideQuery);
+            m_ToolClearSystem.Update();
         }
 
         /// <inheritdoc/>
@@ -225,6 +241,7 @@ namespace Better_Bulldozer.Tools
             m_PreviousRaycastedEntity = Entity.Null;
             m_WarningTooltipSystem.ClearTooltips();
             m_BetterBulldozerUISystem.SubElementBulldozeToolActive = false;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
         }
 
         /// <inheritdoc/>
