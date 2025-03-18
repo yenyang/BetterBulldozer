@@ -100,7 +100,7 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <ChangeLog># Patch V1.3.11
-* Re-did tool handling in a manner that works for v1.2.4
+* Re-did tool handling.
 * Removed I18n Everywhere dependency. 
 * Translations for officially supported languages are handled internally with embedded resource files.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
