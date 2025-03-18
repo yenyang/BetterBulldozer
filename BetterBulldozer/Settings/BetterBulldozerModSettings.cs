@@ -6,21 +6,17 @@ namespace Better_Bulldozer.Settings
 {
     using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
-    using Colossal.PSI.Common;
     using Game;
     using Game.Input;
     using Game.Modding;
     using Game.Settings;
     using Game.Tools;
     using Unity.Entities;
-    using static Game.Prefabs.CompositionFlags;
 
     /// <summary>
     /// The mod settings for the Anarchy Mod.
     /// </summary>
     [FileLocation("Mods_Yenyang_Better_Bulldozer")]
-    [SettingsUIMouseAction(BetterBulldozerMod.RSEApplyMimicAction, "RemoveSubElementsApplyAction")]
-    [SettingsUIMouseAction(BetterBulldozerMod.VCAApplyMimicAction, "RemoveVCAApplyAction")]
     public class BetterBulldozerModSettings : ModSetting
     {
         /// <summary>
@@ -101,23 +97,6 @@ namespace Better_Bulldozer.Settings
                 World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreBrandingObjects>().Enabled = true;
             }
         }
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for Remove Sub Elements apply action.
-        /// </summary>
-        [SettingsUIMouseBinding(BetterBulldozerMod.RSEApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding RSEApplyMimic { get; set; }
-
-        /// <summary>
-        /// Gets or sets hidden keybinding for Remove Vehicle Cims and Animals action.
-        /// </summary>
-        [SettingsUIMouseBinding(BetterBulldozerMod.VCAApplyMimicAction)]
-        [SettingsUIBindingMimic(InputManager.kToolMap, "Apply")]
-        [SettingsUIHidden]
-        public ProxyBinding VCAApplyMimic { get; set; }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether: for saving previous selection mode for remove subelement tool mode.

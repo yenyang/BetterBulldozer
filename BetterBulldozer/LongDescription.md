@@ -5,7 +5,6 @@ Sully made a Youtube video about custom car parks (aka Parking Lots) and this fu
 
 ## Dependencies
 Unified Icon Library
-I18n Everywhere (Soft dependency)
 
 ## Donations
 If you want to say thank you with a donation you can do so on Paypal.
@@ -15,7 +14,7 @@ I am looking for volunteers to help translate the mod into the other languages. 
 The mod is fully or partially translated into: Chinese Simplified, German, Korean, Polish, Spanish, Chinese Traditional, French, Italian, Brazilian Portuguese, Russian, and Portuguese. 
 
 ## Supplemental Mods
-European Portuguese Localization (Only needed for European Portuguese Translations)
+I18n Everywhere and European Portuguese Localization (Only needed for European Portuguese Translations)
 
 # Detailed Description
 * Remove Moving Objects and Cims Tool Mode that allows you to use the bulldozer on moving objects such as vehicles or cims including broken, stuck, and vehicles placed by the player. Use radius selection to remove any that you cannot target with single selection. 

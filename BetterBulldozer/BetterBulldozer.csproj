@@ -10,9 +10,9 @@
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<AssemblyVersion>1.3.10</AssemblyVersion>
-		<FileVersion>1.3.10</FileVersion>
-		<Version>1.3.10</Version>
+		<AssemblyVersion>1.3.11</AssemblyVersion>
+		<FileVersion>1.3.11</FileVersion>
+		<Version>1.3.11</Version>
 		<RootNamespace>Better_Bulldozer</RootNamespace>
 	</PropertyGroup>
 	<!--Imports must be after PropertyGroup block-->
@@ -211,6 +211,20 @@
 		<Content Include="lang\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <EmbeddedResource Include="l10n\de-DE.json" />
+	  <EmbeddedResource Include="l10n\es-ES.json" />
+	  <EmbeddedResource Include="l10n\fr-FR.json" />
+	  <EmbeddedResource Include="l10n\it-IT.json" />
+	  <EmbeddedResource Include="l10n\ko-KR.json" />
+	  <EmbeddedResource Include="l10n\pl-PL.json" />
+	  <EmbeddedResource Include="l10n\pt-BR.json" />
+	  <EmbeddedResource Include="l10n\ru-RU.json" />
+	  <EmbeddedResource Include="l10n\zh-HANS.json" />
+	  <EmbeddedResource Include="l10n\zh-HANT.json" />
 	</ItemGroup>
 
 

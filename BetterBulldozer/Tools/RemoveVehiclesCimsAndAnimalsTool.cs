@@ -31,7 +31,6 @@ namespace Better_Bulldozer.Tools
     /// </summary>
     public partial class RemoveVehiclesCimsAndAnimalsTool : ToolBaseSystem
     {
-        private ProxyAction m_ApplyAction;
         private OverlayRenderSystem m_OverlayRenderSystem;
         private ToolOutputBarrier m_ToolOutputBarrier;
         private BulldozeToolSystem m_BulldozeToolSystem;
@@ -39,19 +38,38 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_ParkedObjectsQuery;
         private ILog m_Log;
         private BetterBulldozerUISystem m_BetterBulldozerUISystem;
+        private bool m_MustStartRunning = false;
+        private EntityQuery m_OverrideQuery;
+        private ToolClearSystem m_ToolClearSystem;
 
         /// <inheritdoc/>
-        public override string toolID => m_BulldozeToolSystem.toolID; // This is hack to get the UI use bulldoze cursor and bulldoze bar.
+        public override string toolID => m_BulldozeToolSystem.toolID;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the tool must start running.
+        /// </summary>
+        public bool MustStartRunning
+        {
+            get { return m_MustStartRunning; }
+            set { m_MustStartRunning = value; }
+        }
 
         /// <inheritdoc/>
         public override PrefabBase GetPrefab()
         {
-            return null;
+            return m_BulldozeToolSystem.GetPrefab();
         }
 
         /// <inheritdoc/>
         public override bool TrySetPrefab(PrefabBase prefab)
         {
+            if (m_BetterBulldozerUISystem.VCAToolActive &&
+                prefab is BulldozePrefab bulldozePrefab)
+            {
+                m_BulldozeToolSystem.prefab = bulldozePrefab;
+                return true;
+            }
+
             return false;
         }
 
@@ -68,6 +86,7 @@ namespace Better_Bulldozer.Tools
         public void RequestDisable()
         {
             m_ToolSystem.activeTool = m_DefaultToolSystem;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
         }
 
         /// <inheritdoc/>
@@ -86,6 +105,7 @@ namespace Better_Bulldozer.Tools
             m_OverlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
             m_BulldozeToolSystem = World.GetOrCreateSystemManaged<BulldozeToolSystem>();
             m_BetterBulldozerUISystem = World.GetOrCreateSystemManaged<BetterBulldozerUISystem>();
+            m_ToolClearSystem = World.GetOrCreateSystemManaged<ToolClearSystem>();
             base.OnCreate();
 
             m_MovingObjectsQuery = GetEntityQuery(new EntityQueryDesc[]
@@ -133,22 +153,34 @@ namespace Better_Bulldozer.Tools
                 },
             });
 
+            m_OverrideQuery = SystemAPI.QueryBuilder()
+                .WithAll<Override>()
+                .WithNone<Deleted>()
+                .Build();
             RequireForUpdate(m_MovingObjectsQuery);
-
-            m_ApplyAction = BetterBulldozerMod.Instance.Settings.GetAction(BetterBulldozerMod.VCAApplyMimicAction);
         }
 
         /// <inheritdoc/>
         protected override void OnStartRunning()
         {
-            m_ApplyAction.shouldBeEnabled = true;
+            base.OnStartRunning();
+            applyAction.enabled = true;
             m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
+            m_MustStartRunning = false;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
+            EntityManager.AddComponent<BatchesUpdated>(m_OverrideQuery);
+            EntityManager.RemoveComponent<Override>(m_OverrideQuery);
+            EntityManager.AddComponent<BatchesUpdated>(m_ErrorQuery);
+            EntityManager.RemoveComponent<Error>(m_ErrorQuery);
+            m_ToolClearSystem.Update();
         }
 
         /// <inheritdoc/>
         protected override void OnStopRunning()
         {
-            m_ApplyAction.shouldBeEnabled = false;
+            base.OnStopRunning();
+            applyAction.enabled = false;
+            m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
         }
 
         /// <inheritdoc/>
@@ -172,7 +204,7 @@ namespace Better_Bulldozer.Tools
             inputDeps = IJobExtensions.Schedule(toolRadiusJob, JobHandle.CombineDependencies(inputDeps, outJobHandle));
             m_OverlayRenderSystem.AddBufferWriter(inputDeps);
 
-            if (m_ApplyAction.IsPressed())
+            if (applyAction.IsPressed())
             {
                     RemoveVehiclesCimsAndAnimalsWithRadius removeVCAWithinRadiusJob = new ()
                     {
