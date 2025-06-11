@@ -101,7 +101,7 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <ChangeLog># Patch V1.3.12
 * Radius selection can now go down to a minimum of 1 instead of 10.
-* Rebuilt for game update.
+* Rebuilt for v1.3.3f1 game update.
 * Updated Localization</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />

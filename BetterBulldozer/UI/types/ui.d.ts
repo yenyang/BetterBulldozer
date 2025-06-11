@@ -1,5 +1,5 @@
 declare module "cs2/ui" {
-  import { CSSProperties, HTMLAttributes, PropsWithChildren, ReactElement, ReactNode, Ref } from 'react';
+  import { CSSProperties, HTMLAttributes, PropsWithChildren, ReactElement, ReactNode, Ref, RefObject } from 'react';
   
   export interface RefReactElement<T = any, P = any> extends ReactElement<P> {
   	ref?: Ref<T>;
@@ -34,17 +34,30 @@ declare module "cs2/ui" {
   export interface TooltipProps extends ClassProps {
   	tooltip: ReactNode;
   	disabled?: boolean;
+  	forceVisible?: boolean;
   	theme?: Partial<BalloonTheme>;
   	direction?: BalloonDirection;
   	alignment?: BalloonAlignment;
   	children: RefReactElement;
+  	anchorElRef?: RefObject<HTMLElement>;
   }
-  export export const Tooltip: ({ tooltip, disabled, theme, direction, alignment, className, children }: PropsWithChildren<TooltipProps>) => JSX.Element;
+  export export const Tooltip: ({ tooltip, forceVisible, disabled, theme, direction, alignment, className, children, anchorElRef }: PropsWithChildren<TooltipProps>) => JSX.Element;
+  export class FocusSymbol {
+  	readonly debugName: string;
+  	readonly r: number;
+  	constructor(debugName: string);
+  	toString(): string;
+  }
+  export const FOCUS_DISABLED: FocusSymbol;
+  export const FOCUS_AUTO: FocusSymbol;
+  export type FocusKey = typeof FOCUS_DISABLED | typeof FOCUS_AUTO | UniqueFocusKey;
+  export type UniqueFocusKey = FocusSymbol | string | number;
   export interface PanelTheme extends PanelTitleBarTheme {
   	panel: string;
   	header: string;
   	content: string;
   	footer: string;
+  	floatingHint?: string;
   }
   export interface PanelTitleBarTheme {
   	titleBar: string;
@@ -67,15 +80,22 @@ declare module "cs2/ui" {
   }
   export export const DialogContext: import("react").Context<DialogContextProps>;
   export export const DialogRenderer: ({ children }: PropsWithChildren) => JSX.Element;
-  export interface ConfirmationDialogProps {
+  export interface Number2 {
+  	readonly x: number;
+  	readonly y: number;
+  }
+  export interface ConfirmationDialogProps extends PropsWithChildren {
   	title?: ReactNode;
-  	message: ReactNode;
+  	message?: ReactNode;
+  	details?: string;
   	confirm?: ReactNode;
   	cancel?: ReactNode;
   	onConfirm: (dismiss: boolean) => void;
   	onCancel?: () => void;
-  	dismissable?: boolean;
+  	dismissible?: boolean;
   	cancellable?: boolean;
+  	zIndex?: number;
+  	multiline?: boolean;
   }
   export const UITriggeredConfirmationDialog: React.FC<ConfirmationDialogProps>;
   export enum UISound {
@@ -123,21 +143,8 @@ declare module "cs2/ui" {
   	openPanel = "open-panel",
   	closePanel = "close-panel",
   	openMenu = "open-menu",
-  	closeMenu = "close-menu"
-  }
-  export const FOCUS_DISABLED: unique symbol;
-  export const FOCUS_AUTO: unique symbol;
-  export type FocusKey = typeof FOCUS_DISABLED | typeof FOCUS_AUTO | UniqueFocusKey;
-  export type UniqueFocusKey = FocusSymbol | string | number;
-  export class FocusSymbol {
-  	readonly debugName: string;
-  	readonly r: number;
-  	constructor(debugName: string);
-  	toString(): string;
-  }
-  export interface Number2 {
-  	readonly x: number;
-  	readonly y: number;
+  	closeMenu = "close-menu",
+  	clickDisableButton = "click-disable-button"
   }
   export type Action = () => void | boolean;
   export type Action1D = (value: number) => void | boolean;
@@ -146,13 +153,18 @@ declare module "cs2/ui" {
   	"Change Slider Value": Action1D;
   	"Change Tool Option": Action1D;
   	"Change Value": Action1D;
+  	"Change Line Schedule": Action1D;
+  	"Select Popup Button": Action1D;
   	"Move Vertical": Action1D;
   	"Switch Radio Station": Action1D;
   	"Scroll Vertical": Action1D;
+  	"Scroll Assets": Action1D;
   	"Select": Action;
   	"Purchase Dev Tree Node": Action;
   	"Select Chirp Sender": Action;
   	"Save Game": Action;
+  	"Overwrite Save": Action;
+  	"Confirm": Action;
   	"Expand Group": Action;
   	"Collapse Group": Action;
   	"Select Route": Action;
@@ -167,24 +179,39 @@ declare module "cs2/ui" {
   	"Toggle Tool Color Picker": Action;
   	"Cinematic Mode": Action;
   	"Photo Mode": Action;
+  	"Focus Citizen": Action;
+  	"Unfocus Citizen": Action;
+  	"Focus Line Panel": Action;
+  	"Focus Occupants Panel": Action;
+  	"Focus Info Panel": Action;
+  	"Close": Action;
   	"Back": Action;
   	"Leave Underground Mode": Action;
   	"Leave Info View": Action;
+  	"Leave Map Tile View": Action;
+  	"Jump Section": Action1D;
   	"Switch Tab": Action1D;
+  	"Switch Option Section": Action1D;
   	"Switch DLC": Action1D;
   	"Switch Ordering": Action1D;
   	"Switch Radio Network": Action1D;
   	"Change Time Scale": Action1D;
   	"Switch Page": Action1D;
+  	"Default Tool": Action;
+  	"Default Tool UI": Action;
   	"Tool Options": Action;
   	"Switch Toolmode": Action;
   	"Toggle Snapping": Action;
+  	"Toggle Contour Lines": Action;
   	"Capture Keyframe": Action;
   	"Reset Property": Action;
   	"Toggle Property": Action;
   	"Previous Tutorial Phase": Action;
   	"Continue Tutorial": Action;
+  	"Finish Tutorial": Action;
+  	"Close Tutorial": Action;
   	"Focus Tutorial List": Action;
+  	"Start Next Tutorial": Action;
   	"Pause Simulation": Action;
   	"Resume Simulation": Action;
   	"Switch Speed": Action;
@@ -192,32 +219,51 @@ declare module "cs2/ui" {
   	"Speed 2": Action;
   	"Speed 3": Action;
   	"Bulldozer": Action;
+  	"Exit Underground Mode": Action;
+  	"Enter Underground Mode": Action;
+  	"Increase Elevation": Action;
+  	"Decrease Elevation": Action;
   	"Change Elevation": Action1D;
   	"Advisor": Action;
   	"Quicksave": Action;
   	"Quickload": Action;
   	"Focus Selected Object": Action;
   	"Hide UI": Action;
-  	"Map tile Purchase Panel": Action;
+  	"Map Tile Purchase Panel": Action;
   	"Info View": Action;
   	"Progression Panel": Action;
   	"Economy Panel": Action;
   	"City Information Panel": Action;
   	"Statistic Panel": Action;
   	"Transportation Overview Panel": Action;
+  	"Notification Panel": Action;
   	"Chirper Panel": Action;
   	"Lifepath Panel": Action;
   	"Event Journal Panel": Action;
   	"Radio Panel": Action;
   	"Photo Mode Panel": Action;
   	"Take Photo": Action;
+  	"Relocate Selected Object": Action;
+  	"Toggle Selected Object Active": Action;
+  	"Delete Selected Object": Action;
+  	"Toggle Selected Object Emptying": Action;
+  	"Toggle Selected Lot Edit": Action;
+  	"Toggle Follow Selected Citizen": Action;
+  	"Toggle Traffic Routes": Action;
   	"Pause Menu": Action;
   	"Load Game": Action;
   	"Start Game": Action;
   	"Save Options": Action;
   	"Switch User": Action;
   	"Unset Binding": Action;
+  	"Reset Binding": Action;
   	"Switch Savegame Location": Action1D;
+  	"Show Advanced": Action;
+  	"Hide Advanced": Action;
+  	"Select Directory": Action;
+  	"Search Options": Action;
+  	"Clear Search": Action;
+  	"Credit Speed": Action1D;
   	"Debug UI": Action;
   	"Debug Prefab Tool": Action;
   	"Debug Change Field": Action1D;
@@ -226,6 +272,7 @@ declare module "cs2/ui" {
   export type InputAction = keyof InputActionsDefinition;
   export interface ButtonTheme {
   	button: string;
+  	hint: string;
   }
   export interface ButtonSounds {
   	select?: UISound | string | null;
@@ -241,9 +288,14 @@ declare module "cs2/ui" {
   	selectAction?: InputAction;
   	selectSound?: UISound | string | null;
   	tooltipLabel?: ReactNode;
+  	disableHint?: boolean;
   	/** When the button is clicked or the SELECT button on a gamepad is pressed */
   	onSelect?: () => void;
   	as?: "button" | "div";
+  	hintAction?: InputAction;
+  	forceHint?: boolean;
+  	shortcut?: InputAction;
+  	allowFocusableChildren?: boolean;
   }
   export interface IconButtonTheme extends ButtonTheme {
   	icon: string;
@@ -267,6 +319,7 @@ declare module "cs2/ui" {
   export export const Button: (props: ButtonProps$1) => JSX.Element;
   export export const MenuButton: (props: Partial<LabeledIconButtonProps>) => JSX.Element;
   export export const FloatingButton: (props: Partial<IconButtonProps>) => JSX.Element;
+  export type AnchoredPopupAlignment = "left" | "right";
   export interface DropdownTheme extends DropdownToggleTheme, DropdownMenuTheme, DropdownItemTheme {
   }
   export interface DropdownToggleTheme {
@@ -289,15 +342,21 @@ declare module "cs2/ui" {
   	initialFocused?: UniqueFocusKey | null;
   	theme?: Partial<DropdownTheme>;
   	content: ReactNode;
+  	alignment?: AnchoredPopupAlignment;
+  	onToggle?: (visible: boolean) => void;
   }
-  export export const Dropdown: ({ focusKey, initialFocused, theme: partialTheme, content, children }: PropsWithChildren<DropdownProps>) => JSX.Element;
-  export interface DropdownToggleProps extends DropdownToggleBaseProps {
+  export export const Dropdown: ({ focusKey, initialFocused, theme: partialTheme, content, alignment, children, onToggle }: PropsWithChildren<DropdownProps>) => JSX.Element;
+  export interface DropdownToggleProps extends DropdownToggleBaseProps, ClassProps {
   	theme?: DropdownToggleTheme;
+  	openIconComponent?: ReactNode;
+  	closeIconComponent?: ReactNode;
   }
-  export export const DropdownToggle: ({ theme, children, ...props }: PropsWithChildren<DropdownToggleProps>) => JSX.Element;
+  export export const DropdownToggle: ({ theme, openIconComponent, closeIconComponent, children, ...props }: PropsWithChildren<DropdownToggleProps>) => JSX.Element;
   export interface DropdownToggleBaseProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   	tooltip?: ReactNode;
+  	showHint?: boolean;
   	theme?: Partial<DropdownToggleTheme>;
+  	buttonTheme?: ButtonProps$1["theme"];
   	sounds?: ButtonSounds | null;
   	selectSound?: UISound | string | null;
   	tooltipLabel?: ReactNode;
@@ -330,6 +389,7 @@ declare module "cs2/ui" {
   	enter?: UISound | string | null;
   	exit?: UISound | string | null;
   }
+  export type LocReactNode = JSX.Element | string;
   export interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   	focusKey?: FocusKey;
   	header?: ReactNode;
@@ -340,6 +400,11 @@ declare module "cs2/ui" {
   	contentClassName?: string;
   	onClose?: () => void;
   	allowFocusExit?: boolean;
+  	hintClassName?: string;
+  	showCloseHint?: boolean | InputAction;
+  	unfocusedHintAction?: InputAction;
+  	backActionOverride?: string;
+  	allowLooping?: boolean;
   }
   export interface DraggablePanelProps extends PanelProps {
   	initialPosition?: Number2;
@@ -366,8 +431,9 @@ declare module "cs2/ui" {
   	uppercase?: boolean;
   	subRow?: boolean;
   	disableFocus?: boolean;
+  	noShrinkRight?: boolean;
   }
-  export const InfoRow: ({ icon, left, right, tooltip, link, uppercase, subRow, disableFocus, className }: InfoRowProps) => JSX.Element;
+  export const InfoRow: ({ icon, left, right, tooltip, link, uppercase, subRow, disableFocus, className, noShrinkRight }: InfoRowProps) => JSX.Element;
   export interface SimplePanelProps extends PanelProps {
   	draggable?: false | undefined;
   }
@@ -380,8 +446,9 @@ declare module "cs2/ui" {
   	src: string;
   	tinted?: boolean;
   	className?: string;
+  	children?: ReactNode;
   }
-  export export const Icon: ({ tinted, className, src }: IconProps) => JSX.Element;
+  export export const Icon: ({ tinted, className, src, children }: IconProps) => JSX.Element;
   export const PortalContainerProvider: ({ children }: {
   	children: RefReactElement<HTMLElement>;
   }) => JSX.Element;
@@ -424,13 +491,14 @@ declare module "cs2/ui" {
   	className?: string;
   	style?: CSSProperties;
   	onScroll?: () => void;
+  	onOverflowX?: (overflow: boolean) => void;
+  	onOverflowY?: (overflow: boolean) => void;
   	autoScroll?: boolean;
   	autoScrollSettings?: AutoScrollSettings;
   }
   export export const Scrollable: (props: ScrollableProps & {
   	children?: import("react").ReactNode;
   } & import("react").RefAttributes<HTMLDivElement>) => import("react").ReactElement<any, string | import("react").JSXElementConstructor<any>> | null;
-  export type LocReactNode = JSX.Element | string;
   export enum ParagraphStyle {
   	None = 0,
   	Heading1 = 1,
@@ -441,11 +509,11 @@ declare module "cs2/ui" {
   	Heading6 = 6,
   	ListItem = 7
   }
-  export type FormattedTextRenderResult = [
-  	node: ReactNode,
-  	style: ParagraphStyle,
-  	images: string[]
-  ];
+  export type FormattedTextRenderResult = {
+  	node: ReactNode;
+  	style: ParagraphStyle;
+  	images: string[];
+  };
   export interface FormattedTextRenderer {
   	render(str: string): FormattedTextRenderResult;
   }
@@ -466,8 +534,9 @@ declare module "cs2/ui" {
   	theme?: Partial<FormattedTextTheme>;
   	renderer?: FormattedTextRenderer;
   	onLinkSelect?: (data: string) => void;
+  	selectAction?: InputAction;
   }
-  export export const FormattedText: ({ focusKey, text, theme: partialTheme, renderer, className, onLinkSelect, ...props }: FormattedTextProps) => JSX.Element;
+  export export const FormattedText: ({ focusKey, text, theme: partialTheme, renderer, className, onLinkSelect, selectAction, ...props }: FormattedTextProps) => JSX.Element;
   export interface FormattedParagraphsTheme extends FormattedTextTheme {
   	paragraphs: string;
   }
@@ -478,10 +547,11 @@ declare module "cs2/ui" {
   	theme?: Partial<FormattedParagraphsTheme>;
   	renderer?: FormattedTextRenderer;
   	onLinkSelect?: (data: string) => void;
+  	selectAction?: InputAction;
   	maxLineLength?: number;
   	splitLineLength?: number;
   }
-  export export const FormattedParagraphs: ({ focusKey, text, theme: partialTheme, renderer, className, children, onLinkSelect, maxLineLength, splitLineLength, ...props }: PropsWithChildren<FormattedParagraphsProps>) => JSX.Element;
+  export export const FormattedParagraphs: ({ focusKey, text, theme: partialTheme, renderer, className, children, onLinkSelect, selectAction, maxLineLength, splitLineLength, ...props }: PropsWithChildren<FormattedParagraphsProps>) => JSX.Element;
   export export class MarkdownRenderer implements FormattedTextRenderer {
   	render(str: string): FormattedTextRenderResult;
   }
