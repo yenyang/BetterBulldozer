@@ -323,9 +323,29 @@ namespace Better_Bulldozer.Systems
             AddBinding(new TriggerBinding(ModId, "UpgradeIsMain", () => m_UpgradeIsMain.Update(true)));
             AddBinding(new TriggerBinding(ModId, "SubElementsOfMainElement", () => m_UpgradeIsMain.Update(false)));
             CreateTrigger("ChangeSelectionMode", (int value) => ChangeSelectionMode(value));
-            CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value) );
-            CreateTrigger("IncreaseRadius", () => m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 10, 100));
-            CreateTrigger("DecreaseRadius", () => m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 10, 10));
+            CreateTrigger("ChangeVCAselectionMode", (int value) => ChangeVCAselectionMode(value));
+            CreateTrigger("IncreaseRadius", () =>
+            {
+                if (m_SelectionRadius.Value >= 10)
+                {
+                    m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 10, 100);
+                }
+                else
+                {
+                    m_SelectionRadius.Value = Math.Min(m_SelectionRadius.Value + 1, 10);
+                }
+            });
+            CreateTrigger("DecreaseRadius", () =>
+            {
+                if (m_SelectionRadius.Value > 10)
+                {
+                    m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 10, 10);
+                }
+                else
+                {
+                    m_SelectionRadius.Value = Math.Max(m_SelectionRadius.Value - 1, 1);
+                }
+            });
             CreateTrigger("ChangeVanillaFilter", (int value) => ChangeVanillaFilters((VanillaFilters)value));
         }
 

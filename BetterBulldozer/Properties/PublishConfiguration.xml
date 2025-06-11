@@ -76,7 +76,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 * Klyte45, T.D.W., Algernon - Help with UI, Cooperative Development and Code Sharing
 * krzychu124, Triton Supreme, and Quboid - Cooperative Development and Code Sharing
 * City Rat - Icons
-* Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg and Morgan (French), yui hei lai and allegretic (Chinese Traditional), Furios (Italian), Ti4goc (Portuguese)
+* Localization - Hendrix (German), RilkeXS (Chinese Simplified), TwotoolusFly_LSh.st (Korean), OWSEEX and krugl1y (Russian), felipecollucci (Brazilian Portuguese), Karmel68 and Lisek (Polish), Citadino (Spanish), Karg and Morgan (French), yui hei lai and allegretic (Chinese Traditional), Furios (Italian), Ti4goc (Portuguese)
 * Testing, Feedback - Dante, starrysum, HarbourMaster Jay, Dome, Tigon Ologdring, BruceyBoy, RaftermanNZ, Elektrotek, SpaceChad, CanadianMoosePlays
 
 This mod is not affiliated with any C:S1 mod with similar titles.</LongDescription>
@@ -93,16 +93,16 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.11" />
+  <ModVersion Value="1.3.12" />
   <!--Recommended version of the base game to use the mod-->
-  <GameVersion Value="1.2.*" />
+  <GameVersion Value="1.3.*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.11
-* Re-did tool handling.
-* Removed I18n Everywhere dependency. 
-* Translations for officially supported languages are handled internally with embedded resource files.</ChangeLog>
+  <ChangeLog># Patch V1.3.12
+* Radius selection can now go down to a minimum of 1 instead of 10.
+* Rebuilt for v1.3.3f1 game update.
+* Updated Localization</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />

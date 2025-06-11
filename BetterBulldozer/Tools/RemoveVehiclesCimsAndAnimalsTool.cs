@@ -292,7 +292,7 @@ namespace Better_Bulldozer.Tools
             /// <returns>True if tree position is within radius of position. False if not.</returns>
             private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
             {
-                float minRadius = 10f;
+                float minRadius = 1f;
                 radius = Mathf.Max(radius, minRadius);
                 position.y = cursorPosition.y;
                 if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
@@ -346,7 +346,7 @@ namespace Better_Bulldozer.Tools
             /// <returns>True if tree position is within radius of position. False if not.</returns>
             private bool CheckForWithinRadius(float3 cursorPosition, float3 position, float radius)
             {
-                float minRadius = 10f;
+                float minRadius = 1f;
                 radius = Mathf.Max(radius, minRadius);
                 position.y = cursorPosition.y;
                 if (Unity.Mathematics.math.distance(cursorPosition, position) < radius)
