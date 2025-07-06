@@ -332,7 +332,9 @@ namespace Better_Bulldozer.Tools
                     {
                         foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                         {
-                            if (!EntityManager.HasComponent<Extension>(subObject.m_SubObject) && !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject))
+                            if (!EntityManager.HasComponent<Extension>(subObject.m_SubObject) &&
+                                !EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(subObject.m_SubObject) &&
+                                subObject.m_SubObject != Entity.Null)
                             {
                                 buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                 buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
@@ -347,7 +349,8 @@ namespace Better_Bulldozer.Tools
                 {
                     buffer.RemoveComponent<PermanentlyRemovedSubElementPrefab>(currentRaycastEntity);
                     buffer.AddComponent<Updated>(currentRaycastEntity);
-                    if (hasOwnerComponentFlag)
+                    if (hasOwnerComponentFlag &&
+                        owner.m_Owner != Entity.Null)
                     {
                         buffer.AddComponent<Updated>(owner.m_Owner);
                     }
@@ -369,7 +372,9 @@ namespace Better_Bulldozer.Tools
                     buffer.AddComponent<BatchesUpdated>(currentRaycastEntity);
                     m_MainEntities.Add(currentRaycastEntity);
                     m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} Added to main entities {currentRaycastEntity.Index} {currentRaycastEntity.Version}");
-                    if (EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
+                    if (EntityManager.TryGetComponent(currentRaycastEntity, out PrefabRef prefabRef) &&
+                        m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase) &&
+                        prefabBase is not null)
                     {
                         if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Matching)
                         {
@@ -378,11 +383,14 @@ namespace Better_Bulldozer.Tools
                                 m_PrefabEntities.Add(prefabRef.m_Prefab);
                             }
 
-                            if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
+                            if (prefabBase is StaticObjectPrefab &&
+                                EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                             {
                                 foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                                 {
-                                    if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                    if (subObject.m_SubObject != Entity.Null &&
+                                        EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) &&
+                                        subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
                                     {
                                         buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                         buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
@@ -392,11 +400,14 @@ namespace Better_Bulldozer.Tools
                                     }
                                 }
                             }
-                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
+                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) &&
+                                      EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
                             {
                                 foreach (Game.Net.SubLane subLane in ownerSublanes)
                                 {
-                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef subLanePrefabRef) && subLanePrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                    if (subLane.m_SubLane != Entity.Null &&
+                                        EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef subLanePrefabRef) &&
+                                        subLanePrefabRef.m_Prefab == prefabRef.m_Prefab)
                                     {
                                         buffer.AddComponent<Highlighted>(subLane.m_SubLane);
                                         buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
@@ -419,7 +430,9 @@ namespace Better_Bulldozer.Tools
                         else if (m_BetterBulldozerUISystem.ActiveSelectionMode == BetterBulldozerUISystem.SelectionMode.Similar)
                         {
                             m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnUpdate)} similar.");
-                            if (prefabBase is StaticObjectPrefab && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
+                            if (prefabBase is StaticObjectPrefab &&
+                                owner.m_Owner != Entity.Null &&
+                                EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> ownerSubobjects))
                             {
                                 if (EntityManager.HasComponent<Tree>(currentRaycastEntity))
                                 {
@@ -454,7 +467,9 @@ namespace Better_Bulldozer.Tools
 
                                     foreach (Game.Objects.SubObject subObject in ownerSubobjects)
                                     {
-                                        if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) && subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
+                                        if (subObject.m_SubObject != Entity.Null &&
+                                            EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef subObjectPrefabRef) &&
+                                            subObjectPrefabRef.m_Prefab == prefabRef.m_Prefab)
                                         {
                                             buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                             buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
@@ -465,11 +480,15 @@ namespace Better_Bulldozer.Tools
                                     }
                                 }
                             }
-                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
+                            else if ((prefabBase is NetLanePrefab || prefabBase is NetLaneGeometryPrefab) &&
+                                owner.m_Owner != Entity.Null &&
+                                EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerSublanes))
                             {
                                 foreach (Game.Net.SubLane subLane in ownerSublanes)
                                 {
-                                    if (EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef fencePrefabEntity) && EntityManager.TryGetComponent(fencePrefabEntity.m_Prefab, out UtilityLaneData utilityLaneData) && (utilityLaneData.m_UtilityTypes & UtilityTypes.Fence) == UtilityTypes.Fence)
+                                    if (subLane.m_SubLane != Entity.Null &&
+                                        EntityManager.TryGetComponent(subLane.m_SubLane, out PrefabRef fencePrefabEntity) &&
+                                        EntityManager.TryGetComponent(fencePrefabEntity.m_Prefab, out UtilityLaneData utilityLaneData) && (utilityLaneData.m_UtilityTypes & UtilityTypes.Fence) == UtilityTypes.Fence)
                                     {
                                         buffer.AddComponent<Highlighted>(subLane.m_SubLane);
                                         buffer.AddComponent<BatchesUpdated>(subLane.m_SubLane);
@@ -501,6 +520,11 @@ namespace Better_Bulldozer.Tools
                         {
                             foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                             {
+                                if (subObject.m_SubObject == Entity.Null)
+                                {
+                                    continue;
+                                }
+
                                 buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                                 buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
 
@@ -603,7 +627,9 @@ namespace Better_Bulldozer.Tools
                 foreach (Entity entity in m_MainEntities)
                 {
                     Entity currentEntity = entity;
-                    if (EntityManager.TryGetComponent(currentEntity, out Owner currentOwner)
+                    if (currentEntity != Entity.Null &&
+                        EntityManager.TryGetComponent(currentEntity, out Owner currentOwner) &&
+                        currentOwner.m_Owner != Entity.Null
                     && EntityManager.TryGetBuffer(currentOwner.m_Owner, isReadOnly: true, out DynamicBuffer<Game.Net.SubLane> ownerBuffer)
                     && ownerBuffer.Length == 1
                     && EntityManager.HasComponent<Game.Tools.EditorContainer>(currentOwner.m_Owner))
@@ -614,9 +640,11 @@ namespace Better_Bulldozer.Tools
 
                     if (EntityManager.TryGetComponent(currentEntity, out Edge segmentEdge))
                     {
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
+                        if (segmentEdge.m_Start != Entity.Null &&
+                            EntityManager.TryGetBuffer(segmentEdge.m_Start, false, out DynamicBuffer<ConnectedEdge> startConnectedEdges))
                         {
-                            if (startConnectedEdges.Length == 1 && startConnectedEdges[0].m_Edge == currentEntity)
+                            if (startConnectedEdges.Length == 1 &&
+                                startConnectedEdges[0].m_Edge == currentEntity)
                             {
                                 buffer.AddComponent<Deleted>(segmentEdge.m_Start);
                             }
@@ -624,7 +652,8 @@ namespace Better_Bulldozer.Tools
                             {
                                 foreach (ConnectedEdge edge in startConnectedEdges)
                                 {
-                                    if (edge.m_Edge != currentEntity)
+                                    if (edge.m_Edge != currentEntity &&
+                                        edge.m_Edge != Entity.Null)
                                     {
                                         buffer.AddComponent<Updated>(edge.m_Edge);
                                         if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
@@ -639,9 +668,11 @@ namespace Better_Bulldozer.Tools
                             }
                         }
 
-                        if (EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
+                        if (segmentEdge.m_End != Entity.Null &&
+                            EntityManager.TryGetBuffer(segmentEdge.m_End, false, out DynamicBuffer<ConnectedEdge> endConnectedEdges))
                         {
-                            if (endConnectedEdges.Length == 1 && endConnectedEdges[0].m_Edge == currentEntity)
+                            if (endConnectedEdges.Length == 1 &&
+                                endConnectedEdges[0].m_Edge == currentEntity)
                             {
                                 buffer.AddComponent<Deleted>(segmentEdge.m_End);
                             }
@@ -649,7 +680,8 @@ namespace Better_Bulldozer.Tools
                             {
                                 foreach (ConnectedEdge edge in endConnectedEdges)
                                 {
-                                    if (edge.m_Edge != currentEntity)
+                                    if (edge.m_Edge != currentEntity &&
+                                        edge.m_Edge != Entity.Null)
                                     {
                                         buffer.AddComponent<Updated>(edge.m_Edge);
                                         if (EntityManager.TryGetComponent(edge.m_Edge, out Edge distantEdge))
@@ -669,26 +701,33 @@ namespace Better_Bulldozer.Tools
                     {
                         foreach (Game.Objects.SubObject subObject in dynamicBuffer)
                         {
-                            buffer.AddComponent<Deleted>(subObject.m_SubObject);
+                            if (subObject.m_SubObject != Entity.Null)
+                            {
+                                buffer.AddComponent<Deleted>(subObject.m_SubObject);
+                            }
                         }
                     }
 
-                    if ((!EntityManager.HasComponent<Extension>(currentEntity) && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)) || (BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)))
+                    if ((!EntityManager.HasComponent<Extension>(currentEntity) && !EntityManager.HasComponent<Game.Net.Node>(currentEntity)) || (BetterBulldozerMod.Instance.Settings.AllowRemovingExtensions && !EntityManager.HasComponent<Game.Net.Node>(currentEntity) && currentEntity != Entity.Null))
                     {
                         buffer.AddComponent<Deleted>(currentEntity);
                     }
                 }
 
-                if (m_PrefabEntities.Length > 0 && !EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(owner.m_Owner))
+                if (m_PrefabEntities.Length > 0 &&
+                    !EntityManager.HasBuffer<PermanentlyRemovedSubElementPrefab>(owner.m_Owner) &&
+                    owner.m_Owner != Entity.Null)
                 {
                     EntityManager.AddBuffer<PermanentlyRemovedSubElementPrefab>(owner.m_Owner);
                 }
 
-                if (m_PrefabEntities.Length > 0 && EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: false, out DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedPrefabBuffer))
+                if (m_PrefabEntities.Length > 0 &&
+                    EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: false, out DynamicBuffer<PermanentlyRemovedSubElementPrefab> removedPrefabBuffer))
                 {
                     foreach (Entity entity in m_PrefabEntities)
                     {
-                        if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
+                        if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase) &&
+                            prefabBase != null)
                         {
                             Entity recordEntity = EntityManager.CreateEntity();
 
@@ -710,7 +749,8 @@ namespace Better_Bulldozer.Tools
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
-                if (EntityManager.HasComponent(subObject.m_SubObject, excludeComponent))
+                if (EntityManager.HasComponent(subObject.m_SubObject, excludeComponent) ||
+                    subObject.m_SubObject == Entity.Null)
                 {
                     continue;
                 }
@@ -733,7 +773,8 @@ namespace Better_Bulldozer.Tools
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
-                if (EntityManager.HasComponent(subObject.m_SubObject, necessaryComponent))
+                if (EntityManager.HasComponent(subObject.m_SubObject, necessaryComponent) &&
+                    subObject.m_SubObject != Entity.Null)
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
@@ -751,7 +792,9 @@ namespace Better_Bulldozer.Tools
         {
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
-                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && EntityManager.HasComponent(prefabRef.m_Prefab, necessaryComponent))
+                if (subObject.m_SubObject != Entity.Null &&
+                    EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) &&
+                    EntityManager.HasComponent(prefabRef.m_Prefab, necessaryComponent))
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);
@@ -772,7 +815,9 @@ namespace Better_Bulldozer.Tools
 
             foreach (Game.Objects.SubObject subObject in subObjects)
             {
-                if (EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) && prefabEntities.Contains(prefabRef.m_Prefab))
+                if (subObject.m_SubObject != Entity.Null &&
+                    EntityManager.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) &&
+                    prefabEntities.Contains(prefabRef.m_Prefab))
                 {
                     buffer.AddComponent<Highlighted>(subObject.m_SubObject);
                     buffer.AddComponent<BatchesUpdated>(subObject.m_SubObject);

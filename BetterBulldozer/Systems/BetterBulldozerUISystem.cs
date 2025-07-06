@@ -39,6 +39,7 @@ namespace Better_Bulldozer.Systems
         private RenderingSystem m_RenderingSystem;
         private PrefabSystem m_PrefabSystem;
         private BulldozeToolSystem m_BulldozeToolSystem;
+        private AreaToolSystem m_AreaToolSystem;
         private SubElementBulldozerTool m_SubElementBulldozeToolSystem;
         private bool m_RecordedShowMarkers;
         private bool m_PrefabIsMarker = false;
@@ -292,6 +293,7 @@ namespace Better_Bulldozer.Systems
             m_ToolSystem.EventToolChanged += OnToolChanged;
             m_DefaultToolSystem = World.GetOrCreateSystemManaged<DefaultToolSystem>();
             m_RemoveVehiclesCimsAndAnimalsTool = World.GetOrCreateSystemManaged<RemoveVehiclesCimsAndAnimalsTool>();
+            m_AreaToolSystem = World.GetOrCreateSystemManaged<AreaToolSystem>();
             m_ToolSystem.EventPrefabChanged += OnPrefabChanged;
             m_ActiveBulldozeToolSystem = m_BulldozeToolSystem;
             m_UiView = GameManager.instance.userInterface.view.View;
@@ -698,7 +700,9 @@ namespace Better_Bulldozer.Systems
 
         private void HandleShowMarkers(PrefabBase prefab)
         {
-            if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) && m_ToolSystem.activeTool != m_DefaultToolSystem)
+            if (prefab != null &&
+                m_PrefabSystem.TryGetEntity(prefab, out Entity prefabEntity) &&
+                m_ToolSystem.activeTool != m_DefaultToolSystem)
             {
                 if (EntityManager.HasComponent<MarkerNetData>(prefabEntity)
                  || prefab is MarkerObjectPrefab || prefab is NetLaneGeometryPrefab || prefab is NetLanePrefab || prefab is TransformPrefab
@@ -714,6 +718,15 @@ namespace Better_Bulldozer.Systems
                     m_RenderingSystem.markersVisible = true;
                     m_PrefabIsMarker = true;
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} m_PrefabIsMarker = {m_PrefabIsMarker}");
+
+                    if (m_ToolSystem.activeTool != null &&
+                         m_ToolSystem.activeTool != m_AreaToolSystem &&
+                        m_ToolSystem.activeTool != m_BulldozeToolSystem)
+                    {
+                        AreaTypeMask areaTypeMask = m_ToolSystem.activeTool.requireAreas;
+                        areaTypeMask |= AreaTypeMask.Spaces;
+                        m_ToolSystem.activeTool.SetMemberValue("requireAreas", areaTypeMask);
+                    }
                 }
                 else if (m_PrefabIsMarker)
                 {
@@ -724,6 +737,16 @@ namespace Better_Bulldozer.Systems
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} prefab is BulldozePrefab : {prefab is BulldozePrefab}");
 
                     m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)}  m_RaycastTarget == RaycastTarget.Markers: {SelectedRaycastTarget == RaycastTarget.Markers}");
+
+                    if (m_ToolSystem.activeTool != null &&
+                        m_ToolSystem.activeTool != m_AreaToolSystem &&
+                        m_ToolSystem.activeTool != m_BulldozeToolSystem &&
+                        (m_ToolSystem.activeTool.requireAreas & AreaTypeMask.Spaces) == AreaTypeMask.Spaces)
+                    {
+                        AreaTypeMask areaTypeMask = m_ToolSystem.activeTool.requireAreas;
+                        areaTypeMask &= ~AreaTypeMask.Spaces;
+                        m_ToolSystem.activeTool.SetMemberValue("requireAreas", areaTypeMask);
+                    }
                 }
             }
             else if (m_PrefabIsMarker)
@@ -737,6 +760,16 @@ namespace Better_Bulldozer.Systems
                 m_Log.Debug($"{nameof(BetterBulldozerUISystem)}.{nameof(HandleShowMarkers)} m_ToolSystem.activeTool != m_DefaultToolSystem : {m_ToolSystem.activeTool != m_DefaultToolSystem}");
                 m_PrefabIsMarker = false;
                 m_RenderingSystem.markersVisible = m_RecordedShowMarkers;
+
+                if (m_ToolSystem.activeTool != null &&
+                    m_ToolSystem.activeTool != m_AreaToolSystem &&
+                    m_ToolSystem.activeTool != m_BulldozeToolSystem &&
+                    (m_ToolSystem.activeTool.requireAreas & AreaTypeMask.Spaces) == AreaTypeMask.Spaces)
+                {
+                    AreaTypeMask areaTypeMask = m_ToolSystem.activeTool.requireAreas;
+                    areaTypeMask &= ~AreaTypeMask.Spaces;
+                    m_ToolSystem.activeTool.SetMemberValue("requireAreas", areaTypeMask);
+                }
             }
         }
 
