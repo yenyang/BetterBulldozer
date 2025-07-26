@@ -99,10 +99,9 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.12
-* Radius selection can now go down to a minimum of 1 instead of 10.
-* Rebuilt for v1.3.3f1 game update.
-* Updated Localization</ChangeLog>
+  <ChangeLog># Patch V1.3.13
+* Additional safety checks for Remove Subelement Tool mode to prevent serialization problems in rare circumstances.
+* Areas such as Handaround Areas are visible now while placing Invisible Markers.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
