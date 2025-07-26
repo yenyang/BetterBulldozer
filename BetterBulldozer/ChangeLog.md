@@ -1,4 +1,3 @@
-﻿# Patch V1.3.12
-* Radius selection can now go down to a minimum of 1 instead of 10.
-* Rebuilt for v1.3.3f1 game update.
-* Updated Localization
+﻿# Patch V1.3.13
+* Additional safety checks for Remove Subelement Tool mode to prevent serialization problems in rare circumstances.
+* Areas such as Handaround Areas are visible now while placing Invisible Markers.
