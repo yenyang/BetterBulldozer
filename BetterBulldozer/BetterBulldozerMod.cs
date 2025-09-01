@@ -50,7 +50,7 @@ namespace Better_Bulldozer
         /// <summary>
         /// Gets the version of the mod.
         /// </summary>
-        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
 
         /// <summary>
         /// Gets ILog for mod.
