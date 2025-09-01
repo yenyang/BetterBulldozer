@@ -219,7 +219,7 @@ namespace Better_Bulldozer.Tools
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            applyAction.enabled = true;
+            applyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(SubElementBulldozerTool)}.{nameof(OnStartRunning)}");
             m_MustStartRunning = false;
             m_BetterBulldozerUISystem.SubElementBulldozeToolActive = true;
@@ -235,7 +235,7 @@ namespace Better_Bulldozer.Tools
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            applyAction.enabled = false;
+            applyAction.shouldBeEnabled = false;
             EntityManager.AddComponent<BatchesUpdated>(m_HighlightedQuery);
             EntityManager.RemoveComponent<Highlighted>(m_HighlightedQuery);
             m_PreviousRaycastedEntity = Entity.Null;

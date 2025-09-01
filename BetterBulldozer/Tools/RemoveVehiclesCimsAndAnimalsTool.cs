@@ -164,7 +164,7 @@ namespace Better_Bulldozer.Tools
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            applyAction.enabled = true;
+            applyAction.shouldBeEnabled = true;
             m_Log.Debug($"{nameof(RemoveVehiclesCimsAndAnimalsTool)}.{nameof(OnStartRunning)}");
             m_MustStartRunning = false;
             m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
@@ -179,7 +179,7 @@ namespace Better_Bulldozer.Tools
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            applyAction.enabled = false;
+            applyAction.shouldBeEnabled = false;
             m_BetterBulldozerUISystem.EnsureToolbarBulldozerClassList();
         }
 
