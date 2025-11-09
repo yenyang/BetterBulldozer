@@ -85,9 +85,11 @@ namespace Better_Bulldozer.Patches
                     return false;
                 }
 
-                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Props) != BetterBulldozerUISystem.VanillaFilters.Props
-                    && toolSystem.EntityManager.HasComponent<Game.Objects.Object>(result.m_Hit.m_HitEntity)
-                    && toolSystem.EntityManager.HasComponent<Game.Objects.Static>(result.m_Hit.m_HitEntity))
+                if ((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Props) != BetterBulldozerUISystem.VanillaFilters.Props &&
+                   ((toolSystem.EntityManager.HasComponent<Game.Objects.Object>(result.m_Hit.m_HitEntity) &&
+                     toolSystem.EntityManager.HasComponent<Game.Objects.Static>(result.m_Hit.m_HitEntity)) ||
+                    (toolSystem.EntityManager.HasComponent<Game.Objects.Object>(result.m_Owner) &&
+                     toolSystem.EntityManager.HasComponent<Game.Objects.Static>(result.m_Owner))))
                 {
                     if (((betterBulldozerUISystem.SelectedVanillaFilters & BetterBulldozerUISystem.VanillaFilters.Buildings) == BetterBulldozerUISystem.VanillaFilters.Buildings
                     && (toolSystem.EntityManager.HasComponent<Game.Buildings.Building>(result.m_Hit.m_HitEntity)

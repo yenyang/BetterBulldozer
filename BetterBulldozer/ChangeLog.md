@@ -1,3 +1,3 @@
-﻿# Patch V1.3.13
-* Additional safety checks for Remove Subelement Tool mode to prevent serialization problems in rare circumstances.
-* Areas such as Handaround Areas are visible now while placing Invisible Markers.
+﻿# Patch V1.3.14
+* Fix being able to remove props while having props filter toggled off if targeting a subelement of it such as icon above transit stop.
+* Minor compatibility fixes for game version 1.3.6f1.

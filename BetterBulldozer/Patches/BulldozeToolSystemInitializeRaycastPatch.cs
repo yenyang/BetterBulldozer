@@ -91,7 +91,6 @@ namespace Better_Bulldozer.Patches
                     toolRaycastSystem.typeMask &= ~TypeMask.StaticObjects;
                 }
             }
-
         }
     }
 }
