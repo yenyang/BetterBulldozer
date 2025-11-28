@@ -39,8 +39,6 @@ namespace Better_Bulldozer.Systems
         private ToolSystem m_ToolSystem;
         private PrefabSystem m_PrefabSystem;
         private ILog m_Log;
-        private int m_ReviewTrafficModCompatibilityTimer;
-        private ComponentType m_TrafficModComponent;
         private EntityQuery m_OnLoadPermanentlyRemovedSubObjectQuery;
         private EndFrameBarrier m_EndFrameBarrier;
 
@@ -139,7 +137,7 @@ namespace Better_Bulldozer.Systems
                 if (type != null)
                 {
                     m_Log.Info($"Found {type.FullName} in {type.Assembly.FullName}. ");
-                    m_TrafficModComponent = ComponentType.ReadOnly(type);
+                    ComponentType m_TrafficModComponent = ComponentType.ReadOnly(type);
 
                     NativeArray<Entity> checkForTrafficComponentEntities = m_OnLoadPermanentlyRemovedSubObjectQuery.ToEntityArray(Allocator.Temp);
                     EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
