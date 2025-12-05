@@ -1,8 +1,8 @@
 <Publish>
   <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-  <ModId Value="75250" />
+  <ModId Value="126106" />
   <!--Name of the mod to display to players-->
-  <DisplayName Value="Better Bulldozer" />
+  <DisplayName Value="Better Bulldozer [Temporary Beta]" />
   <!--Short description of the mod-->
   <ShortDescription Value="Easily delete things that you otherwise could not delete or easily delete." />
   <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
@@ -81,7 +81,7 @@ I will respond on the code modding channels on **Cities: Skylines Modding Discor
 
 This mod is not affiliated with any C:S1 mod with similar titles.</LongDescription>
   <!--Thumbnail-->
-  <Thumbnail Value="Properties/Thumbnail.png" />
+  <Thumbnail Value="Properties/Release/Thumbnail.png" />
   <!--Screenshot, can be set multiple-->
   <Screenshot Value="Properties/Previews/chickenCoop.jpg" />
   <Screenshot Value="Properties/Previews/neighborhood.png" />
@@ -93,19 +93,20 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.14" />
+  <ModVersion Value="1.3.14.100" />
   <!--Recommended version of the base game to use the mod-->
-  <GameVersion Value="1.3.*" />
+  <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.14
-* Fix being able to remove props while having props filter toggled off if targeting a subelement of it such as icon above transit stop.
-* Minor compatibility fixes for game version 1.3.6f1.</ChangeLog>
+  <ChangeLog>
+  </ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
   <ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/YenyangsMods" />
   <ExternalLink Type="github" Url="https://github.com/yenyang/BetterBulldozer" />
   <ExternalLink Type="crowdin" Url="https://crowdin.com/project/cs2-mods-better-bulldozer" />
+  <!-- Supported values Public, Private, Unlisted -->
+  <AccessLevel Value="Unlisted" />
 </Publish>

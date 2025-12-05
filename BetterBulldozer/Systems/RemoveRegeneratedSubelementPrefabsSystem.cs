@@ -8,6 +8,7 @@ namespace Better_Bulldozer.Systems
     using Better_Bulldozer.Components;
     using Colossal.Entities;
     using Colossal.Logging;
+    using Colossal.PSI.Common;
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Areas;
@@ -17,6 +18,8 @@ namespace Better_Bulldozer.Systems
     using Game.Prefabs;
     using Game.Tools;
     using Game.Vehicles;
+    using System;
+    using System.Reflection;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
@@ -36,6 +39,8 @@ namespace Better_Bulldozer.Systems
         private ToolSystem m_ToolSystem;
         private PrefabSystem m_PrefabSystem;
         private ILog m_Log;
+        private EntityQuery m_OnLoadPermanentlyRemovedSubObjectQuery;
+        private EndFrameBarrier m_EndFrameBarrier;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -46,7 +51,7 @@ namespace Better_Bulldozer.Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnCreate)}");
-
+            m_EndFrameBarrier = World.GetOrCreateSystemManaged <EndFrameBarrier>();
 
             m_PermanentlyRemovedSubObjectQuery = GetEntityQuery(new EntityQueryDesc[]
             {
@@ -101,6 +106,12 @@ namespace Better_Bulldozer.Systems
                 },
             });
 
+            m_OnLoadPermanentlyRemovedSubObjectQuery = SystemAPI.QueryBuilder()
+                .WithAll<PermanentlyRemovedSubElementPrefab, Game.Objects.SubObject>()
+                .WithAny<Game.Net.Node, Game.Net.Edge>()
+                .WithNone<Temp, Deleted, DeleteInXFrames>()
+                .Build();
+
             RequireAnyForUpdate(m_PermanentlyRemovedSubObjectQuery, m_PermanentlyRemovedSubLaneQuery, m_RentersUpdatedQuery);
         }
 
@@ -115,15 +126,44 @@ namespace Better_Bulldozer.Systems
             else
             {
                 Enabled = false;
+                return;
+            }
+
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach (Assembly assembly in assemblies)
+            {
+                Type type = assembly.GetType("Traffic.Components.ModifiedConnections");
+                if (type != null)
+                {
+                    m_Log.Info($"Found {type.FullName} in {type.Assembly.FullName}. ");
+                    ComponentType m_TrafficModComponent = ComponentType.ReadOnly(type);
+
+                    NativeArray<Entity> checkForTrafficComponentEntities = m_OnLoadPermanentlyRemovedSubObjectQuery.ToEntityArray(Allocator.Temp);
+                    EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+
+                    for (int i = 0; i < checkForTrafficComponentEntities.Length; i++)
+                    {
+                        if (checkForTrafficComponentEntities[i] != Entity.Null &&
+                          ((EntityManager.TryGetComponent(checkForTrafficComponentEntities[i], out Game.Net.Edge edge) &&
+                           (EntityManager.HasComponent(edge.m_Start, m_TrafficModComponent) ||
+                            EntityManager.HasComponent(edge.m_End, m_TrafficModComponent))) ||
+                            EntityManager.HasComponent(checkForTrafficComponentEntities[i], m_TrafficModComponent)))
+                        {
+                            m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Found a traffic and removed premanent prefab.");
+                            buffer.AddComponent<Updated>(checkForTrafficComponentEntities[i]);
+                        }
+                    }
+                }
             }
 
             // This is to remove orphaned subelements from previous builds.
-            EntityQuery m_OwnedQuery = SystemAPI.QueryBuilder()
+            EntityQuery ownedQuery = SystemAPI.QueryBuilder()
                 .WithAll<Owner>()
                 .WithNone<Temp, Deleted, DeleteInXFrames, Vehicle, Game.Net.Node, Game.Net.Edge>()
                 .Build();
 
-            NativeArray<Entity> entities = m_OwnedQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> entities = ownedQuery.ToEntityArray(Allocator.Temp);
 
             foreach (Entity entity in entities)
             {
