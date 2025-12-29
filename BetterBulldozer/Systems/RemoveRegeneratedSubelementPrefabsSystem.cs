@@ -1,4 +1,4 @@
-﻿// <copyright file="RemoveRegeneratedSubelementPrefabsSystem.cs" company="Yenyang's Mods. MIT License">
+// <copyright file="RemoveRegeneratedSubelementPrefabsSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
@@ -32,6 +32,8 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class RemoveRegeneratedSubelementPrefabsSystem : GameSystemBase
     {
+        private const int PostLoadDelayFrames = 30;
+
         private EntityQuery m_PermanentlyRemovedSubObjectQuery;
         private EntityQuery m_PermanentlyRemovedSubLaneQuery;
         private EntityQuery m_RentersUpdatedQuery;
@@ -40,7 +42,9 @@ namespace Better_Bulldozer.Systems
         private PrefabSystem m_PrefabSystem;
         private ILog m_Log;
         private EntityQuery m_OnLoadPermanentlyRemovedSubObjectQuery;
-        private EndFrameBarrier m_EndFrameBarrier;
+
+        private bool m_RunPostLoadCleanup;
+        private int m_PostLoadFramesRemaining;
 
         /// <inheritdoc/>
         protected override void OnCreate()
@@ -51,7 +55,6 @@ namespace Better_Bulldozer.Systems
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_ToolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
             m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnCreate)}");
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged <EndFrameBarrier>();
 
             m_PermanentlyRemovedSubObjectQuery = GetEntityQuery(new EntityQueryDesc[]
             {
@@ -111,8 +114,6 @@ namespace Better_Bulldozer.Systems
                 .WithAny<Game.Net.Node, Game.Net.Edge>()
                 .WithNone<Temp, Deleted, DeleteInXFrames>()
                 .Build();
-
-            RequireAnyForUpdate(m_PermanentlyRemovedSubObjectQuery, m_PermanentlyRemovedSubLaneQuery, m_RentersUpdatedQuery);
         }
 
         /// <inheritdoc/>
@@ -122,128 +123,44 @@ namespace Better_Bulldozer.Systems
             if (mode == GameMode.Game)
             {
                 Enabled = true;
+
+                // Queue one-time load cleanup, but run it later (after the simulation has ticked a bit).
+                m_RunPostLoadCleanup = true;
+                m_PostLoadFramesRemaining = PostLoadDelayFrames;
+                m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)} delaying post-load cleanup by ~{PostLoadDelayFrames} frames.");
             }
             else
             {
                 Enabled = false;
+                m_RunPostLoadCleanup = false;
+                m_PostLoadFramesRemaining = 0;
                 return;
-            }
-
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            foreach (Assembly assembly in assemblies)
-            {
-                Type type = assembly.GetType("Traffic.Components.ModifiedConnections");
-                if (type != null)
-                {
-                    m_Log.Info($"Found {type.FullName} in {type.Assembly.FullName}. ");
-                    ComponentType m_TrafficModComponent = ComponentType.ReadOnly(type);
-
-                    NativeArray<Entity> checkForTrafficComponentEntities = m_OnLoadPermanentlyRemovedSubObjectQuery.ToEntityArray(Allocator.Temp);
-                    EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
-
-                    for (int i = 0; i < checkForTrafficComponentEntities.Length; i++)
-                    {
-                        if (checkForTrafficComponentEntities[i] != Entity.Null &&
-                          ((EntityManager.TryGetComponent(checkForTrafficComponentEntities[i], out Game.Net.Edge edge) &&
-                           (EntityManager.HasComponent(edge.m_Start, m_TrafficModComponent) ||
-                            EntityManager.HasComponent(edge.m_End, m_TrafficModComponent))) ||
-                            EntityManager.HasComponent(checkForTrafficComponentEntities[i], m_TrafficModComponent)))
-                        {
-                            m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Found a traffic and removed premanent prefab.");
-                            buffer.AddComponent<Updated>(checkForTrafficComponentEntities[i]);
-                        }
-                    }
-                }
-            }
-
-            // This is to remove orphaned subelements from previous builds.
-            EntityQuery ownedQuery = SystemAPI.QueryBuilder()
-                .WithAll<Owner>()
-                .WithNone<Temp, Deleted, DeleteInXFrames, Vehicle, Game.Net.Node, Game.Net.Edge>()
-                .Build();
-
-            NativeArray<Entity> entities = ownedQuery.ToEntityArray(Allocator.Temp);
-
-            foreach (Entity entity in entities)
-            {
-                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner == Entity.Null)
-                {
-                    EntityManager.AddComponent<Deleted>(entity);
-                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {entity.Index}:{entity.Version}.");
-                    if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
-                    {
-                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase.name}");
-                    }
-
-                    if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects1))
-                    {
-                        continue;
-                    }
-
-                    foreach (Game.Objects.SubObject subobject1 in subobjects1)
-                    {
-                        EntityManager.AddComponent<Deleted>(subobject1.m_SubObject);
-                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject1.m_SubObject.Index}:{subobject1.m_SubObject.Version}.");
-                        if (EntityManager.TryGetComponent(subobject1.m_SubObject, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
-                        {
-                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase1.name}");
-                        }
-
-                        if (!EntityManager.TryGetBuffer(subobject1.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects2))
-                        {
-                            continue;
-                        }
-
-                        foreach (Game.Objects.SubObject subobject2 in subobjects2)
-                        {
-                            EntityManager.AddComponent<Deleted>(subobject2.m_SubObject);
-                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject2.m_SubObject.Index}:{subobject2.m_SubObject.Version}.");
-                            if (EntityManager.TryGetComponent(subobject2.m_SubObject, out PrefabRef prefabRef2) && m_PrefabSystem.TryGetPrefab(prefabRef2.m_Prefab, out PrefabBase prefabBase2))
-                            {
-                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase2.name}");
-                            }
-
-                            if (!EntityManager.TryGetBuffer(subobject2.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects3))
-                            {
-                                continue;
-                            }
-
-                            foreach (Game.Objects.SubObject subobject3 in subobjects3)
-                            {
-                                EntityManager.AddComponent<Deleted>(subobject3.m_SubObject);
-                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject3.m_SubObject.Index}:{subobject3.m_SubObject.Version}.");
-
-                                if (EntityManager.TryGetComponent(subobject3.m_SubObject, out PrefabRef prefabRef3) && m_PrefabSystem.TryGetPrefab(prefabRef3.m_Prefab, out PrefabBase prefabBase3))
-                                {
-                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase3.name}");
-                                }
-
-                                if (!EntityManager.TryGetBuffer(subobject3.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects4))
-                                {
-                                    continue;
-                                }
-
-                                foreach (Game.Objects.SubObject subobject4 in subobjects4)
-                                {
-                                    EntityManager.AddComponent<Deleted>(subobject4.m_SubObject);
-                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned Sub-element Entity: {subobject4.m_SubObject.Index}:{subobject4.m_SubObject.Version}.");
-
-                                    if (EntityManager.TryGetComponent(subobject4.m_SubObject, out PrefabRef prefabRef4) && m_PrefabSystem.TryGetPrefab(prefabRef4.m_Prefab, out PrefabBase prefabBase4))
-                                    {
-                                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnGameLoadingComplete)} Removed Orphaned was a {prefabBase4.name}");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
 
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
+            if (m_RunPostLoadCleanup)
+            {
+                if (m_PostLoadFramesRemaining > 0)
+                {
+                    m_PostLoadFramesRemaining--;
+                    return;
+                }
+
+                m_RunPostLoadCleanup = false;
+                m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)} running delayed post-load cleanup now.");
+                RunPostLoadCleanup();
+            }
+
+            if (m_PermanentlyRemovedSubObjectQuery.IsEmptyIgnoreFilter &&
+                m_PermanentlyRemovedSubLaneQuery.IsEmptyIgnoreFilter &&
+                m_RentersUpdatedQuery.IsEmptyIgnoreFilter)
+            {
+                return;
+            }
+
             m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(OnUpdate)}");
             NativeList<Entity> subElements = new NativeList<Entity>(Allocator.TempJob);
 
@@ -304,6 +221,137 @@ namespace Better_Bulldozer.Systems
             Dependency = handleDeleteInXFramesJobHandle;
 
             subElements.Dispose(Dependency);
+        }
+
+        private void RunPostLoadCleanup()
+        {
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach (Assembly assembly in assemblies)
+            {
+                Type type = assembly.GetType("Traffic.Components.ModifiedConnections");
+                if (type != null)
+                {
+                    m_Log.Info($"Found {type.FullName} in {type.Assembly.FullName}. ");
+                    ComponentType trafficModComponent = ComponentType.ReadOnly(type);
+
+                    NativeArray<Entity> checkForTrafficComponentEntities = m_OnLoadPermanentlyRemovedSubObjectQuery.ToEntityArray(Allocator.Temp);
+                    EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+                    for (int i = 0; i < checkForTrafficComponentEntities.Length; i++)
+                    {
+                        Entity entity = checkForTrafficComponentEntities[i];
+                        if (entity != Entity.Null &&
+                          ((EntityManager.TryGetComponent(entity, out Game.Net.Edge edge) &&
+                           (EntityManager.HasComponent(edge.m_Start, trafficModComponent) ||
+                            EntityManager.HasComponent(edge.m_End, trafficModComponent))) ||
+                            EntityManager.HasComponent(entity, trafficModComponent)))
+                        {
+                            m_Log.Debug($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Found a traffic and removed premanent prefab.");
+                            buffer.AddComponent<Updated>(entity);
+                        }
+                    }
+
+                    checkForTrafficComponentEntities.Dispose();
+                }
+            }
+
+            // This is to remove orphaned subelements from previous builds.
+            EntityQuery ownedQuery = SystemAPI.QueryBuilder()
+                .WithAll<Owner>()
+                .WithNone<Temp, Deleted, DeleteInXFrames, Vehicle, Game.Net.Node, Game.Net.Edge>()
+                .Build();
+
+            NativeArray<Entity> entities = ownedQuery.ToEntityArray(Allocator.Temp);
+
+            foreach (Entity entity in entities)
+            {
+                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner == Entity.Null)
+                {
+                    EntityManager.AddComponent<Deleted>(entity);
+                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {entity.Index}:{entity.Version}.");
+                    if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefabBase))
+                    {
+                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned was a {prefabBase.name}");
+                    }
+
+                    if (!EntityManager.TryGetBuffer(entity, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects1))
+                    {
+                        continue;
+                    }
+
+                    foreach (Game.Objects.SubObject subobject1 in subobjects1)
+                    {
+                        if (!EntityManager.HasComponent<Deleted>(subobject1.m_SubObject))
+                        {
+                            EntityManager.AddComponent<Deleted>(subobject1.m_SubObject);
+                        }
+                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject1.m_SubObject.Index}:{subobject1.m_SubObject.Version}.");
+                        if (EntityManager.TryGetComponent(subobject1.m_SubObject, out PrefabRef prefabRef1) && m_PrefabSystem.TryGetPrefab(prefabRef1.m_Prefab, out PrefabBase prefabBase1))
+                        {
+                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned was a {prefabBase1.name}");
+                        }
+
+                        if (!EntityManager.TryGetBuffer(subobject1.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects2))
+                        {
+                            continue;
+                        }
+
+                        foreach (Game.Objects.SubObject subobject2 in subobjects2)
+                        {
+                            if (!EntityManager.HasComponent<Deleted>(subobject2.m_SubObject))
+                            {
+                                EntityManager.AddComponent<Deleted>(subobject2.m_SubObject);
+                            }
+                            m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject2.m_SubObject.Index}:{subobject2.m_SubObject.Version}.");
+                            if (EntityManager.TryGetComponent(subobject2.m_SubObject, out PrefabRef prefabRef2) && m_PrefabSystem.TryGetPrefab(prefabRef2.m_Prefab, out PrefabBase prefabBase2))
+                            {
+                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned was a {prefabBase2.name}");
+                            }
+
+                            if (!EntityManager.TryGetBuffer(subobject2.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects3))
+                            {
+                                continue;
+                            }
+
+                            foreach (Game.Objects.SubObject subobject3 in subobjects3)
+                            {
+                                if (!EntityManager.HasComponent<Deleted>(subobject3.m_SubObject))
+                                {
+                                    EntityManager.AddComponent<Deleted>(subobject3.m_SubObject);
+                                }
+                                m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject3.m_SubObject.Index}:{subobject3.m_SubObject.Version}.");
+
+                                if (EntityManager.TryGetComponent(subobject3.m_SubObject, out PrefabRef prefabRef3) && m_PrefabSystem.TryGetPrefab(prefabRef3.m_Prefab, out PrefabBase prefabBase3))
+                                {
+                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned was a {prefabBase3.name}");
+                                }
+
+                                if (!EntityManager.TryGetBuffer(subobject3.m_SubObject, isReadOnly: true, out DynamicBuffer<Game.Objects.SubObject> subobjects4))
+                                {
+                                    continue;
+                                }
+
+                                foreach (Game.Objects.SubObject subobject4 in subobjects4)
+                                {
+                                    if (!EntityManager.HasComponent<Deleted>(subobject4.m_SubObject))
+                                    {
+                                        EntityManager.AddComponent<Deleted>(subobject4.m_SubObject);
+                                    }
+                                    m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject4.m_SubObject.Index}:{subobject4.m_SubObject.Version}.");
+
+                                    if (EntityManager.TryGetComponent(subobject4.m_SubObject, out PrefabRef prefabRef4) && m_PrefabSystem.TryGetPrefab(prefabRef4.m_Prefab, out PrefabBase prefabBase4))
+                                    {
+                                        m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned was a {prefabBase4.name}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            entities.Dispose();
         }
 
 #if BURST
