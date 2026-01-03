@@ -2,6 +2,7 @@
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
+// # define EXPORT_EN_US
 namespace Better_Bulldozer
 {
     using System;
@@ -19,12 +20,10 @@ namespace Better_Bulldozer
     using Game.Modding;
     using Game.SceneFlow;
     using HarmonyLib;
-#if DEBUG
+#if DEBUG && EXPORT_EN_US
     using Newtonsoft.Json;
-    using System.Collections.Generic;
-    using System.Linq;
     using Colossal;
-    using Colossal.Localization;
+    using System.Runtime.CompilerServices;
 #endif
 
     /// <summary>
@@ -50,7 +49,11 @@ namespace Better_Bulldozer
         /// <summary>
         /// Gets the version of the mod.
         /// </summary>
+#if !STABLE
+        internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(4);
+#else
         internal string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+#endif
 
         /// <summary>
         /// Gets ILog for mod.
@@ -61,6 +64,13 @@ namespace Better_Bulldozer
         ///  Gets or sets the Mod Settings.
         /// </summary>
         internal BetterBulldozerModSettings Settings { get; set; }
+
+#if EXPORT_EN_US
+        private static string GetThisFilePath([CallerFilePath] string path = null)
+        {
+            return path;
+        }
+#endif
 
         /// <inheritdoc/>
         public void OnLoad(UpdateSystem updateSystem)
@@ -97,18 +107,8 @@ namespace Better_Bulldozer
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Settings));
             Logger.Info($"[{nameof(BetterBulldozerMod)}] {nameof(OnLoad)} Loading localization for other languages.");
             LoadNonEnglishLocalizations();
-#if DEBUG
-            Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Exporting localization");
-            var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
-            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
-            try
-            {
-                File.WriteAllText($"C:\\Users\\TJ\\source\\repos\\{Id}\\{Id}\\UI\\src\\mods\\lang\\en-US.json", str);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex.ToString());
-            }
+#if DEBUG && EXPORT_EN_US
+            GenerateLanguageFile();
 #endif
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Injecting systems.");
             updateSystem.UpdateAt<BetterBulldozerUISystem>(SystemUpdatePhase.UIUpdate);
@@ -125,6 +125,7 @@ namespace Better_Bulldozer
             updateSystem.UpdateAt<RestoreBrandingObjects>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<RemoveVehiclesCimsAndAnimalsTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<RemoveExistingOwnedGrassSurfaces>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<HandleUpdateNextFrameSystem>(SystemUpdatePhase.Modification1);
             Logger.Info($"{nameof(BetterBulldozerMod)}.{nameof(OnLoad)} Complete.");
         }
 
@@ -160,7 +161,7 @@ namespace Better_Bulldozer
                             Logger.Debug($"Reading embedded translation file {resourceName}");
 
                             // Read embedded file.
-                            using StreamReader reader = new(thisAssembly.GetManifestResourceStream(resourceName));
+                            using StreamReader reader = new (thisAssembly.GetManifestResourceStream(resourceName));
                             {
                                 string entireFile = reader.ReadToEnd();
                                 Colossal.Json.Variant varient = Colossal.Json.JSON.Load(entireFile);
@@ -186,6 +187,25 @@ namespace Better_Bulldozer
             }
         }
 
+#if EXPORT_EN_US
+        private void GenerateLanguageFile()
+        {
+            Logger.Info($"[{Id}] Exporting localization");
+            var localeDict = new LocaleEN(Settings).ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+            var str = JsonConvert.SerializeObject(localeDict, Formatting.Indented);
+            try
+            {
+                var path = GetThisFilePath();
+                var directory = Path.GetDirectoryName(path);
 
+                var exportPath = $@"{directory}\UI\src\mods\lang\en-US.json";
+                File.WriteAllText(exportPath, str);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+            }
+        }
+#endif
     }
 }
