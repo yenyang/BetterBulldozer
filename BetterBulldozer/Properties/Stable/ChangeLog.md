@@ -1,3 +1,2 @@
-﻿# Patch V1.3.15
-* Compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections.
-* Compatible with game version 1.5.2f1.
+﻿# Patch V1.3.16
+* Additional Compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections. Now delayed until shortly after OnGameLoadingComplete. Thanks to phillycheese!
