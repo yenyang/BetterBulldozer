@@ -32,7 +32,7 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class RemoveRegeneratedSubelementPrefabsSystem : GameSystemBase
     {
-        private const int PostLoadDelayFrames = 30;
+        private const int PostLoadDelayFrames = 10;
 
         private EntityQuery m_PermanentlyRemovedSubObjectQuery;
         private EntityQuery m_PermanentlyRemovedSubLaneQuery;

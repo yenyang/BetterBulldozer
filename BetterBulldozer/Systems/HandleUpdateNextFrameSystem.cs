@@ -19,7 +19,7 @@ namespace Better_Bulldozer.Systems
     {
         private ILog m_Log;
         private EntityQuery m_UpdateNextFrameQuery;
-        private ModificationBarrier1 m_Barrier;
+        private ModificationBarrier5 m_Barrier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HandleUpdateNextFrameSystem"/> class.
@@ -46,7 +46,7 @@ namespace Better_Bulldozer.Systems
                     ComponentType.ReadOnly<DeleteInXFrames>(),
                },
             });
-            m_Barrier = World.GetOrCreateSystemManaged<ModificationBarrier1>();
+            m_Barrier = World.GetOrCreateSystemManaged<ModificationBarrier5>();
             RequireAnyForUpdate(m_UpdateNextFrameQuery);
             base.OnCreate();
         }
