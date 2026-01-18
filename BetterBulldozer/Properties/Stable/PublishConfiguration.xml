@@ -15,7 +15,7 @@ Sully made a Youtube video about custom car parks (aka Parking Lots) and this fu
 Unified Icon Library
 
 ## Donations
-If you want to say thank you with a donation you can do so on Paypal.
+If you want to say thank you with a donation you can do so on Paypal or Buy me a Coffee.
 
 ## Translations
 I am looking for volunteers to help translate the mod into the other languages. For those interested please discuss the translation project in the discord link. CSL2:CODEMODS -&gt; mods-wip -&gt; Better Bulldozer: Translations. CrowdIn Link available there or here.
@@ -94,20 +94,21 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/better-bulldozer.1644977/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.16.0" />
+  <ModVersion Value="1.3.17" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.16
-* Additional Compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections. Now delayed until shortly after OnGameLoadingComplete. Thanks to phillycheese!</ChangeLog>
+  <ChangeLog># Patch V1.3.17
+* Additional minor compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections. Thanks to phillycheese!</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
   <ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/YenyangsMods" />
   <ExternalLink Type="github" Url="https://github.com/yenyang/BetterBulldozer" />
   <ExternalLink Type="crowdin" Url="https://crowdin.com/project/cs2-mods-better-bulldozer" />
+  <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/yenyang_mods" />
   <!-- Supported values Public, Private, Unlisted -->
   <AccessLevel Value="Public" />
 </Publish>
