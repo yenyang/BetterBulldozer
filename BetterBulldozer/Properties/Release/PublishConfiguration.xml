@@ -100,8 +100,8 @@ This mod is not affiliated with any C:S1 mod with similar titles.</LongDescripti
   <!--Dependency for the mod, can be set multiple-->
   <Dependency Id="74417" DisplayName="Unified Icon Library" Version="1.0.13" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-  <ChangeLog># Patch V1.3.15.100
-* Additional Compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections. Now delayed until shortly after OnGameLoadingComplete. Thanks to phillycheese!</ChangeLog>
+  <ChangeLog># Patch V1.3.16.1
+* Additional minor compatibility  changes for combinations with the Traffic Mod including removing sub-elements from networks with custom intersection lane connections. Thanks to phillycheese!</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="youtube" Url="https://www.youtube.com/watch?v=YSJPjV8mHu0" />
   <ExternalLink Type="discord" Url="https://discord.gg/HTav7ARPs2" />
