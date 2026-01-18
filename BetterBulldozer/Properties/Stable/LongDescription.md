@@ -7,7 +7,7 @@ Sully made a Youtube video about custom car parks (aka Parking Lots) and this fu
 Unified Icon Library
 
 ## Donations
-If you want to say thank you with a donation you can do so on Paypal.
+If you want to say thank you with a donation you can do so on Paypal or Buy me a Coffee.
 
 ## Translations
 I am looking for volunteers to help translate the mod into the other languages. For those interested please discuss the translation project in the discord link. CSL2:CODEMODS -> mods-wip -> Better Bulldozer: Translations. CrowdIn Link available there or here.
