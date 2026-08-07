@@ -12,7 +12,6 @@ namespace Better_Bulldozer.Tools
     using Game;
     using Game.Common;
     using Game.Creatures;
-    using Game.Input;
     using Game.Prefabs;
     using Game.Rendering;
     using Game.Tools;
@@ -24,7 +23,6 @@ namespace Better_Bulldozer.Tools
     using Unity.Jobs;
     using Unity.Mathematics;
     using UnityEngine;
-
 
     /// <summary>
     /// Tool for controlling removing vehicles cims and animals.
@@ -217,7 +215,7 @@ namespace Better_Bulldozer.Tools
                     inputDeps = JobChunkExtensions.Schedule(removeVCAWithinRadiusJob, m_MovingObjectsQuery, inputDeps);
                     m_ToolOutputBarrier.AddJobHandleForProducer(inputDeps);
 
-                    RemoveStationaryVehiclesCimsAndAnimalsWithRadius removeStationaryVCAwithinRadiusJob = new()
+                    RemoveStationaryVehiclesCimsAndAnimalsWithRadius removeStationaryVCAwithinRadiusJob = new ()
                     {
                         m_EntityType = SystemAPI.GetEntityTypeHandle(),
                         m_Position = hit.m_HitPosition,

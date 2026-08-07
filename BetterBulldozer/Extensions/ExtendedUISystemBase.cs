@@ -1,5 +1,5 @@
-﻿// <copyright file="ExtendedUISystemBase.cs" company="Yenyang's BetterBulldozerMods. MIT License">
-// Copyright (c) Yenyang's BetterBulldozerMods. MIT License. All rights reserved.
+﻿// <copyright file="ExtendedUISystemBase.cs" company="Yenyang's Mods. MIT License">
+// Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
 namespace Better_Bulldozer.Extensions

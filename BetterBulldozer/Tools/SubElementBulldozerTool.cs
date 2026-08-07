@@ -17,7 +17,6 @@ namespace Better_Bulldozer.Tools
     using Game.Areas;
     using Game.Buildings;
     using Game.Common;
-    using Game.Input;
     using Game.Net;
     using Game.Objects;
     using Game.Prefabs;
@@ -26,7 +25,6 @@ namespace Better_Bulldozer.Tools
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEngine.InputSystem;
 
     /// <summary>
     /// Tool for removing subelements. For debuggin use --burst-disable-compilation launch parameter.
@@ -52,7 +50,6 @@ namespace Better_Bulldozer.Tools
         private EntityQuery m_PlantPrefabQuery;
         private EntityQuery m_StreetLightPrefabQuery;
         private EntityQuery m_BrandObjectPrefabQuery;
-        private EntityQuery m_ActivityLocationPrefabQuery;
         private EntityQuery m_QuantityPrefabQuery;
         private EntityQuery m_OverrideQuery;
         private ToolClearSystem m_ToolClearSystem;
@@ -268,7 +265,6 @@ namespace Better_Bulldozer.Tools
                     m_FoundPlopTheGrowables = true;
                 }
             }
-
         }
 
         /// <inheritdoc/>
@@ -620,7 +616,6 @@ namespace Better_Bulldozer.Tools
                 m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromGrowable");
                 m_WarningTooltipSystem.RemoveTooltip("RemovingSubelementsFromServiceBuildings");
             }
-
 
             if (applyAction.WasPressedThisFrame())
             {

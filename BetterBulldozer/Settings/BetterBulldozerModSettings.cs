@@ -6,11 +6,8 @@ namespace Better_Bulldozer.Settings
 {
     using Better_Bulldozer.Systems;
     using Colossal.IO.AssetDatabase;
-    using Game;
-    using Game.Input;
     using Game.Modding;
     using Game.Settings;
-    using Game.Tools;
     using Unity.Entities;
 
     /// <summary>
@@ -39,11 +36,23 @@ namespace Better_Bulldozer.Settings
         /// </summary>
         public bool AllowRemovingExtensions { get; set; }
 
+        private bool _automaticRemovalManicuredGrass;
+        private bool _automaticRemovalFencesAndHedges;
+        private bool _automaticRemovalBrandingObjects;
+        private bool _automaticRemovalStreetSignObjects;
+
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove manicured grass.
         /// </summary>
-        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveManicuredGrassSystem))]
-        public bool AutomaticRemovalManicuredGrass { get; set; }
+        public bool AutomaticRemovalManicuredGrass
+        {
+            get => _automaticRemovalManicuredGrass;
+            set
+            {
+                _automaticRemovalManicuredGrass = value;
+                ManageAutomaticallyRemoveManicuredGrassSystem(value);
+            }
+        }
 
         /// <summary>
         /// Sets a value indicating whether to remove owned grass surfaces.
@@ -61,8 +70,15 @@ namespace Better_Bulldozer.Settings
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove fences and hedges.
         /// </summary>
-        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveFencesAndHedgesSystem))]
-        public bool AutomaticRemovalFencesAndHedges { get; set; }
+        public bool AutomaticRemovalFencesAndHedges
+        {
+            get => _automaticRemovalFencesAndHedges;
+            set
+            {
+                _automaticRemovalFencesAndHedges = value;
+                ManageAutomaticallyRemoveFencesAndHedgesSystem(value);
+            }
+        }
 
         /// <summary>
         /// Sets a value indicating whether to restore fences and hedges.
@@ -81,8 +97,15 @@ namespace Better_Bulldozer.Settings
         /// <summary>
         /// Gets or sets a value indicating whether to automatically remove branding objects.
         /// </summary>
-        [SettingsUISetter(typeof(BetterBulldozerModSettings), nameof(ManageAutomaticallyRemoveBrandingObjects))]
-        public bool AutomaticRemovalBrandingObjects { get; set; }
+        public bool AutomaticRemovalBrandingObjects
+        {
+            get => _automaticRemovalBrandingObjects;
+            set
+            {
+                _automaticRemovalBrandingObjects = value;
+                ManageAutomaticallyRemoveBrandingObjects(value);
+            }
+        }
 
         /// <summary>
         /// Sets a value indicating whether to restore branding objects.
@@ -95,6 +118,33 @@ namespace Better_Bulldozer.Settings
             set
             {
                 World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreBrandingObjects>().Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically remove street sign objects.
+        /// </summary>
+        public bool AutomaticRemovalStreetSignObjects
+        {
+            get => _automaticRemovalStreetSignObjects;
+            set
+            {
+                _automaticRemovalStreetSignObjects = value;
+                ManageAutomaticallyRemoveStreetSignObjects(value);
+            }
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether to restore branding objects.
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIDisableByCondition(typeof(BetterBulldozerModSettings), nameof(AutomaticRemovalStreetSignObjects))]
+        [SettingsUIConfirmation]
+        public bool RestoreStreetSignObjects
+        {
+            set
+            {
+                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreStreetSignObjects>().Enabled = true;
             }
         }
 
@@ -145,13 +195,22 @@ namespace Better_Bulldozer.Settings
             AutomaticRemovalManicuredGrass = false;
             AutomaticRemovalFencesAndHedges = false;
             AutomaticRemovalBrandingObjects = false;
+            AutomaticRemovalStreetSignObjects = false;
         }
 
         /// <summary>
         /// Sets Enabled for AutomaticallyRemoveManicuredGrassSurfaceSystem.
         /// </summary>
         /// <param name="value">Toggle value.</param>
-        public void ManageAutomaticallyRemoveManicuredGrassSystem(bool value) => World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>().Enabled = value;
+        public void ManageAutomaticallyRemoveManicuredGrassSystem(bool value)
+        {
+            var system = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveManicuredGrassSurfaceSystem>();
+
+            if (system != null)
+            {
+                system.Enabled = value;
+            }
+        }
 
         /// <summary>
         /// Sets Enabled for AutomaticallyRemoveFencesAndHedges.
@@ -159,10 +218,16 @@ namespace Better_Bulldozer.Settings
         /// <param name="value">Toggle value.</param>
         public void ManageAutomaticallyRemoveFencesAndHedgesSystem(bool value)
         {
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveFencesAndHedges>().Enabled = value;
-            if (!value && World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>().actionMode.IsGame())
+            var system = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveFencesAndHedges>();
+
+            if (system != null)
             {
-                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreFencesAndHedgesSystem>().Enabled = true;
+                system.Enabled = value;
+
+                if (value)
+                {
+                    system.ForceFullScan();
+                }
             }
         }
 
@@ -172,10 +237,35 @@ namespace Better_Bulldozer.Settings
         /// <param name="value">Toggle value.</param>
         public void ManageAutomaticallyRemoveBrandingObjects(bool value)
         {
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveBrandingObjects>().Enabled = value;
-            if (!value && World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ToolSystem>().actionMode.IsGame())
+            var system = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveBrandingObjects>();
+
+            if (system != null)
             {
-                World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<RestoreBrandingObjects>().Enabled = true;
+                system.Enabled = value;
+
+                if (value)
+                {
+                    system.ForceFullScan();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets Enabled for AutomaticallyRemoveStreetSignObjects.
+        /// </summary>
+        /// <param name="value">Toggle value.</param>
+        public void ManageAutomaticallyRemoveStreetSignObjects(bool value)
+        {
+            var system = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<AutomaticallyRemoveStreetSignObjects>();
+
+            if (system != null)
+            {
+                system.Enabled = value;
+
+                if (value)
+                {
+                    system.ForceFullScan();
+                }
             }
         }
 

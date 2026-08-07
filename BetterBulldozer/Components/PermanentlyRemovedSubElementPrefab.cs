@@ -5,9 +5,7 @@
 namespace Better_Bulldozer.Components
 {
     using System;
-    using Better_Bulldozer;
     using Colossal.Serialization.Entities;
-    using Game.Prefabs;
     using Unity.Entities;
 
     /// <summary>
@@ -47,7 +45,7 @@ namespace Better_Bulldozer.Components
             where TWriter : IWriter
         {
             writer.Write(1);
-            writer.Write( m_RecordEntity );
+            writer.Write(m_RecordEntity);
         }
 
         /// <inheritdoc/>

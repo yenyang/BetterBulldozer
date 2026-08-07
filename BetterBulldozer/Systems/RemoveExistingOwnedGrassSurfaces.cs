@@ -25,7 +25,7 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class RemoveExistingOwnedGrassSurfaces : GameSystemBase
     {
-        private readonly List<PrefabID> m_GrassSurfacePrefabIDs = new()
+        private readonly List<PrefabID> m_GrassSurfacePrefabIDs = new ()
         {
             new ("SurfacePrefab", "Grass Surface 01"),
             new ("SurfacePrefab", "Grass Surface 02"),
@@ -44,7 +44,6 @@ namespace Better_Bulldozer.Systems
         public RemoveExistingOwnedGrassSurfaces()
         {
         }
-
 
         /// <inheritdoc/>
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)

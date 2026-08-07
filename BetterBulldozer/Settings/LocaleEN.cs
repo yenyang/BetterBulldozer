@@ -6,8 +6,6 @@ namespace Better_Bulldozer.Settings
 {
     using System.Collections.Generic;
     using Colossal;
-    using Colossal.PSI.Common;
-    using Game.Settings;
 
     /// <summary>
     /// Localization for <see cref="BetterBulldozerMod"/> mod in English.
@@ -35,7 +33,6 @@ namespace Better_Bulldozer.Settings
             return $"BetterBulldozer.WARNING_TOOLTIP[{key}]";
         }
 
-
         /// <summary>
         /// Returns the locale key for a tooltip title key.
         /// </summary>
@@ -62,6 +59,8 @@ namespace Better_Bulldozer.Settings
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalFencesAndHedges)), "Automatically removes fences and hedges from buildings plopped, spawned, when they update, and when loading a save. They still appear temporarily while moving or plopping. This is intended for players that want to draw their own fencing everywhere and do not want to remove fencing everytime. Disabling this triggers a restoration which takes time to complete especially if you are automatically removing branding objects." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalBrandingObjects)), "Automatically Remove Branding objects and Advertisements" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalBrandingObjects)), "Automatically removes branding objects and advertisements from buildings plopped, spawned, when they update, and when loading a save. They still appear temporarily while moving or plopping. This is intended for players that do not want any branding objects anywhere and may want control over when and where they apply branding objects. Disabling this triggers a restoration which takes time to complete especially if you are automatically removing fences and hedges." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalStreetSignObjects)), "Automatically Remove Stret sign objects" },
+                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.AutomaticRemovalStreetSignObjects)), "Automatically removes street sign objects from buildings plopped, spawned, when they update, and when loading a save. They still appear temporarily while moving or plopping. This is intended for players that do not want any branding objects anywhere and may want control over when and where they apply branding objects. Disabling this triggers a restoration which takes time to complete especially if you are automatically removing fences and hedges." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "Reset Better Bulldozer Settings" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "After confirmation this will reset Better Bulldozer Settings." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.ResetModSettings)), "Reset Better Bulldozer  Settings?" },
@@ -74,6 +73,9 @@ namespace Better_Bulldozer.Settings
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.RestoreBrandingObjects)), "Restore Branding Objects" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.RestoreBrandingObjects)), "Triggers updates on everything with sub-objects so that all sub-objects including branding objects not 'permanently removed' get restored after having used Automatically Remove Branding objects and Advertisements. This may take some time." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.RestoreBrandingObjects)), "Restore Branding Objects? This may take some time especially if you are automatically removing fences and hedges." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.RestoreStreetSignObjects)), "Restore Street sign Objects" },
+                { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.RestoreStreetSignObjects)), "Triggers updates on everything with sub-objects so that all sub-objects including street sign objects not 'permanently removed' get restored after having used Automatically Remove Street sign objects. This may take some time." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.RestoreStreetSignObjects)), "Restore Street sign Objects? This may take some time especially if you are automatically removing fences and hedges." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(BetterBulldozerModSettings.RemovedOwnedGrassSurfaces)), "Remove Owned Grass Surfaces" },
                 { m_Setting.GetOptionDescLocaleID(nameof(BetterBulldozerModSettings.RemovedOwnedGrassSurfaces)), "Removes all Grass Surface 01 and Grass Surface 02 from buildings that already exist. This cannot be undone." },
                 { m_Setting.GetOptionWarningLocaleID(nameof(BetterBulldozerModSettings.RemovedOwnedGrassSurfaces)), "Remove Grass Surfaces from all buildings? This cannot be undone." },
@@ -147,7 +149,6 @@ namespace Better_Bulldozer.Settings
                 { WarningTooltipKey("RemovingSubelementsFromServiceBuildings"), "Recommend purchasing all upgrades before removing single sub-elements from service buildings to avoid regeneration." },
             };
         }
-
 
         /// <inheritdoc/>
         public void Unload()

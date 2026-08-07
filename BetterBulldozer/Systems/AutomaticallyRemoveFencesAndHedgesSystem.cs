@@ -10,7 +10,6 @@ namespace Better_Bulldozer.Systems
     using Colossal.Serialization.Entities;
     using Game;
     using Game.Common;
-    using Game.Net;
     using Game.Prefabs;
     using Game.Tools;
     using Unity.Burst;
@@ -38,6 +37,14 @@ namespace Better_Bulldozer.Systems
         /// </summary>
         public AutomaticallyRemoveFencesAndHedges()
         {
+        }
+
+        public void ForceFullScan()
+        {
+            if (Enabled)
+            {
+                m_JustLoaded = true;
+            }
         }
 
         /// <inheritdoc/>

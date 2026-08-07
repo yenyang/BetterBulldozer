@@ -5,27 +5,24 @@
 #define BURST
 namespace Better_Bulldozer.Systems
 {
+    using System;
+    using System.Reflection;
     using Better_Bulldozer.Components;
     using Colossal.Entities;
     using Colossal.Logging;
-    using Colossal.PSI.Common;
     using Colossal.Serialization.Entities;
     using Game;
-    using Game.Areas;
     using Game.Buildings;
     using Game.Common;
     using Game.Objects;
     using Game.Prefabs;
     using Game.Tools;
     using Game.Vehicles;
-    using System;
-    using System.Reflection;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using UnityEngine;
 
     /// <summary>
     /// Removes regenrated subelement prefabs that have been permananetly removed.
@@ -203,6 +200,7 @@ namespace Better_Bulldozer.Systems
                                 {
                                     EntityManager.AddComponent<Deleted>(subobject3.m_SubObject);
                                 }
+
                                 m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject3.m_SubObject.Index}:{subobject3.m_SubObject.Version}.");
 
                                 if (EntityManager.TryGetComponent(subobject3.m_SubObject, out PrefabRef prefabRef3) && m_PrefabSystem.TryGetPrefab(prefabRef3.m_Prefab, out PrefabBase prefabBase3))
@@ -221,6 +219,7 @@ namespace Better_Bulldozer.Systems
                                     {
                                         EntityManager.AddComponent<Deleted>(subobject4.m_SubObject);
                                     }
+
                                     m_Log.Info($"{nameof(RemoveRegeneratedSubelementPrefabsSystem)}.{nameof(RunPostLoadCleanup)} Removed Orphaned Sub-element Entity: {subobject4.m_SubObject.Index}:{subobject4.m_SubObject.Version}.");
 
                                     if (EntityManager.TryGetComponent(subobject4.m_SubObject, out PrefabRef prefabRef4) && m_PrefabSystem.TryGetPrefab(prefabRef4.m_Prefab, out PrefabBase prefabBase4))
@@ -490,7 +489,6 @@ namespace Better_Bulldozer.Systems
                         prefabEntities.Add(prefabRef.m_Prefab);
                     }
 
-
                     foreach (Game.Objects.SubObject subObject in subObjectBuffer)
                     {
                         if (!m_PrefabRefLookup.TryGetComponent(subObject.m_SubObject, out PrefabRef prefabRef) || !prefabEntities.Contains(prefabRef.m_Prefab))
@@ -580,7 +578,6 @@ namespace Better_Bulldozer.Systems
                 }
             }
         }
-
 
 #if BURST
         [BurstCompile]

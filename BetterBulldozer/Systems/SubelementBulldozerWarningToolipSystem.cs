@@ -70,7 +70,6 @@ namespace Better_Bulldozer.Systems
             m_Tooltips.Clear();
         }
 
-
         /// <inheritdoc/>
         protected override void OnCreate()
         {

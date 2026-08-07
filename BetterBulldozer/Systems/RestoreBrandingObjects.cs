@@ -9,7 +9,6 @@ namespace Better_Bulldozer.Systems
     using Colossal.Logging;
     using Game;
     using Game.Common;
-    using Game.Prefabs;
     using Game.Tools;
     using Unity.Burst;
     using Unity.Burst.Intrinsics;
@@ -23,8 +22,9 @@ namespace Better_Bulldozer.Systems
     public partial class RestoreBrandingObjects : GameSystemBase
     {
         private ILog m_Log;
-        private EntityQuery m_SubObjectQuery;
-        private PrefabSystem m_PrefabSystem;
+
+        private EntityQuery m_SavedBrandingQuery;
+
         private ToolSystem m_ToolSystem;
         private ToolOutputBarrier m_Barrier;
 
@@ -40,17 +40,20 @@ namespace Better_Bulldozer.Systems
         {
             m_Log = BetterBulldozerMod.Instance.Logger;
             m_Log.Info($"{nameof(AutomaticallyRemoveBrandingObjects)}.{nameof(OnCreate)}.");
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+
             m_Barrier = World.GetOrCreateSystemManaged<ToolOutputBarrier>();
             m_ToolSystem = World.GetExistingSystemManaged<ToolSystem>();
+
             base.OnCreate();
+
             Enabled = false;
-            m_SubObjectQuery = SystemAPI.QueryBuilder()
-                .WithAll<Game.Objects.SubObject>()
-                .WithNone<Temp, Deleted, DeleteInXFrames>()
+
+            m_SavedBrandingQuery = SystemAPI.QueryBuilder()
+                .WithAll<SavedOwnerBuildingTag>()
+                .WithNone<Temp, Deleted>()
                 .Build();
 
-            RequireForUpdate(m_SubObjectQuery);
+            RequireForUpdate(m_SavedBrandingQuery);
         }
 
         /// <inheritdoc/>
@@ -62,35 +65,40 @@ namespace Better_Bulldozer.Systems
                 return;
             }
 
+            EntityCommandBuffer.ParallelWriter ecbWriter = m_Barrier.CreateCommandBuffer().AsParallelWriter();
 
-            AddUpdatedJob addUpdatedJob = new AddUpdatedJob()
+            RestoreBrandingJob restoreJob = new RestoreBrandingJob()
             {
-                buffer = m_Barrier.CreateCommandBuffer().AsParallelWriter(),
                 m_EntityType = SystemAPI.GetEntityTypeHandle(),
+                m_SavedOwnerBuildingTagType = SystemAPI.GetComponentTypeHandle<SavedOwnerBuildingTag>(),
+                m_CommandBuffer = ecbWriter,
             };
-            JobHandle jobHandle = addUpdatedJob.ScheduleParallel(m_SubObjectQuery, Dependency);
-            m_Barrier.AddJobHandleForProducer(jobHandle);
-            Dependency = jobHandle;
+
+            JobHandle finalHandle = restoreJob.ScheduleParallel(m_SavedBrandingQuery, Dependency);
+
+            m_Barrier.AddJobHandleForProducer(finalHandle);
+            Dependency = finalHandle;
+
             Enabled = false;
         }
 
 #if BURST
         [BurstCompile]
 #endif
-        private struct AddUpdatedJob : IJobChunk
+        private struct RestoreBrandingJob : IJobChunk
         {
-            [ReadOnly]
-            public EntityTypeHandle m_EntityType;
-            public EntityCommandBuffer.ParallelWriter buffer;
+            [ReadOnly] public EntityTypeHandle m_EntityType;
+
+            public ComponentTypeHandle<SavedOwnerBuildingTag> m_SavedOwnerBuildingTagType;
+
+            public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
-                NativeArray<Entity> entityNativeArray = chunk.GetNativeArray(m_EntityType);
-                for (int i = 0; i < chunk.Count; i++)
-                {
-                    Entity currentEntity = entityNativeArray[i];
-                    buffer.AddComponent<Updated>(unfilteredChunkIndex, currentEntity);
-                }
+                NativeArray<Entity> entities = chunk.GetNativeArray(m_EntityType);
+
+                m_CommandBuffer.RemoveComponent<SavedOwnerBuildingTag>(unfilteredChunkIndex, entities);
+                m_CommandBuffer.AddComponent<Updated>(unfilteredChunkIndex, entities);
             }
         }
     }

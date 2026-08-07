@@ -22,10 +22,7 @@ namespace Better_Bulldozer.Systems
     using Game.SceneFlow;
     using Game.Tools;
     using Game.UI.InGame;
-    using Unity.Collections.LowLevel.Unsafe;
     using Unity.Entities;
-    using UnityEngine.InputSystem;
-    using static Colossal.AssetPipeline.Diagnostic.Report;
 
     /// <summary>
     /// UI system for Better Bulldozer extensions to the bulldoze tool.
@@ -257,7 +254,6 @@ namespace Better_Bulldozer.Systems
             {
                 m_UiView = GameManager.instance.userInterface.view.View;
             }
-
 
             // This script creates the BetterBulldozer object if it doesn't exist.
             m_UiView.ExecuteScript("if (yyBetterBulldozer == null) var yyBetterBulldozer = {};");
@@ -696,7 +692,6 @@ namespace Better_Bulldozer.Systems
 
             HandleShowMarkers(m_ToolSystem.activePrefab);
         }
-
 
         private void HandleShowMarkers(PrefabBase prefab)
         {

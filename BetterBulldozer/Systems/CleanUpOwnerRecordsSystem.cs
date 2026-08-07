@@ -22,7 +22,6 @@ namespace Better_Bulldozer.Systems
     /// </summary>
     public partial class CleanUpOwnerRecordsSystem : GameSystemBase
     {
-
         private EntityQuery m_OwnerRecordQuery;
         private ILog m_Log;
         private DeserializationBarrier m_Barrier;

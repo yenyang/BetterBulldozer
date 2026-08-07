@@ -1,4 +1,4 @@
-﻿// <copyright file="AutomaticallyRemoveManicuredGrassSurface.cs" company="Yenyang's Mods. MIT License">
+﻿// <copyright file="AutomaticallyRemoveManicuredGrassSurfaceSystem.cs" company="Yenyang's Mods. MIT License">
 // Copyright (c) Yenyang's Mods. MIT License. All rights reserved.
 // </copyright>
 
